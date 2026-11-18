@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * Renders every Fixtures::all() entry to tests/out/<name>.svg (and .png when rsvg-convert is installed),
- * plus tests/out/index.html showing them all. Run from packages/math: php tests/render-fixtures.php
+ * plus tests/out/index.html showing them all. Run from packages/core: php tests/render-fixtures.php
  * A fixture whose name ends in "-inline" is laid out in text style, every other one in display style.
  */
 

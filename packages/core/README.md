@@ -35,12 +35,12 @@ echo MathRender::fromTex('\ce{CH4 + 2O2 -> CO2 + 2H2O}')->svg();
 
 ## Documentation
 
-- [Overview](https://one-learning-community.github.io/phactorial/phactorial/), with a comparison to KaTeX and MathJax
-- [Recipes](https://one-learning-community.github.io/phactorial/phactorial/recipes.html): web pages, email, Word, conversion,
+- [Overview](https://one-learning-community.github.io/phactorial/), with a comparison to KaTeX and MathJax
+- [Recipes](https://one-learning-community.github.io/phactorial/recipes.html): web pages, email, Word, conversion,
   alt text, untrusted input
-- [Input](https://one-learning-community.github.io/phactorial/phactorial/input.html): the builder, TeX, MathML, notes and limits
-- [Output](https://one-learning-community.github.io/phactorial/phactorial/output.html): one-call output, layout options and every writer
-- [Custom backends](https://one-learning-community.github.io/phactorial/phactorial/backends.html): the display list, glyph
+- [Input](https://one-learning-community.github.io/phactorial/input.html): the builder, TeX, MathML, notes and limits
+- [Output](https://one-learning-community.github.io/phactorial/output.html): one-call output, layout options and every writer
+- [Custom backends](https://one-learning-community.github.io/phactorial/backends.html): the display list, glyph
   outlines, fonts
 
 ## Testing
