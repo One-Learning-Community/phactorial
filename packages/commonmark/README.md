@@ -62,9 +62,21 @@ All options live under the `math` key.
 |---|---|---|---|
 | `output` | `svg`, `mathml` | `svg` | `svg` draws each formula as an inline `<svg>` that looks the same everywhere. `mathml` writes MathML Core for the browser to draw. |
 | `size` | a number above 0 | `16` | The font size in pixels for SVG output. |
-| `on_error` | `source`, `render` | `source` | What a formula the reader cannot parse becomes: `source` shows the TeX unchanged, `render` draws what the reader recovered. |
+| `on_error` | `source`, `render` | `source` | What a formula the reader could not fully parse becomes: `source` shows the formula's Markdown unchanged, `render` draws what the reader recovered. |
 
 An invalid value throws `League\Config\Exception\ValidationException` on the first render.
+
+## Errors
+
+A formula is an error when the reader dropped part of it, as it does for an unknown command such as `\nosuchcommand`.
+With `on_error: source` (the default), the page shows the formula's Markdown, delimiters included and HTML-escaped,
+instead of a drawing. Inline formulas become `<code class="math math-error">$\nosuchcommand{x}$</code>`. Display
+blocks keep their block shape: `<div class="math math-display math-error"><code>$$…$$</code></div>`. A `math` fence
+shows its content between `$$` delimiters. Style `.math-error` as you like. With `on_error: render`, the formula is
+drawn from whatever the reader recovered.
+
+A formula the reader only approximated is drawn either way. The extension never emits a link from math, and the source
+fallback is escaped like any other text.
 
 ## Compatibility with GitHub
 

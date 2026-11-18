@@ -9,4 +9,6 @@ use League\CommonMark\Node\Block\AbstractBlock;
 final class MathBlock extends AbstractBlock
 {
     public string $tex = '';
+    /** The Markdown the formula was read from, delimiters included. */
+    public string $source = '';
 }

@@ -21,9 +21,9 @@ final class MathNodeRenderer implements NodeRendererInterface
     public function render(Node $node, ChildNodeRendererInterface $childRenderer): ?string
     {
         return match (true) {
-            $node instanceof MathInline => $this->html->render($node->tex, $node->display),
-            $node instanceof MathBlock => $this->html->render($node->tex, true, true),
-            $node instanceof FencedCode && ($node->getInfoWords()[0] ?? '') === 'math' => $this->html->render(trim($node->getLiteral()), true, true),
+            $node instanceof MathInline => $this->html->render($node->tex, $node->display, false, $node->source),
+            $node instanceof MathBlock => $this->html->render($node->tex, true, true, $node->source),
+            $node instanceof FencedCode && ($node->getInfoWords()[0] ?? '') === 'math' => $this->html->render(trim($node->getLiteral()), true, true, '$$' . trim($node->getLiteral()) . '$$'),
             default => null,
         };
     }
