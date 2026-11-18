@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Phactorial\CommonMark\MathExtension;
 use Phactorial\CommonMark\Node\MathBlock;
 use Phactorial\CommonMark\Node\MathInline;
+use Phactorial\CommonMark\Parser\LatexInlineParser;
 use Phactorial\CommonMark\Parser\MathInlineParser;
 use Phactorial\CommonMark\Tests\Support\RecordingBuilder;
 
@@ -24,7 +25,7 @@ final class ContractTest extends TestCase
         $builder = new RecordingBuilder();
         (new MathExtension())->register($builder);
 
-        self::assertSame([[MathInlineParser::class, 50]], $builder->parsers);
+        self::assertSame([[MathInlineParser::class, 50], [LatexInlineParser::class, 90]], $builder->parsers);
         self::assertSame(
             [[MathInline::class, 0], [MathBlock::class, 0], [FencedCode::class, 50]],
             $builder->renderers,

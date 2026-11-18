@@ -10,7 +10,7 @@ final class ArchitectureTest extends TestCase
 {
     /** The extension, its node types and its configuration are the public API; the listener, parser, renderers and output enum are the wiring. */
     private const INTERNAL = [
-        'MathBlockListener.php', 'MathOutput.php', 'Parser/MathInlineParser.php',
+        'MathBlockListener.php', 'MathOutput.php', 'Parser/LatexInlineParser.php', 'Parser/MathInlineParser.php',
         'Parser/ParagraphScan.php', 'Renderer/MathHtml.php', 'Renderer/MathNodeRenderer.php',
     ];
 
