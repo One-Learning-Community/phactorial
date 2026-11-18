@@ -76,6 +76,6 @@ STIX Two Math is bundled and is the default. Load another math font with `Font::
 
 The font needs an OpenType `MATH` table. Its outlines may be TrueType or CFF, so Latin Modern Math and the other `.otf` math fonts load the same way as a `.ttf`. The reader refuses CFF2 (variable) fonts, CID-keyed CFF fonts, a CFF font whose `FontMatrix` disagrees with its units per em, font collections, and fonts without a `MATH` table. A file that is not a font at all says so. A font that can't be used throws `Phactorial\Exception\UnsupportedFont`, which names the file and the reason.
 
-`TrueTypeFont` is the old name of `Font`. It remains as a deprecated alias until 1.0.
+`TrueTypeFont`, the old name of `Font`, was removed. Use `Font`.
 
 A character the font has no glyph for is laid out with the font's `.notdef` glyph. If your backend draws such characters in another font, pass `fallbackAdvance` to `Math::layout()` so the layout leaves room for them.

@@ -16,7 +16,9 @@ $paper = '#fafafa';
 /** Strips the wrapper so the formula can be placed inside a larger SVG. */
 function inner(string $svg): array
 {
-    preg_match('/<svg[^>]*width="([\d.]+)"[^>]*height="([\d.]+)"[^>]*>(.*)<\/svg>/s', $svg, $m);
+    if (preg_match('/<svg[^>]*width="([\d.]+)"[^>]*height="([\d.]+)"[^>]*>(.*)<\/svg>/s', $svg, $m) !== 1) {
+        throw new RuntimeException('Unexpected SVG shape from the renderer.');
+    }
 
     return [(float) $m[1], (float) $m[2], $m[3]];
 }
@@ -32,9 +34,8 @@ file_put_contents("$out/phactorial-wordmark-dark.svg", wordmark($word, 28, $pape
 
 // Favicon: "Ph" in a rounded square, 64 x 64.
 [$w, $h, $body] = inner(wordmark('\mathrm{Ph}', 34, $paper, 0));
-$scale = 1.0;
-$x = (64 - $w * $scale) / 2;
-$y = (64 - $h * $scale) / 2;
+$x = (64 - $w) / 2;
+$y = (64 - $h) / 2;
 file_put_contents("$out/favicon.svg", sprintf(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><rect width="64" height="64" rx="14" fill="%s"/><g transform="translate(%.2F %.2F)">%s</g></svg>',
     $ink, $x, $y, $body,

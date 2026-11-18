@@ -18,16 +18,7 @@ Every glyph is a path, so the SVG looks the same everywhere and needs no web fon
 
 ## Reads and writes
 
-| Reads | Writes |
-|---|---|
-| TeX, including `\ce` and `\pu` chemistry | SVG |
-| MathML | PNG (needs ext-imagick) |
-| The `Math` builder in PHP | MathML |
-| MathType and Wiris text | TeX |
-| | Word equations (OMML) |
-| | Plain text |
-
-Every reader produces the same tree, so Phactorial also converts: TeX to MathML, MathML to TeX, either to Word.
+It reads TeX (including `\ce` and `\pu` chemistry), MathML, MathType and Wiris text, and the `Math` builder in PHP. It writes the formats in the table below. Every reader produces the same tree, so Phactorial also converts: TeX to MathML, MathML to TeX, either to Word.
 
 ## What it does
 
@@ -54,7 +45,7 @@ KaTeX and MathJax are the standard tools for math on the web, and they are excel
 
 Phactorial is the PHP-only alternative. It reads the TeX KaTeX reads (gaps listed under [Input](./input.md#tex)), runs in your PHP process and returns a string. It also writes Word equations, which neither JavaScript library does.
 
-phpoffice/math is a neighbor, not a rival: it converts between MathML and Word's format. Phactorial also reads TeX and draws the formula.
+phpoffice/math converts between MathML and Word's format but does not typeset. Phactorial also reads TeX and draws the formula.
 
 Not yet supported: line breaks inside long formulas, color and boxes within a formula, and equation numbers.
 

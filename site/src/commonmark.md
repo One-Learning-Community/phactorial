@@ -56,7 +56,7 @@ The rules match GitHub's renderer.
 
 ## Output
 
-Inline math becomes an inline `<svg>` or `<math>` element. A display block becomes `<div class="math math-display">`. Add this rule to your CSS to center display math that sits inside a paragraph:
+Inline math becomes `<span class="math math-inline">` around an `<svg>` or `<math>` element. A `$$…$$` formula inside a paragraph is `<span class="math math-display">`, and a display block is `<div class="math math-display">`. Add this rule to your CSS to center display math that sits inside a paragraph:
 
 ```css
 .math-display { display: block; text-align: center; }

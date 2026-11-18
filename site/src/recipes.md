@@ -35,7 +35,7 @@ echo MathRender::fromTex('\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}')->d
 
 Load the font once and reuse the object. SVG, PNG and MathML output carry no font, so the file costs nothing there. A PDF that embeds the font carries it whole, about 390 KB; [Quoin](https://one-learning-community.github.io/quoin/guide/fonts.html#the-math-font) does this for equations in its PDF documents.
 
-Other math fonts with CFF outlines load the same way: New Computer Modern Math, the TeX Gyre math fonts, Fira Math, Libertinus Math and XITS Math. In a Quoin document, point the font set at the file with `withMathFont()`, or set `math_font` in Laravel.
+Other math fonts with CFF outlines load the same way: New Computer Modern Math, the TeX Gyre math fonts, Fira Math, Libertinus Math and XITS Math. In a Quoin document, [Quoin's `withMathFont()` and its Laravel `math_font` option](https://one-learning-community.github.io/quoin/guide/fonts.html#the-math-font) point the font set at the file.
 
 ## Accessible formulas
 
