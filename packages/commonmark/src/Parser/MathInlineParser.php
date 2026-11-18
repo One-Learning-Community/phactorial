@@ -27,6 +27,8 @@ use Phactorial\CommonMark\Node\MathInline;
  * "$$" closers, the newlines and the code-span openers are each listed once per paragraph, and every opener finds
  * its closer, and any newline or code span in between, by binary search. A single-dollar formula cannot contain a
  * dollar sign, so its scan ends at the next one.
+ *
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class MathInlineParser implements InlineParserInterface
 {

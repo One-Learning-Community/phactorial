@@ -1,12 +1,7 @@
 Phactorial\Exception\MissingExtension | final class extends RuntimeException implements Stringable, Throwable
 Phactorial\Exception\MissingExtension::$extension | readonly protected(set) string
-Phactorial\Exception\MissingExtension::__construct() | (string $extension, string $needs)
-Phactorial\Exception\MissingExtension::imagick() | static (): self
 Phactorial\Exception\UnsupportedFont | final class extends InvalidArgumentException implements Stringable, Throwable
 Phactorial\Exception\UnsupportedFont::$path | readonly protected(set) string
-Phactorial\Exception\UnsupportedFont::__construct() | (string $path, string $reason)
-Phactorial\Exception\UnsupportedFont::cff() | static (string $path): self
-Phactorial\Exception\UnsupportedFont::noMathTable() | static (string $path): self
 Phactorial\Font\Font | final class
 Phactorial\Font\Font::$numGlyphs | int
 Phactorial\Font\Font::$unitsPerEm | int
@@ -16,15 +11,13 @@ Phactorial\Font\Font::outlinePath() | (int $gid): string
 Phactorial\Layout\Box | final class
 Phactorial\Layout\Box::$ascent | float
 Phactorial\Layout\Box::$descent | float
-Phactorial\Layout\Box::$italic | float
 Phactorial\Layout\Box::$items | hooks{get,set} array ; @var list<DisplayItem>
-Phactorial\Layout\Box::$simple | bool
 Phactorial\Layout\Box::$width | float
-Phactorial\Layout\Box::__construct() | (float $width = 0.0, float $ascent = 0.0, float $descent = 0.0, float $italic = 0.0, bool $simple = false) ; @param $italic float ; @param $simple bool
 Phactorial\Layout\Box::each() | (callable $visit): void ; @param $visit callable(DisplayItem, float, float): void
 Phactorial\Layout\Box::height() | (): float
 Phactorial\Layout\Box::notes() | (): array ; @return list<MathNote>
 Phactorial\Layout\DisplayItem | interface
+Phactorial\Layout\DisplayItem::translated() | abstract (float $dx, float $dy): static
 Phactorial\Layout\Glyph | final readonly class implements Phactorial\Layout\DisplayItem
 Phactorial\Layout\Glyph::$gid | readonly protected(set) int
 Phactorial\Layout\Glyph::$size | readonly protected(set) float
@@ -33,13 +26,13 @@ Phactorial\Layout\Glyph::$sy | readonly protected(set) float
 Phactorial\Layout\Glyph::$text | readonly protected(set) ?string
 Phactorial\Layout\Glyph::$x | readonly protected(set) float
 Phactorial\Layout\Glyph::$y | readonly protected(set) float
-Phactorial\Layout\Glyph::__construct() | (int $gid, ?string $text, float $x, float $y, float $size, float $sx = 1.0, float $sy = 1.0)
+Phactorial\Layout\Glyph::translated() | (float $dx, float $dy): static
 Phactorial\Layout\Rule | final readonly class implements Phactorial\Layout\DisplayItem
 Phactorial\Layout\Rule::$h | readonly protected(set) float
 Phactorial\Layout\Rule::$w | readonly protected(set) float
 Phactorial\Layout\Rule::$x | readonly protected(set) float
 Phactorial\Layout\Rule::$y | readonly protected(set) float
-Phactorial\Layout\Rule::__construct() | (float $x, float $y, float $w, float $h)
+Phactorial\Layout\Rule::translated() | (float $dx, float $dy): static
 Phactorial\Math | final class
 Phactorial\Math::BIG_SIZES | const = array ( 0 => 1.2, 1 => 1.8, 2 => 2.4, 3 => 3.0, )
 Phactorial\Math::accent() | static (Phactorial\Node\Node|string $base, string $mark): Phactorial\Node\UnderOver
@@ -90,14 +83,12 @@ Phactorial\MathNote::$element | readonly protected(set) string
 Phactorial\MathNote::$level | readonly protected(set) Phactorial\NoteLevel
 Phactorial\MathNote::$reason | readonly protected(set) string
 Phactorial\MathNote::$where | readonly protected(set) string
-Phactorial\MathNote::__construct() | (Phactorial\NoteLevel $level, string $element, string $reason, string $where = '')
 Phactorial\MathPng | final readonly class
 Phactorial\MathPng::$alt | readonly protected(set) string
 Phactorial\MathPng::$bytes | readonly protected(set) string
 Phactorial\MathPng::$height | readonly protected(set) float
 Phactorial\MathPng::$verticalAlign | readonly protected(set) ?float
 Phactorial\MathPng::$width | readonly protected(set) float
-Phactorial\MathPng::__construct() | (string $bytes, float $width, float $height, ?float $verticalAlign, string $alt) ; @param $verticalAlign ?float ; @param $alt string
 Phactorial\MathPng::dataUri() | (): string
 Phactorial\MathPng::img() | (string $src, ?string $alt = NULL): string
 Phactorial\MathRender | final readonly class
@@ -124,7 +115,6 @@ Phactorial\Mathml\MathmlReader::read() | static (Dom\Element|string $input): Pha
 Phactorial\Mathml\MathmlResult | final readonly class
 Phactorial\Mathml\MathmlResult::$display | readonly protected(set) bool
 Phactorial\Mathml\MathmlResult::$node | readonly protected(set) Phactorial\Node\Node
-Phactorial\Mathml\MathmlResult::__construct() | (Phactorial\Node\Node $node, bool $display)
 Phactorial\Mathml\MathmlResult::notes() | (): array ; @return list<MathNote>
 Phactorial\Mathml\SafeXml | final class
 Phactorial\Mathml\SafeXml::decode() | static (string $text): string
@@ -132,21 +122,21 @@ Phactorial\Mathml\SafeXml::find() | static (string $text): array ; @return list<
 Phactorial\Node\DisplayStyle | final class extends Phactorial\Node\Node
 Phactorial\Node\DisplayStyle::$content | readonly protected(set) Phactorial\Node\Node
 Phactorial\Node\DisplayStyle::$display | readonly protected(set) bool
-Phactorial\Node\DisplayStyle::__construct() | (Phactorial\Node\Node $content, bool $display)
+Phactorial\Node\DisplayStyle::children() | (): array ; @return list<Node>
 Phactorial\Node\Fallback | final class extends Phactorial\Node\Node
 Phactorial\Node\Fallback::$content | readonly protected(set) ?Phactorial\Node\Node
 Phactorial\Node\Fallback::$note | readonly protected(set) Phactorial\MathNote
-Phactorial\Node\Fallback::__construct() | (?Phactorial\Node\Node $content, Phactorial\MathNote $note)
+Phactorial\Node\Fallback::children() | (): array ; @return list<Node>
 Phactorial\Node\Fenced | final class extends Phactorial\Node\Node
 Phactorial\Node\Fenced::$close | readonly protected(set) string
 Phactorial\Node\Fenced::$content | readonly protected(set) Phactorial\Node\Node
 Phactorial\Node\Fenced::$open | readonly protected(set) string
-Phactorial\Node\Fenced::__construct() | (string $open, string $close, Phactorial\Node\Node $content)
+Phactorial\Node\Fenced::children() | (): array ; @return list<Node>
 Phactorial\Node\Fraction | final class extends Phactorial\Node\Node
 Phactorial\Node\Fraction::$bar | readonly protected(set) bool
 Phactorial\Node\Fraction::$denominator | readonly protected(set) Phactorial\Node\Node
 Phactorial\Node\Fraction::$numerator | readonly protected(set) Phactorial\Node\Node
-Phactorial\Node\Fraction::__construct() | (Phactorial\Node\Node $numerator, Phactorial\Node\Node $denominator, bool $bar = true)
+Phactorial\Node\Fraction::children() | (): array ; @return list<Node>
 Phactorial\Node\Grid | final class extends Phactorial\Node\Node
 Phactorial\Node\Grid::$alignment | readonly protected(set) bool
 Phactorial\Node\Grid::$columnAlign | readonly protected(set) array ; @var list<string>
@@ -155,22 +145,17 @@ Phactorial\Node\Grid::$columns | readonly protected(set) int
 Phactorial\Node\Grid::$display | readonly protected(set) bool
 Phactorial\Node\Grid::$rowAlign | readonly protected(set) string
 Phactorial\Node\Grid::$rows | readonly protected(set) array ; @var list<list<Node>>
-Phactorial\Node\Grid::COLUMN_ALIGN | const = array ( 0 => 'left', 1 => 'center', 2 => 'right', )
-Phactorial\Node\Grid::ROW_ALIGN | const = array ( 0 => 'baseline', 1 => 'axis', 2 => 'center', 3 => 'top', 4 => 'bottom', )
-Phactorial\Node\Grid::__construct() | (array $rows, array $columnAlign = array ( ), string $rowAlign = 'baseline', bool $display = false, array $columnSpacing = array ( ), bool $alignment = false) ; @param $rows array<array<Node>> ; @param $columnAlign array<string> ; @param $rowAlign string ; @param $display bool ; @param $columnSpacing array<float> ; @param $alignment bool
+Phactorial\Node\Grid::children() | (): array ; @return list<Node>
 Phactorial\Node\Identifier | final class extends Phactorial\Node\Node
 Phactorial\Node\Identifier::$function | readonly protected(set) bool
-Phactorial\Node\Identifier::$italic | readonly protected(set) ?bool
 Phactorial\Node\Identifier::$name | readonly protected(set) string
 Phactorial\Node\Identifier::$upright | readonly protected(set) bool
-Phactorial\Node\Identifier::__construct() | (string $name, ?bool $italic = NULL, bool $function = false)
 Phactorial\Node\Middle | final class extends Phactorial\Node\Node
 Phactorial\Node\Middle::$char | readonly protected(set) string
-Phactorial\Node\Middle::__construct() | (string $char, ?float $height = NULL) ; @param $height ?float
 Phactorial\Node\Node | abstract class
+Phactorial\Node\Node::children() | (): array ; @return list<Node>
 Phactorial\Node\Number | final class extends Phactorial\Node\Node
 Phactorial\Node\Number::$text | readonly protected(set) string
-Phactorial\Node\Number::__construct() | (string $text)
 Phactorial\Node\Operator | final class extends Phactorial\Node\Node
 Phactorial\Node\Operator::$char | readonly protected(set) string
 Phactorial\Node\Operator::$form | readonly protected(set) ?string
@@ -181,45 +166,37 @@ Phactorial\Node\Operator::$minSize | readonly protected(set) ?float
 Phactorial\Node\Operator::$movablelimits | readonly protected(set) ?bool
 Phactorial\Node\Operator::$rspace | readonly protected(set) ?float
 Phactorial\Node\Operator::$stretchy | readonly protected(set) ?bool
-Phactorial\Node\Operator::__construct() | (string $char, ?bool $stretchy = NULL, ?bool $largeop = NULL, ?bool $movablelimits = NULL, ?string $form = NULL, ?float $lspace = NULL, ?float $rspace = NULL, ?float $minSize = NULL, ?float $maxSize = NULL) ; @param $stretchy ?bool ; @param $largeop ?bool ; @param $movablelimits ?bool ; @param $form ?string ; @param $lspace ?float ; @param $rspace ?float ; @param $minSize ?float ; @param $maxSize ?float
-Phactorial\Node\Operator::hasMovableLimits() | (string $form): bool
-Phactorial\Node\Operator::isLargeop() | (string $form): bool
 Phactorial\Node\Phantom | final class extends Phactorial\Node\Node
 Phactorial\Node\Phantom::$content | readonly protected(set) Phactorial\Node\Node
-Phactorial\Node\Phantom::__construct() | (Phactorial\Node\Node $content)
+Phactorial\Node\Phantom::children() | (): array ; @return list<Node>
 Phactorial\Node\Root | final class extends Phactorial\Node\Node
 Phactorial\Node\Root::$index | readonly protected(set) ?Phactorial\Node\Node
 Phactorial\Node\Root::$radicand | readonly protected(set) Phactorial\Node\Node
-Phactorial\Node\Root::__construct() | (Phactorial\Node\Node $radicand, ?Phactorial\Node\Node $index = NULL)
+Phactorial\Node\Root::children() | (): array ; @return list<Node>
 Phactorial\Node\Row | final class extends Phactorial\Node\Node
 Phactorial\Node\Row::$children | readonly protected(set) array
-Phactorial\Node\Row::__construct() | (array $children) ; @param $children list<Node>
+Phactorial\Node\Row::children() | (): array ; @return list<Node>
 Phactorial\Node\Scripts | final class extends Phactorial\Node\Node
 Phactorial\Node\Scripts::$base | readonly protected(set) Phactorial\Node\Node
 Phactorial\Node\Scripts::$preSub | readonly protected(set) ?Phactorial\Node\Node
 Phactorial\Node\Scripts::$preSup | readonly protected(set) ?Phactorial\Node\Node
 Phactorial\Node\Scripts::$sub | readonly protected(set) ?Phactorial\Node\Node
 Phactorial\Node\Scripts::$sup | readonly protected(set) ?Phactorial\Node\Node
-Phactorial\Node\Scripts::__construct() | (Phactorial\Node\Node $base, ?Phactorial\Node\Node $sub, ?Phactorial\Node\Node $sup, ?Phactorial\Node\Node $preSub = NULL, ?Phactorial\Node\Node $preSup = NULL)
+Phactorial\Node\Scripts::children() | (): array ; @return list<Node>
 Phactorial\Node\Space | final class extends Phactorial\Node\Node
 Phactorial\Node\Space::$em | readonly protected(set) float
-Phactorial\Node\Space::MAX_EM | const float = 100.0
-Phactorial\Node\Space::__construct() | (float $em)
 Phactorial\Node\TexSource | final class extends Phactorial\Node\Node
-Phactorial\Node\TexSource::$close | readonly protected(set) ?string
 Phactorial\Node\TexSource::$content | readonly protected(set) Phactorial\Node\Node
-Phactorial\Node\TexSource::$tex | readonly protected(set) string
-Phactorial\Node\TexSource::__construct() | (Phactorial\Node\Node $content, string $tex, ?string $close = NULL)
+Phactorial\Node\TexSource::children() | (): array ; @return list<Node>
 Phactorial\Node\Text | final class extends Phactorial\Node\Node
 Phactorial\Node\Text::$text | readonly protected(set) string
-Phactorial\Node\Text::__construct() | (string $text)
 Phactorial\Node\UnderOver | final class extends Phactorial\Node\Node
 Phactorial\Node\UnderOver::$accent | readonly protected(set) bool
 Phactorial\Node\UnderOver::$accentUnder | readonly protected(set) bool
 Phactorial\Node\UnderOver::$base | readonly protected(set) Phactorial\Node\Node
 Phactorial\Node\UnderOver::$over | readonly protected(set) ?Phactorial\Node\Node
 Phactorial\Node\UnderOver::$under | readonly protected(set) ?Phactorial\Node\Node
-Phactorial\Node\UnderOver::__construct() | (Phactorial\Node\Node $base, ?Phactorial\Node\Node $under, ?Phactorial\Node\Node $over, bool $accent = false, bool $accentUnder = false)
+Phactorial\Node\UnderOver::children() | (): array ; @return list<Node>
 Phactorial\NoteLevel | enum implements UnitEnum
 Phactorial\NoteLevel::Approximated | case
 Phactorial\NoteLevel::Dropped | case
@@ -259,5 +236,4 @@ Phactorial\Tex\TexReader::read() | static (string $tex): Phactorial\Tex\TexResul
 Phactorial\Tex\TexResult | final readonly class
 Phactorial\Tex\TexResult::$display | readonly protected(set) bool
 Phactorial\Tex\TexResult::$node | readonly protected(set) Phactorial\Node\Node
-Phactorial\Tex\TexResult::__construct() | (Phactorial\Node\Node $node, bool $display)
 Phactorial\Tex\TexResult::notes() | (): array ; @return list<MathNote>

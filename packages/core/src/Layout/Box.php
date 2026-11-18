@@ -69,12 +69,16 @@ final class Box
     /**
      * @param float $italic italics correction of the last glyph, in points (used to place superscripts)
      * @param bool $simple true for a single token (letter, digit run, operator): scripts then ignore the base's height
+     *
+     * @internal Engine detail, not public API.
      */
     public function __construct(
         public float $width = 0.0,
         public float $ascent = 0.0,
         public float $descent = 0.0,
+        /** @internal Engine detail, not public API. */
         public float $italic = 0.0,
+        /** @internal Engine detail, not public API. */
         public bool $simple = false,
     ) {
     }

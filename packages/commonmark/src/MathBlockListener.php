@@ -16,6 +16,8 @@ use Phactorial\CommonMark\Node\MathInline;
  * Settles two things only the finished tree can show. GitHub leaves formulas inside link text (and image alt text)
  * as plain text, so those go back to their source. A paragraph that holds nothing but one display formula becomes a
  * MathBlock, so it renders as a block instead of a span inside a paragraph.
+ *
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class MathBlockListener
 {
