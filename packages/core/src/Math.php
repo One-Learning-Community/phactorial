@@ -36,6 +36,10 @@ final class Math
     /** The bundled STIX Two Math, opened once per process. */
     private static ?Font $stix = null;
 
+    private function __construct()
+    {
+    }
+
     /** Path of the bundled STIX Two Math font (SIL OFL 1.1, see resources/fonts/OFL.txt). */
     public static function stixTwoMathPath(): string
     {

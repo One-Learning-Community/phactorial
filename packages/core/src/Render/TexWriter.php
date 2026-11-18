@@ -52,6 +52,10 @@ final class TexWriter
     /** @var array<int, true> ids of the TexSource nodes that may be written as an equation number: those at the top of the formula */
     private static array $topLevel = [];
 
+    private function __construct()
+    {
+    }
+
     public static function write(Node $root): string
     {
         $saved = self::$topLevel;

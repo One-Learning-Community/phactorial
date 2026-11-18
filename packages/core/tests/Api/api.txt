@@ -226,7 +226,6 @@ Phactorial\NoteLevel::Dropped | case
 Phactorial\Render\MathmlWriter | final class
 Phactorial\Render\MathmlWriter::write() | static (Phactorial\Node\Node $root, bool $display = true): string
 Phactorial\Render\OmmlWriter | final class
-Phactorial\Render\OmmlWriter::checkAlignment() | static (string $jc): void
 Phactorial\Render\OmmlWriter::oMath() | static (Phactorial\Node\Node $root, ?Phactorial\Render\RunFormat $format = NULL): string
 Phactorial\Render\OmmlWriter::oMathPara() | static (Phactorial\Node\Node $root, string $jc = 'left', ?Phactorial\Render\RunFormat $format = NULL): string
 Phactorial\Render\PngRenderer | final class

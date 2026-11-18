@@ -31,12 +31,18 @@ use Phactorial\Styles;
  */
 final class OmmlWriter
 {
+    private function __construct()
+    {
+    }
+
     public static function oMath(Node $root, ?RunFormat $format = null): string
     {
         return '<m:oMath>' . self::node($root, self::rPr($format)) . '</m:oMath>';
     }
 
     /**
+     * @internal Engine detail, not public API.
+     *
      * @throws \InvalidArgumentException for an equation alignment other than left, center or right
      */
     public static function checkAlignment(string $jc): void
