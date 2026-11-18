@@ -16,9 +16,9 @@ final class SafeXml
     {
     }
 
-    public static function decode(string $s): string
+    public static function decode(string $text): string
     {
-        return strtr($s, self::MAP);
+        return strtr($text, self::MAP);
     }
 
     /**

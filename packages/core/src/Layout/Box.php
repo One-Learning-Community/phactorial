@@ -90,14 +90,14 @@ final class Box
     }
 
     /**
-     * Visit every leaf item in drawing order with its absolute offset: $fn($item, $dx, $dy), where the item itself is as laid out
+     * Visit every leaf item in drawing order with its absolute offset: $visit($item, $dx, $dy), where the item itself is as laid out
      * in its own box and (dx, dy) is the sum of the offsets down to it. No flat list is built.
      *
-     * @param callable(DisplayItem, float, float): void $fn
+     * @param callable(DisplayItem, float, float): void $visit
      */
-    public function each(callable $fn): void
+    public function each(callable $visit): void
     {
-        $this->walk($fn, 0.0, 0.0);
+        $this->walk($visit, 0.0, 0.0);
     }
 
     /** @param callable(DisplayItem, float, float): void $fn */

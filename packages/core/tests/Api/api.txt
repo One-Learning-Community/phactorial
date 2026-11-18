@@ -11,7 +11,7 @@ Phactorial\Font\Font | final class
 Phactorial\Font\Font::$numGlyphs | int
 Phactorial\Font\Font::$unitsPerEm | int
 Phactorial\Font\Font::fromFile() | static (string $path): self
-Phactorial\Font\Font::gid() | (int $cp): int
+Phactorial\Font\Font::gid() | (int $codePoint): int
 Phactorial\Font\Font::outlinePath() | (int $gid): string
 Phactorial\Layout\Box | final class
 Phactorial\Layout\Box::$ascent | float
@@ -21,7 +21,7 @@ Phactorial\Layout\Box::$items | hooks{get,set} array ; @var list<DisplayItem>
 Phactorial\Layout\Box::$simple | bool
 Phactorial\Layout\Box::$width | float
 Phactorial\Layout\Box::__construct() | (float $width = 0.0, float $ascent = 0.0, float $descent = 0.0, float $italic = 0.0, bool $simple = false) ; @param $italic float ; @param $simple bool
-Phactorial\Layout\Box::each() | (callable $fn): void ; @param $fn callable(DisplayItem, float, float): void
+Phactorial\Layout\Box::each() | (callable $visit): void ; @param $visit callable(DisplayItem, float, float): void
 Phactorial\Layout\Box::height() | (): float
 Phactorial\Layout\Box::notes() | (): array ; @return list<MathNote>
 Phactorial\Layout\DisplayItem | interface
@@ -44,20 +44,20 @@ Phactorial\Math | final class
 Phactorial\Math::BIG_SIZES | const = array ( 0 => 1.2, 1 => 1.8, 2 => 2.4, 3 => 3.0, )
 Phactorial\Math::accent() | static (Phactorial\Node\Node|string $base, string $mark): Phactorial\Node\UnderOver
 Phactorial\Math::aligned() | static (array $rows, float $pairGap = 2.0): Phactorial\Node\Grid ; @param $rows list<list<string|Node>> ; @param $pairGap float
-Phactorial\Math::big() | static (string $delimiter, int $size): Phactorial\Node\Operator
-Phactorial\Math::bigOp() | static (string $op, Phactorial\Node\Node|string|null $under = NULL, Phactorial\Node\Node|string|null $over = NULL): Phactorial\Node\Node
+Phactorial\Math::big() | static (string $delimiter, int $step): Phactorial\Node\Operator
+Phactorial\Math::bigOp() | static (string $operator, Phactorial\Node\Node|string|null $under = NULL, Phactorial\Node\Node|string|null $over = NULL): Phactorial\Node\Node
 Phactorial\Math::binom() | static (Phactorial\Node\Node|string $top, Phactorial\Node\Node|string $bottom): Phactorial\Node\Fenced
 Phactorial\Math::cases() | static (array $rows): Phactorial\Node\Fenced ; @param $rows list<list<string|Node>>
 Phactorial\Math::dot() | static (Phactorial\Node\Node|string $base): Phactorial\Node\UnderOver
 Phactorial\Math::fenced() | static (string $open, string $close, Phactorial\Node\Node|string ...$content): Phactorial\Node\Fenced
-Phactorial\Math::frac() | static (Phactorial\Node\Node|string $num, Phactorial\Node\Node|string $den): Phactorial\Node\Fraction
+Phactorial\Math::frac() | static (Phactorial\Node\Node|string $numerator, Phactorial\Node\Node|string $denominator): Phactorial\Node\Fraction
 Phactorial\Math::hat() | static (Phactorial\Node\Node|string $base): Phactorial\Node\UnderOver
 Phactorial\Math::integral() | static (Phactorial\Node\Node|string|null $under = NULL, Phactorial\Node\Node|string|null $over = NULL): Phactorial\Node\Node
 Phactorial\Math::layout() | static (Phactorial\Node\Node $root, float $size = 12.0, bool $display = true, ?Phactorial\Font\Font $font = NULL, bool $scriptAlternates = true, ?Closure $fallbackAdvance = NULL): Phactorial\Layout\Box ; @param $size float ; @param $scriptAlternates bool ; @param $fallbackAdvance (\Closure(string, float): ?float)|null
 Phactorial\Math::mathml() | static (Dom\Element|string $input): Phactorial\Node\Node
 Phactorial\Math::matrix() | static (array $rows, string $fence = 'paren', array|string $align = 'center'): Phactorial\Node\Node ; @param $rows list<list<string|Node>> ; @param $fence string ; @param $align string|array<string>
 Phactorial\Math::middle() | static (string $delimiter): Phactorial\Node\Node
-Phactorial\Math::notes() | static (Phactorial\Node\Node $root): array ; @return list<MathNote>
+Phactorial\Math::notes() | static (Phactorial\Node\Node $node): array ; @return list<MathNote>
 Phactorial\Math::over() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string $over): Phactorial\Node\UnderOver
 Phactorial\Math::overbrace() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string|null $label = NULL): Phactorial\Node\UnderOver
 Phactorial\Math::overline() | static (Phactorial\Node\Node|string $base): Phactorial\Node\UnderOver
@@ -72,10 +72,10 @@ Phactorial\Math::stack() | static (Phactorial\Node\Node|string $top, Phactorial\
 Phactorial\Math::stixTwoMath() | static (): Phactorial\Font\Font
 Phactorial\Math::stixTwoMathPath() | static (): string
 Phactorial\Math::styled() | static (string $text, string $variant): Phactorial\Node\Node
-Phactorial\Math::sub() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string $sub): Phactorial\Node\Scripts
-Phactorial\Math::subSup() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string $sub, Phactorial\Node\Node|string $sup): Phactorial\Node\Scripts
+Phactorial\Math::sub() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string $subscript): Phactorial\Node\Scripts
+Phactorial\Math::subSup() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string $subscript, Phactorial\Node\Node|string $superscript): Phactorial\Node\Scripts
 Phactorial\Math::sum() | static (Phactorial\Node\Node|string|null $under = NULL, Phactorial\Node\Node|string|null $over = NULL): Phactorial\Node\Node
-Phactorial\Math::sup() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string $sup): Phactorial\Node\Scripts
+Phactorial\Math::sup() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string $superscript): Phactorial\Node\Scripts
 Phactorial\Math::tex() | static (string $tex): Phactorial\Node\Node
 Phactorial\Math::text() | static (string $text): Phactorial\Node\Node
 Phactorial\Math::tilde() | static (Phactorial\Node\Node|string $base): Phactorial\Node\UnderOver
@@ -84,7 +84,7 @@ Phactorial\Math::underOver() | static (Phactorial\Node\Node|string $base, Phacto
 Phactorial\Math::underbrace() | static (Phactorial\Node\Node|string $base, Phactorial\Node\Node|string|null $label = NULL): Phactorial\Node\UnderOver
 Phactorial\Math::underline() | static (Phactorial\Node\Node|string $base): Phactorial\Node\UnderOver
 Phactorial\Math::vec() | static (Phactorial\Node\Node|string $base): Phactorial\Node\UnderOver
-Phactorial\Math::xarrow() | static (string $arrow = '→', Phactorial\Node\Node|string|null $over = NULL, Phactorial\Node\Node|string|null $under = NULL): Phactorial\Node\UnderOver
+Phactorial\Math::xarrow() | static (string $arrow = '→', Phactorial\Node\Node|string|null $under = NULL, Phactorial\Node\Node|string|null $over = NULL): Phactorial\Node\UnderOver
 Phactorial\MathNote | final readonly class
 Phactorial\MathNote::$element | readonly protected(set) string
 Phactorial\MathNote::$level | readonly protected(set) Phactorial\NoteLevel
@@ -127,7 +127,7 @@ Phactorial\Mathml\MathmlResult::$node | readonly protected(set) Phactorial\Node\
 Phactorial\Mathml\MathmlResult::__construct() | (Phactorial\Node\Node $node, bool $display)
 Phactorial\Mathml\MathmlResult::notes() | (): array ; @return list<MathNote>
 Phactorial\Mathml\SafeXml | final class
-Phactorial\Mathml\SafeXml::decode() | static (string $s): string
+Phactorial\Mathml\SafeXml::decode() | static (string $text): string
 Phactorial\Mathml\SafeXml::find() | static (string $text): array ; @return list<array{int, int}>
 Phactorial\Node\DisplayStyle | final class extends Phactorial\Node\Node
 Phactorial\Node\DisplayStyle::$content | readonly protected(set) Phactorial\Node\Node
@@ -227,7 +227,7 @@ Phactorial\Render\MathmlWriter | final class
 Phactorial\Render\MathmlWriter::write() | static (Phactorial\Node\Node $root, bool $display = true): string
 Phactorial\Render\OmmlWriter | final class
 Phactorial\Render\OmmlWriter::oMath() | static (Phactorial\Node\Node $root, ?Phactorial\Render\RunFormat $format = NULL): string
-Phactorial\Render\OmmlWriter::oMathPara() | static (Phactorial\Node\Node $root, string $jc = 'left', ?Phactorial\Render\RunFormat $format = NULL): string
+Phactorial\Render\OmmlWriter::oMathPara() | static (Phactorial\Node\Node $root, string $align = 'center', ?Phactorial\Render\RunFormat $format = NULL): string
 Phactorial\Render\PngRenderer | final class
 Phactorial\Render\PngRenderer::MAX_PIXELS | const int = 8000000
 Phactorial\Render\PngRenderer::__construct() | (Phactorial\Font\Font $font, string $color = '#000000', float $opacity = 1.0)

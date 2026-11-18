@@ -212,9 +212,9 @@ final class Font
     }
 
     /** Glyph id for a codepoint, or 0 when the font has none. */
-    public function gid(int $cp): int
+    public function gid(int $codePoint): int
     {
-        return $this->gidCache[$cp] ??= $this->lookupGid($cp);
+        return $this->gidCache[$codePoint] ??= $this->lookupGid($codePoint);
     }
 
     private function lookupGid(int $cp): int

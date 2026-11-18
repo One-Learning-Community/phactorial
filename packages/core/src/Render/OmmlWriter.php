@@ -52,11 +52,11 @@ final class OmmlWriter
         }
     }
 
-    public static function oMathPara(Node $root, string $jc = 'left', ?RunFormat $format = null): string
+    public static function oMathPara(Node $root, string $align = 'center', ?RunFormat $format = null): string
     {
-        self::checkAlignment($jc);
+        self::checkAlignment($align);
 
-        return '<m:oMathPara><m:oMathParaPr><m:jc m:val="' . Xml::text($jc) . '"/></m:oMathParaPr>'
+        return '<m:oMathPara><m:oMathParaPr><m:jc m:val="' . Xml::text($align) . '"/></m:oMathParaPr>'
             . self::oMath($root, $format) . '</m:oMathPara>';
     }
 
