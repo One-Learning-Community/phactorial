@@ -26,6 +26,7 @@
     "require": {
         "php": "^8.4",
         "league/commonmark": "^2.6",
+        "nette/schema": "^1.2",
         "phactorial/phactorial": "^0.18"
     },
     "require-dev": {
