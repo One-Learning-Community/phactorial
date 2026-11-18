@@ -1,5 +1,7 @@
 # Phactorial
 
+[![phactorial/phactorial](https://img.shields.io/packagist/v/phactorial/phactorial?label=phactorial/phactorial)](https://packagist.org/packages/phactorial/phactorial) [![phactorial/commonmark](https://img.shields.io/packagist/v/phactorial/commonmark?label=phactorial/commonmark)](https://packagist.org/packages/phactorial/commonmark) [![core](https://github.com/One-Learning-Community/phactorial/actions/workflows/core.yml/badge.svg?branch=main)](https://github.com/One-Learning-Community/phactorial/actions/workflows/core.yml) [![commonmark](https://github.com/One-Learning-Community/phactorial/actions/workflows/commonmark.yml/badge.svg?branch=main)](https://github.com/One-Learning-Community/phactorial/actions/workflows/commonmark.yml) [![recipes](https://github.com/One-Learning-Community/phactorial/actions/workflows/recipes.yml/badge.svg?branch=main)](https://github.com/One-Learning-Community/phactorial/actions/workflows/recipes.yml)
+
 Math typesetting in plain PHP. It reads TeX and MathML and writes SVG, PNG, MathML, TeX, Word equations and text. It needs PHP 8.4 or later, and no Node, browser or fonts on the server. PNG output also needs `ext-imagick`.
 
 ```php
