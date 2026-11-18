@@ -10,6 +10,14 @@ use PHPUnit\Framework\TestCase;
 
 final class ColorsTest extends TestCase
 {
+    public function test_is_hex_accepts_only_lowercase_rrggbb(): void
+    {
+        self::assertTrue(Colors::isHex('#0a1b2c'));
+        foreach (['#0A1B2C', '#abc', 'red', '#0a1b2c ', "#0a1b2c\n", '0a1b2c', ''] as $bad) {
+            self::assertFalse(Colors::isHex($bad), $bad);
+        }
+    }
+
     /** @return iterable<string, array{string, string}> */
     public static function xcolorBaseNames(): iterable
     {

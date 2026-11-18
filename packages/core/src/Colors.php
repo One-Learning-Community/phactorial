@@ -70,6 +70,12 @@ final class Colors
         return preg_replace('/[^A-Za-z0-9#.,!:\- ]/u', '?', $spec) ?? '';
     }
 
+    /** Whether $color is exactly lowercase #rrggbb, the form every renderer and writer accepts for a display item. */
+    public static function isHex(string $color): bool
+    {
+        return preg_match('/^#[0-9a-f]{6}$/D', $color) === 1;
+    }
+
     /** #rgb or #rrggbb, in any case, as lowercase #rrggbb. */
     private static function hex(string $s): ?string
     {

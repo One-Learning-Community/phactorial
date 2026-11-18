@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phactorial\Render;
 
+use Phactorial\Colors;
 use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
 use Phactorial\Node\Fallback;
@@ -123,7 +124,7 @@ final class MathmlWriter
     private static function mstyle(string $color, string $xml): string
     {
         // Only #rrggbb is ever written; the Color constructor asserts it, and assertions are off in production.
-        return preg_match('/^#[0-9a-f]{6}$/D', $color) === 1 ? '<mstyle mathcolor="' . $color . '">' . $xml . '</mstyle>' : $xml;
+        return Colors::isHex($color) ? '<mstyle mathcolor="' . $color . '">' . $xml . '</mstyle>' : $xml;
     }
 
     /** A child in a fixed-arity element: a dropped one is written as an empty mrow so the others keep their places. */

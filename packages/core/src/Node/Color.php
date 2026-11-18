@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phactorial\Node;
 
+use Phactorial\Colors;
 use Phactorial\Layout\Box;
 use Phactorial\Layout\Context;
 
@@ -17,7 +18,7 @@ final class Color extends Node
     /** @internal Engine detail, not public API. */
     public function __construct(public readonly Node $content, public readonly string $color, public readonly bool $inline = false)
     {
-        assert(preg_match('/^#[0-9a-f]{6}$/', $color) === 1);
+        assert(Colors::isHex($color));
     }
 
     /**
