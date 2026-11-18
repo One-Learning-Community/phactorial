@@ -21,8 +21,9 @@ final class MathHtml
     }
 
     /**
-     * @param string $source The Markdown the formula was read from, delimiters included. It is shown instead of a drawing
-     *                       when the reader dropped part of the formula and `on_error` is `source`.
+     * @param string $source The Markdown the formula was read from, delimiters included. It is shown instead of a
+     *                       drawing when the reader dropped part of the formula and `on_error` is `source`. Empty, it
+     *                       becomes the TeX between `$` (inline) or `$$` (display) delimiters.
      */
     public function render(string $tex, bool $display, bool $block = false, string $source = ''): string
     {
@@ -30,7 +31,8 @@ final class MathHtml
         $math = MathRender::fromTex($tex);
         $math = $display ? $math->display() : $math->inline();
         if ($this->showSource && $this->dropped($math)) {
-            $code = htmlspecialchars($source, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $shown = $source !== '' ? $source : ($display ? '$$' . $tex . '$$' : '$' . $tex . '$');
+            $code = htmlspecialchars($shown, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
             return $block
                 ? '<div class="math math-display math-error"><code>' . $code . '</code></div>'

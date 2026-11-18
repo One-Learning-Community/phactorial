@@ -23,8 +23,15 @@ final class MathNodeRenderer implements NodeRendererInterface
         return match (true) {
             $node instanceof MathInline => $this->html->render($node->tex, $node->display, false, $node->source),
             $node instanceof MathBlock => $this->html->render($node->tex, true, true, $node->source),
-            $node instanceof FencedCode && ($node->getInfoWords()[0] ?? '') === 'math' => $this->html->render(trim($node->getLiteral()), true, true, '$$' . trim($node->getLiteral()) . '$$'),
+            $node instanceof FencedCode && ($node->getInfoWords()[0] ?? '') === 'math' => $this->fence($node),
             default => null,
         };
+    }
+
+    private function fence(FencedCode $node): string
+    {
+        $tex = trim($node->getLiteral());
+
+        return $this->html->render($tex, true, true, '$$' . $tex . '$$');
     }
 }

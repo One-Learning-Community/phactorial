@@ -29,7 +29,10 @@ final class MathExtension implements ConfigurableExtensionInterface
         $builder->addSchema('math', Expect::structure([
             'output' => Expect::anyOf('svg', 'mathml')->default('svg'),
             // Nette's float() rejects whole numbers, so 'size' => 20 is widened before validation.
-            'size' => Expect::float()->min(0.001)->before(static fn (mixed $v): mixed => is_int($v) ? (float) $v : $v)->default(16.0),
+            'size' => Expect::float()
+                ->min(0.001)
+                ->before(static fn (mixed $v): mixed => is_int($v) ? (float) $v : $v)
+                ->default(16.0),
             'on_error' => Expect::anyOf('source', 'render')->default('source'),
         ]));
     }

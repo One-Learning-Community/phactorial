@@ -102,7 +102,7 @@ final class MathmlWriter
                 : '<mroot>' . self::slot($n->radicand) . self::slot($n->index) . '</mroot>',
             $n instanceof Scripts => self::scripts($n),
             $n instanceof UnderOver => self::underOver($n),
-            // Only a Middle that Fenced stretches does so in the PDF; a browser must not stretch the others.
+            // Only a Middle that Fenced stretches does so in the layout; a browser must not stretch the others.
             $n instanceof Middle => self::operator(new Operator($n->char, $n->stretches(), lspace: 3, rspace: 3), OperatorDictionary::FORM_INFIX, OperatorDictionary::FORM_INFIX),
             $n instanceof Fenced => self::fenced($n),
             $n instanceof Grid => self::grid($n),
@@ -162,7 +162,7 @@ final class MathmlWriter
         } elseif ($o->stretchy !== null) {
             $attrs .= ' stretchy="' . ($o->stretchy ? 'true' : 'false') . '"';
         } elseif (! $stretched && OperatorDictionary::lookup($o->char, $form)['stretchy']) {
-            // Only Fenced delimiters stretch in the PDF, so keep the browser from stretching the others.
+            // Only Fenced delimiters stretch in the layout, so keep the browser from stretching the others.
             $attrs .= ' stretchy="false"';
         }
         if ($o->largeop !== null) {
@@ -259,7 +259,7 @@ final class MathmlWriter
         };
         $baseOp = UnderOver::operatorOf($u->base);
         if (UnderOver::isLimitName($u->base)) {
-            // Marked as an operator so a browser sets its limit beside it in inline style, as the PDF does.
+            // Marked as an operator so a browser sets its limit beside it in inline style, as the SVG draws it.
             $name = UnderOver::nameNode($u->base);
             $base = '<mo movablelimits="true">' . Xml::text($name instanceof Identifier ? $name->name : ($name instanceof Operator ? $name->char : '')) . '</mo>';
         } elseif ($baseOp !== null) {
@@ -272,7 +272,7 @@ final class MathmlWriter
         $under = UnderOver::blank($u->under) ? null : $u->under;
         $over = UnderOver::blank($u->over) ? null : $u->over;
         if ($under === null && $over === null) {
-            // No part draws anything (the empty one a label-less chemistry arrow carries): the arrow alone, at least as long as the PDF
+            // No part draws anything (the empty one a label-less chemistry arrow carries): the arrow alone, at least as long as the SVG
             // draws it, since a browser leaves a bare arrow at its natural width.
             if ($baseOp !== null && $u->base === $baseOp && UnderOver::isStretchy($baseOp) && UnderOver::isArrow($baseOp->char) && mb_strlen($baseOp->char) === 1) {
                 $long = UnderOver::LONG_ARROWS[$baseOp->char] ?? null;

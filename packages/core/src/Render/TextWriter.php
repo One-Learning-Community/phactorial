@@ -27,7 +27,7 @@ use Phactorial\ScriptChars;
 use Phactorial\Styles;
 
 /**
- * A formula as linear Unicode text with plain letters, for outputs that have no math: table-of-contents entries, PDF
+ * A formula as linear Unicode text with plain letters, for outputs that have no math: table-of-contents entries,
  * outline titles, slugs, a text fallback. `x = (−b ± √(b² − 4ac))/(2a)`. Infix operators are set off by spaces and
  * prefix and postfix ones are not. Scripts become Unicode superscript and subscript characters when they are
  * digits, signs, parentheses or a single letter, and `^(…)` and `_(…)` otherwise.
