@@ -15,8 +15,8 @@ use Phactorial\CommonMark\Node\MathInline;
  * only after a non-space that is not followed by a digit, so "costs $5 and $10" stays text. It never spans a
  * backtick, which leaves code spans to the code parser.
  *
- * An opener with no closer after it must not rescan the line, or a paragraph of unclosed openers parses in quadratic
- * time. The last closer's position is found once per line and compared with each opener's position.
+ * An opener with no closer after it must not rescan the paragraph, or a paragraph of unclosed openers parses in
+ * quadratic time. The last closer's position is found once per paragraph and compared with each opener's position.
  */
 final class MathInlineParser implements InlineParserInterface
 {
@@ -26,8 +26,9 @@ final class MathInlineParser implements InlineParserInterface
         ['/^\$(?![\s$])((?:\\\\.|[^\\\\$`])+?)(?<!\s)\$(?!\d)/s', false],
     ];
 
-    /** @var \WeakMap<\League\CommonMark\Parser\Cursor, array{string, int}>|null */
-    private ?\WeakMap $lastBacktickCloser = null;
+    /** @var \WeakReference<Cursor>|null The cursor whose paragraph the cached closer position belongs to. */
+    private ?\WeakReference $closerCursor = null;
+    private int $lastCloser = -1;
 
     public function getMatchDefinition(): InlineParserMatch
     {
@@ -54,18 +55,15 @@ final class MathInlineParser implements InlineParserInterface
         return false;
     }
 
-    /** The byte offset of the last "`$" on the cursor's line, or -1; cached while the line is unchanged. */
+    /** The byte offset of the last "`$" in the cursor's paragraph, or -1; found once per cursor. */
     private function lastBacktickCloser(Cursor $cursor): int
     {
-        $this->lastBacktickCloser ??= new \WeakMap();
-        $line = $cursor->getLine();
-        $cached = $this->lastBacktickCloser[$cursor] ?? null;
-        if ($cached === null || $cached[0] !== $line) {
-            $position = strrpos($line, '`$');
-            $cached = [$line, $position === false ? -1 : $position];
-            $this->lastBacktickCloser[$cursor] = $cached;
+        if ($this->closerCursor?->get() !== $cursor) {
+            $position = strrpos($cursor->getLine(), '`$');
+            $this->lastCloser = $position === false ? -1 : $position;
+            $this->closerCursor = \WeakReference::create($cursor);
         }
 
-        return $cached[1];
+        return $this->lastCloser;
     }
 }

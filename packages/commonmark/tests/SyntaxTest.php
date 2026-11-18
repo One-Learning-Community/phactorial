@@ -116,4 +116,12 @@ final class SyntaxTest extends TestCase
 
         self::assertLessThan(0.5, $elapsed, "20000 unclosed '$opener' openers took {$elapsed}s");
     }
+
+    public function test_backtick_dollar_closer_on_a_later_line_of_the_paragraph_matches(): void
+    {
+        $html = $this->convert("a \$`x\ny`\$ b");
+
+        self::assertSame(1, self::occurrences($html, '<span class="math math-inline">'), $html);
+        self::assertSame(1, self::occurrences($html, '<math'), $html);
+    }
 }
