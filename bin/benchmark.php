@@ -73,17 +73,23 @@ foreach ($cold as $scenario => $label) {
     $rows[] = [$label, median($times), max($times)];
 }
 
-$warm = spawn('warm', $png);
-$rows[] = ['warm: per formula, SVG', $warm['svg'], null];
-$rows[] = ['warm: per formula, MathML', $warm['mathml'], null];
-if ($png) {
-    $rows[] = ['warm: per formula, PNG', $warm['png'], null];
+$warm = [];
+for ($i = 0; $i < $runs; $i++) {
+    foreach (spawn('warm', $png) as $name => $ms) {
+        $warm[$name][] = $ms;
+    }
 }
-$rows[] = ['warm: page of 50, SVG', $warm['page'], null];
+$warmLabels = ['svg' => 'warm: per formula, SVG', 'mathml' => 'warm: per formula, MathML', 'png' => 'warm: per formula, PNG', 'page' => 'warm: page of 50, SVG'];
+foreach ($warmLabels as $name => $label) {
+    if (isset($warm[$name])) {
+        sort($warm[$name]);
+        $rows[] = [$label, median($warm[$name]), max($warm[$name])];
+    }
+}
 
 printf("%-28s %10s %10s\n", 'scenario', 'median ms', 'max ms');
 foreach ($rows as [$label, $median, $max]) {
-    printf("%-28s %10s %10s\n", $label, ms($median), $max === null ? '-' : ms($max));
+    printf("%-28s %10s %10s\n", $label, ms($median), ms($max));
 }
 if (!$png) {
     echo "\nPNG: skipped (imagick not loaded)\n";
@@ -96,21 +102,31 @@ function spawn(string $scenario, bool $png): array
     if (php_ini_loaded_file() === false) {
         $command[] = '-n';
     }
-    array_push($command, '-d', 'opcache.enable_cli=0', '-d', 'xdebug.mode=off', __FILE__, "--child=$scenario", '--png=' . ($png ? '1' : '0'));
+    array_push(
+        $command,
+        '-d', 'opcache.enable_cli=0',
+        '-d', 'xdebug.mode=off',
+        '-d', 'display_errors=stderr', // a warning on STDOUT would corrupt the JSON
+        __FILE__, "--child=$scenario", '--png=' . ($png ? '1' : '0'),
+    );
 
-    $process = proc_open($command, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+    // STDERR goes to a file: a pipe left unread while STDOUT drains could fill and stall the child.
+    $errors = tmpfile();
+    $process = proc_open($command, [1 => ['pipe', 'w'], 2 => $errors], $pipes);
     if ($process === false) {
         throw new RuntimeException("Could not start $scenario.");
     }
-    $out = stream_get_contents($pipes[1]);
-    $err = stream_get_contents($pipes[2]);
+    $out = (string) stream_get_contents($pipes[1]);
     fclose($pipes[1]);
-    fclose($pipes[2]);
-    if (proc_close($process) !== 0) {
+    $status = proc_close($process);
+    rewind($errors);
+    $err = (string) stream_get_contents($errors);
+    fclose($errors);
+    if ($status !== 0) {
         throw new RuntimeException("$scenario failed: $err");
     }
 
-    return json_decode((string) $out, true, flags: JSON_THROW_ON_ERROR);
+    return json_decode($out, true, flags: JSON_THROW_ON_ERROR);
 }
 
 /** @return array<string, float> */

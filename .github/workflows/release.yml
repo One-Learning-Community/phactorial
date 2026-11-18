@@ -19,6 +19,8 @@ jobs:
     uses: ./.github/workflows/core.yml
   commonmark:
     uses: ./.github/workflows/commonmark.yml
+  recipes:
+    uses: ./.github/workflows/recipes.yml
 
   notes:
     runs-on: ubuntu-latest
@@ -48,7 +50,7 @@ jobs:
           path: release-notes.md
 
   split:
-    needs: [core, commonmark, notes]
+    needs: [core, commonmark, recipes, notes]
     uses: ./.github/workflows/split-packages.yml
     with:
       branch: main

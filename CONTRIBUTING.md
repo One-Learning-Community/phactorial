@@ -19,7 +19,8 @@ composer --working-dir=packages/commonmark install
 
 The extension's path repository pins core to the current minor's `x-dev` version (`options.versions` in its
 `composer.json`), so it resolves on any branch or detached checkout. Bump that pin together with core's
-`branch-alias` and the `phactorial/phactorial` requirement when the minor version changes.
+`branch-alias` and the `phactorial/phactorial` requirement when the minor version changes. The recipe tests in
+`site/recipes` pin both packages the same way and need the same bump.
 
 ## Running the tests
 
@@ -42,6 +43,23 @@ If Xdebug is loaded, prefix with `php -d xdebug.mode=off` for speed. CI runs the
 
 The core package's fuzz tests (thousands of random TeX and chemistry inputs) are left out of the default run. Run
 them after changing the TeX or chemistry readers: `cd packages/core && vendor/bin/phpunit --group fuzz`.
+
+The docs import their runnable recipes from `site/recipes`, a Composer project on Orchestra Testbench that runs each
+one as a test. Run it after changing either package or a recipe:
+
+```
+cd site/recipes
+composer install
+vendor/bin/phpunit
+```
+
+The PNG recipes skip without `imagick` locally; CI requires it. A recipe file shows on its page from the line its
+`@[code{N-} php]` import names, so keep the lines above that to the opening tag, blank lines and
+`use Phactorial\MathRender;`. `DocImportsTest` enforces this.
+
+`bin/benchmark.php` times typesetting in fresh processes without opcache, the worst case a request meets. Run it
+with `php bin/benchmark.php --runs=20` after `packages/commonmark` is installed. The speed figures in the docs come
+from it.
 
 ## Compatibility
 
@@ -71,8 +89,9 @@ every split.
 | Workflow | Trigger | Does |
 |---|---|---|
 | `core.yml`, `commonmark.yml` | push to `main` and pull requests, when the package's files change | tests and PHPStan |
+| `recipes.yml` | push to `main` and pull requests, when either package or `site/recipes` changes | runs the docs' recipes |
 | `split.yml` | push to `main` | mirrors `packages/*` to the split repos (their `dev-main`) |
-| `release.yml` | tag `vX.Y.Z` | both suites, CHANGELOG check, split and tag both packages, GitHub release |
+| `release.yml` | tag `vX.Y.Z` | all three suites, CHANGELOG check, split and tag both packages, GitHub release |
 | `docs.yml` | push to `main` and pull requests, when the site changes | builds the site; deploys to GitHub Pages only from `main` |
 
 ### One-time setup
@@ -95,7 +114,8 @@ every split.
 2. In `CHANGELOG.md` rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` (`release.yml` refuses a missing or
    still-unreleased section), and add a fresh `## [Unreleased]` above it.
 3. If the minor version changed, bump the `extra.branch-alias` of both packages, the `versions` pin in the
-   extension's path repository, and the extension's `phactorial/phactorial` requirement (`^X.Y`).
+   extension's path repository, the extension's `phactorial/phactorial` requirement (`^X.Y`), and both `versions`
+   pins in `site/recipes/composer.json`.
 4. Commit, then tag from `main`: `git tag -s vX.Y.Z -m "Phactorial X.Y.Z" && git push origin main vX.Y.Z`.
 5. Verify in a scratch project: `composer require phactorial/phactorial phactorial/commonmark`, then render one
    formula.

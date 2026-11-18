@@ -61,6 +61,9 @@ final class PhpRecipesTest extends TestCase
 
     public function test_untrusted(): void
     {
-        self::assertInstanceOf(MathRender::class, Snippet::run('php/untrusted.php', ['userInput' => '\frac{'])['vars']['formula']);
+        $formula = Snippet::run('php/untrusted.php', ['userInput' => '\frac{'])['vars']['formula'];
+
+        self::assertInstanceOf(MathRender::class, $formula);
+        self::assertNotEmpty($formula->notes(), 'the recipe rests on notes() reporting what was not drawn');
     }
 }

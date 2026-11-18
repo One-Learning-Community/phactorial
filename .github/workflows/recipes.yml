@@ -11,6 +11,7 @@ on:
   pull_request:
     paths: *paths
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -38,6 +39,10 @@ jobs:
           extensions: mbstring, imagick
           coverage: none
           tools: composer:v2
+      # Locally the PNG recipes skip without Imagick; here they must run.
+      - name: Require Imagick
+        run: |
+          php -r 'exit(extension_loaded("imagick") ? 0 : 1);'
       - name: Cache Composer downloads
         uses: actions/cache@v6
         with:

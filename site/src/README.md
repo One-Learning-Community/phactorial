@@ -51,7 +51,7 @@ Not yet supported: line breaks inside long formulas, color and boxes within a fo
 
 ## Speed and safety
 
-Once the font is loaded, TeX to SVG takes about 0.1 ms per formula. The first formula in a new PHP process takes about 15 ms without opcache, with classes and font loaded from scratch. Time and memory grow linearly with formula size. `bin/benchmark.php` in the repository measures these on your machine.
+Once the font is loaded, TeX to SVG takes about 0.1 ms per formula. The first formula in a new PHP process takes about 15 ms without opcache, with classes and font loaded from scratch. Time and memory grow linearly with formula size. [`bin/benchmark.php`](https://github.com/One-Learning-Community/phactorial/blob/main/bin/benchmark.php) in the repository measures these on your machine.
 
 The readers never throw. Input that is too large or too deep is cut off at fixed limits, drawn as far as it got and reported, so formulas typed by users are safe to render. See [Untrusted input](./recipes.md#untrusted-input).
 

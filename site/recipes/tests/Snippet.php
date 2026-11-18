@@ -10,25 +10,26 @@ final class Snippet
     /**
      * Includes $path, relative to the recipes directory, in a fresh scope holding $vars.
      *
+     * The scope holds nothing else, so a snippet may use any variable name. Arguments arrive through
+     * func_get_arg() for that reason.
+     *
      * @param array<string, mixed> $vars
      * @return array{output: string, vars: array<string, mixed>}
      */
     public static function run(string $path, array $vars = []): array
     {
-        $file = dirname(__DIR__) . '/' . $path;
+        ob_start();
+        try {
+            $defined = (static function (): array {
+                extract(func_get_arg(1));
+                include func_get_arg(0);
 
-        return (static function () use ($file, $vars): array {
-            extract($vars);
-            ob_start();
-            try {
-                include $file;
-            } finally {
-                $output = (string) ob_get_clean();
-            }
-            $defined = get_defined_vars();
-            unset($defined['file'], $defined['vars'], $defined['output']);
+                return get_defined_vars();
+            })(dirname(__DIR__) . '/' . $path, $vars);
+        } finally {
+            $output = (string) ob_get_clean();
+        }
 
-            return ['output' => $output, 'vars' => $defined];
-        })();
+        return ['output' => $output, 'vars' => $defined];
     }
 }
