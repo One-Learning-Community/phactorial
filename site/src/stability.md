@@ -94,8 +94,8 @@ In `phactorial/commonmark`, these are the contract:
 - the `math` config keys and values;
 - the HTML shapes and classes: `span.math.math-inline`, `span.math.math-display`, `div.math.math-display`, and the error forms `code.math.math-error` and `div.math.math-display.math-error > code`. What sits inside the wrapper, `<svg>` or `<math>`, follows the output rules above;
 - a fence whose first info word is `math` is typeset, and every other fence falls through to the next renderer;
-- a paragraph that is only `$$…$$` becomes a display block, and math inside link text or image alt text returns to its source text;
-- the priorities: the inline parser at 50, the `FencedCode` renderer at 50, and the `MathInline` and `MathBlock` renderers at 0;
+- a paragraph that is only `$$…$$`, or only `\[…\]` with `latex_delimiters` on, becomes a display block, and math inside link text or image alt text returns to text: dollar math keeps its source, and `\(…\)` or `\[…\]` reads as it would with the option off;
+- the priorities: the dollar parser at 50, the parser for `\(` and `\[` at 90, ahead of league/commonmark's escape parser at 80, the `FencedCode` renderer at 50, and the `MathInline` and `MathBlock` renderers at 0;
 - the read-only node properties `MathInline::$tex`, `$display` and `$source`, and `MathBlock::$tex` and `$source`.
 
 The parser, the renderers, the listener and the output helper are internal.

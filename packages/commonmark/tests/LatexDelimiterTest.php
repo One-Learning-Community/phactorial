@@ -62,9 +62,16 @@ final class LatexDelimiterTest extends TestCase
         self::assertSame("<p>[x and (y</p>\n", $this->convert('\[x and \(y'));
     }
 
-    public function test_link_text_keeps_the_source(): void
+    public function test_link_text_reads_as_it_would_without_the_option(): void
     {
-        self::assertStringContainsString('<a href="u">see \(x\)</a>', $this->convert('[see \(x\)](u)'));
+        self::assertStringContainsString('<a href="u">see (x)</a>', $this->convert('[see \(x\)](u)'));
+        self::assertStringContainsString('<a href="#fn1">[1]</a>', $this->convert('[\[1\]](#fn1)'));
+        self::assertStringContainsString('<a href="u">(a \ b)</a>', $this->convert('[\(a \\\\ b\)](u)'));
+    }
+
+    public function test_image_alt_reads_as_it_would_without_the_option(): void
+    {
+        self::assertStringContainsString('alt="alt (x)"', $this->convert('![alt \(x\)](i.png)'));
     }
 
     public function test_an_unreadable_formula_shows_its_source(): void

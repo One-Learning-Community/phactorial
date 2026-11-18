@@ -106,7 +106,7 @@ These parts are the extension's contract. They change only in a major release, a
 - the option keys and values above; a minor release may add keys and values;
 - the HTML shapes under [Output](#output) and [Errors](#errors), including the class names;
 - a fence whose first info word is `math` is typeset, and every other fence goes to the next renderer;
-- a paragraph that is only `$$…$$`, or only `\[…\]` with `latex_delimiters` on, becomes a display block, and math inside link text or image alt text returns to its source text;
+- a paragraph that is only `$$…$$`, or only `\[…\]` with `latex_delimiters` on, becomes a display block, and math inside link text or image alt text returns to text: dollar math keeps its source, and `\(…\)` or `\[…\]` reads as it would with the option off;
 - the priorities: the dollar parser registers at 50, the parser for `\(` and `\[` at 90, ahead of league/commonmark's escape parser at 80, the `FencedCode` renderer at 50, and the `MathInline` and `MathBlock` renderers at the default 0. A renderer registered at a higher number wins, which is how [Laravel's mail recipe](./laravel.md#mail) overrides them;
 - the node properties `MathInline::$tex`, `$display` and `$source`, and `MathBlock::$tex` and `$source`. They are read-only.
 
