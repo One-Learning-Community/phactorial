@@ -44,7 +44,7 @@ The rules match GitHub's renderer.
 
 | Markdown | Result |
 |---|---|
-| `$x^2$` | Inline math. The opening `$` must be followed by a non-space and not preceded by a letter or digit. The closing `$` must not be preceded by a backslash or followed by a letter or digit, so `costs $5 and $10` stays text. |
+| `$x^2$` | Inline math. The opening `$` must be followed by a non-space and not preceded by an ASCII letter, digit, underscore or `$`, or by a non-ASCII character. The closing `$` must not be preceded by a backslash or followed by an ASCII letter, digit or underscore, so `costs $5 and $10` stays text. |
 | ``$`e^{i\pi}`$`` | Inline math that may contain any `$` and may span lines. |
 | `$$\sum k$$` inside a line of text | Inline math, on one line. |
 | `$$` alone on a line, then TeX, then `$$` | A display block, when the paragraph starts and ends with `$$`. It works inside block quotes and list items, and the TeX may span lines. |
@@ -61,6 +61,8 @@ Inline math becomes `<span class="math math-inline">` around an `<svg>` or `<mat
 ```css
 .math-display { display: block; text-align: center; }
 ```
+
+A formula the reader could not fully parse takes a different form, `<code class="math math-error">` or `<div class="math math-display math-error">`; see [Errors](#errors).
 
 ## Options
 

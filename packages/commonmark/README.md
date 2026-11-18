@@ -32,6 +32,9 @@ echo (new MarkdownConverter($environment))->convert('Area is $\pi r^2$.');
 In Laravel, pass the extension and its options to `Str::markdown()`:
 
 ```php
+use Illuminate\Support\Str;
+use Phactorial\CommonMark\MathExtension;
+
 Str::markdown($text, ['math' => ['output' => 'mathml']], [new MathExtension()]);
 ```
 
@@ -41,7 +44,7 @@ The extension works alongside `GithubFlavoredMarkdownExtension`.
 
 | Markdown | Result |
 |---|---|
-| `$x^2$` | Inline math. The opening `$` must be followed by a non-space and not preceded by a letter or digit. The closing `$` must not be preceded by a backslash or followed by a letter or digit, so `costs $5 and $10` stays text. |
+| `$x^2$` | Inline math. The opening `$` must be followed by a non-space and not preceded by an ASCII letter, digit, underscore or `$`, or by a non-ASCII character. The closing `$` must not be preceded by a backslash or followed by an ASCII letter, digit or underscore, so `costs $5 and $10` stays text. |
 | ``$`e^{i\pi}`$`` | Inline math that may contain any `$` and may span lines. |
 | `$$\sum k$$` inside a line of text | Inline math, on one line. |
 | `$$` alone on a line, then TeX, then `$$` | A display block in a `<div class="math math-display">`, when the paragraph starts and ends with `$$`. It works inside block quotes and list items, and the TeX may span lines. |

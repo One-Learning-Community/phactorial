@@ -19,21 +19,54 @@ A string is split into symbols: letters become italic variables, digit runs beco
 
 | Method | Builds |
 |---|---|
-| `row(...$parts)` | Parts side by side |
-| `frac($top, $bottom)`, `binom($top, $bottom)`, `stack($top, $bottom)` | A fraction, a binomial, two lines without a rule |
-| `sqrt(...$content)`, `root($radicand, $index)` | Roots |
-| `sup`, `sub`, `subSup($base, $sub, $sup)` | Scripts |
-| `prescripts($base, $preSub, $preSup, $sub = null, $sup = null)` | Scripts before the base, with optional scripts after it |
-| `fenced($open, $close, ...$content)`, `middle($delimiter)`, `big($delimiter, $size)` | Stretching and fixed-size delimiters |
-| `sum`, `product`, `integral`, `bigOp($op, $under, $over)` | Large operators with optional limits |
-| `under`, `over`, `underOver`, `overbrace`, `underbrace`, `overline`, `underline` | Things above and below a base |
-| `accent($base, $mark)`, `hat`, `tilde`, `vec`, `dot` | Accents |
-| `matrix($rows, $fence, $align)`, `cases($rows)`, `aligned($rows)` | Grids |
-| `xarrow($arrow, $over, $under)` | An arrow that stretches over its labels |
-| `text($text)`, `styled($text, $variant)` | Upright words; text in a `mathvariant` such as `double-struck` |
-| `space($em)`, `phantom(...$content)` | Spacing |
+| `Math::row(...$parts)` | Parts side by side. Strings and nodes mix freely. |
+| `Math::frac($numerator, $denominator)` | A fraction. |
+| `Math::binom($top, $bottom)` | A binomial coefficient: two lines between parentheses. |
+| `Math::stack($top, $bottom)` | Two lines like a fraction, without the rule. |
+| `Math::sqrt(...$content)` | A square root. |
+| `Math::root($radicand, $index)` | A root with an index, such as a cube root. |
+| `Math::sup($base, $superscript)` | A superscript. |
+| `Math::sub($base, $subscript)` | A subscript. |
+| `Math::subSup($base, $subscript, $superscript)` | A subscript and a superscript on one base. |
+| `Math::prescripts($base, $preSub, $preSup, $sub = null, $sup = null)` | Scripts before the base, with optional scripts after it. |
+| `Math::fenced($open, $close, ...$content)` | Content between delimiters, such as `(` and `)`. The delimiters stretch to fit what is inside. |
+| `Math::middle($delimiter)` | A delimiter inside `Math::fenced()` that stretches with it, such as the bar in a set. |
+| `Math::big($delimiter, $size)` | A delimiter at a fixed size, 1 to 4 (`Math::BIG_SIZES`). |
+| `Math::sum($under, $over)`, `Math::product(…)`, `Math::integral(…)` | A large operator with optional limits. In a block equation the limits sit below and above the symbol; in a line of text they move beside it. `integral()` always keeps its limits beside the symbol. |
+| `Math::bigOp($operator, $under, $over)` | The same for any operator character. |
+| `Math::under($base, $under)`, `Math::over($base, $over)`, `Math::underOver($base, $under, $over)` | Something below, above, or both above and below a base. |
+| `Math::overline($base)`, `Math::underline($base)` | A rule as wide as the base. |
+| `Math::overbrace($base, $label)`, `Math::underbrace($base, $label)` | A brace stretched across the base, with an optional label on its far side. |
+| `Math::accent($base, $mark)` | A mark over a base. `$mark` is a combining character such as U+0302. |
+| `Math::hat($base)`, `Math::tilde($base)`, `Math::vec($base)`, `Math::dot($base)` | The common accents. |
+| `Math::matrix($rows, $fence, $align)` | Rows of cells in aligned columns inside a fence. |
+| `Math::cases($rows)` | A left brace around left-aligned rows, for piecewise definitions. |
+| `Math::aligned($rows)` | Equations lined up on their alignment points, as in TeX's `aligned`. |
+| `Math::xarrow($arrow, $over, $under)` | An extensible arrow with optional labels above and below. |
+| `Math::text($text)` | Literal text, such as a word in a formula. It is not tokenized. |
+| `Math::styled($text, $variant)` | Text in a MathML `mathvariant`, such as `bold` or `double-struck`. |
+| `Math::space($em)` | Horizontal space of that many ems. A negative value pulls the next item back. |
+| `Math::phantom(...$content)` | Takes the size of its content and draws nothing. |
 
-The [Equations guide](https://one-learning-community.github.io/quoin/guide/equations.html#building-a-formula) has every method with examples. Methods that get impossible arguments, such as a matrix with no cells or an unknown variant, throw `InvalidArgumentException`; the readers below never throw.
+```php
+Math::subSup('x', 'i', '2');                            // x with i below and 2 above
+Math::fenced('(', ')', Math::frac('a', 'b'));           // a tall pair of brackets
+Math::row('f', Math::fenced('(', ')', 'x'), '=', Math::root('x', '3'));
+Math::row(Math::sum('n = 1', '∞'), Math::frac('1', Math::sup('n', '2')));
+Math::underbrace(Math::row('a + b + c'), 'three terms');
+Math::row(Math::binom('n', 'k'), '=', Math::frac('n!', Math::row('k!', '(n − k)!')));
+Math::xarrow('→', Math::text('heat'), Math::text('catalyst'));
+```
+
+`matrix()` takes a list of rows, each a list of cells (strings or nodes). The fence is one of `paren` (the default), `bracket`, `brace`, `bar`, `doublebar` or `none`, and it stretches to the height of the grid. `$align` is `center` (the default), `left` or `right` for every column, or a list with one value per column; a short list repeats its last value. In `aligned()`, cells alternate right- and left-aligned, so the second cell of each row starts at the alignment point.
+
+```php
+Math::row('A', '=', Math::matrix([['1', '0'], ['0', '1']], 'bracket'));
+Math::row('|x|', '=', Math::cases([['x', Math::text('if x ≥ 0')], ['−x', Math::text('otherwise')]]));
+Math::aligned([['x + 2', '= 5'], ['x', '= 3']]);
+```
+
+`styled()` accepts `normal`, `bold`, `italic`, `bold-italic`, `double-struck`, `script`, `bold-script`, `fraktur`, `bold-fraktur`, `sans-serif`, `bold-sans-serif`, `sans-serif-italic`, `sans-serif-bold-italic` and `monospace`. Methods that get impossible arguments, such as a matrix with no cells, an unknown fence or alignment, an unknown variant or empty `styled()` text, throw `InvalidArgumentException`; the readers below never throw.
 
 ## TeX
 

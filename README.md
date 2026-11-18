@@ -1,6 +1,6 @@
 # Phactorial
 
-Math typesetting in plain PHP. It reads TeX and MathML and writes SVG, PNG, MathML, TeX, Word equations and text. It needs PHP 8.4, and no Node, browser or fonts on the server.
+Math typesetting in plain PHP. It reads TeX and MathML and writes SVG, PNG, MathML, TeX, Word equations and text. It needs PHP 8.4 or later, and no Node, browser or fonts on the server. PNG output also needs `ext-imagick`.
 
 ```php
 use Phactorial\MathRender;

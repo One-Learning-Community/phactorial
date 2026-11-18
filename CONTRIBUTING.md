@@ -8,7 +8,7 @@ This is a monorepo with two Composer packages:
 
 ## Development setup
 
-You need PHP 8.4+ with `mbstring`, `dom` and `imagick` (the PNG renderer's tests use it), and Composer 2.
+You need PHP 8.4+ with `mbstring`, `dom`, and Composer 2. `imagick` is optional: the PNG renderer's tests skip without it.
 
 Install both packages:
 
@@ -58,10 +58,10 @@ every split.
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `core.yml`, `commonmark.yml` | push to `main`, pull requests | tests and PHPStan |
+| `core.yml`, `commonmark.yml` | push to `main` and pull requests, when the package's files change | tests and PHPStan |
 | `split.yml` | push to `main` | mirrors `packages/*` to the split repos (their `dev-main`) |
 | `release.yml` | tag `vX.Y.Z` | both suites, CHANGELOG check, split and tag both packages, GitHub release |
-| `docs.yml` | push to `main` | builds and deploys the site to GitHub Pages |
+| `docs.yml` | push to `main` and pull requests, when the site changes | builds the site; deploys to GitHub Pages only from `main` |
 
 ### One-time setup
 
@@ -69,9 +69,11 @@ every split.
    **Contents: read and write** on `phactorial-core` and `phactorial-commonmark` only, and save it as the
    `SPLIT_TOKEN` Actions secret on `One-Learning-Community/phactorial`. Without it `split.yml` skips with a notice
    and `release.yml` fails at the split step.
-2. Each split repo must exist with at least one commit (a README is enough) before the first split: the split
-   action can't push to an empty repository.
-3. Once the split repos have content, submit them at https://packagist.org/packages/submit (`phactorial-core`
+2. Initialize each split repo (`phactorial-core`, `phactorial-commonmark`) with a README on the default branch
+   `main`. The split action cannot push to an empty repository.
+3. In `One-Learning-Community/phactorial`, set Settings → Pages → Source to **GitHub Actions**, so `docs.yml` can
+   deploy.
+4. Once the split repos have content, submit them at https://packagist.org/packages/submit (`phactorial-core`
    first, since the extension requires it, then `phactorial-commonmark`). Packagist's GitHub integration keeps them
    updated on new pushes and tags.
 

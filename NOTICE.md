@@ -4,7 +4,7 @@ This project is MIT licensed (see `LICENSE`). It includes the following third-pa
 
 ## STIX Two Math typeface
 
-Bundled in `packages/core/resources/fonts/` (Regular), and embedded (subset) in generated PDFs, and in HTML when fonts are embedded, that use it.
+Bundled in `packages/core/resources/fonts/` (Regular). The glyph outlines are drawn into the SVG and PNG output.
 
 - License: SIL Open Font License 1.1
 - Full text: `packages/core/resources/fonts/OFL.txt`
