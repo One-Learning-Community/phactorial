@@ -117,7 +117,7 @@ final class TexWriter
             $n instanceof Fenced => self::fenced($n),
             $n instanceof Grid => self::gridBody($n, true),
             $n instanceof DisplayStyle => '{' . ($n->display ? '\displaystyle ' : '\textstyle ') . self::w($n->content, false) . '}',
-            default => '',
+            default => throw new \InvalidArgumentException('Unknown node ' . $n::class),
         };
     }
 

@@ -220,7 +220,7 @@ Phactorial\Render\RunFormat::__construct() | (?string $colorHex = NULL, ?int $si
 Phactorial\Render\SvgRenderer | final class
 Phactorial\Render\SvgRenderer::__construct() | (Phactorial\Font\Font $font, string $color = '#000000', float $opacity = 1.0)
 Phactorial\Render\SvgRenderer::baselineOffset() | static (Phactorial\Layout\Box $box, float $pad = 0.0): float
-Phactorial\Render\SvgRenderer::glyphPaths() | (array $glyphs, Phactorial\Layout\Box $box): string ; @param $glyphs list<Glyph>
+Phactorial\Render\SvgRenderer::glyphPaths() | (array $glyphs, float $width, float $ascent, float $descent): string ; @param $glyphs list<Glyph>
 Phactorial\Render\SvgRenderer::render() | (Phactorial\Layout\Box $box, float $pad = 0.0): string
 Phactorial\Render\TexWriter | final class
 Phactorial\Render\TexWriter::write() | static (Phactorial\Node\Node $root): string
