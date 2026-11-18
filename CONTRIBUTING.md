@@ -35,6 +35,8 @@ vendor/bin/phpunit
 vendor/bin/phpstan analyse --memory-limit=1G
 ```
 
+Each package keeps a manifest of its public API in `tests/Api/api.txt`: one sorted line per public class, method, property, constant and enum case, with types. `ApiManifestTest` fails when the code and the manifest disagree. After an intended change, regenerate it with `UPDATE_API=1 vendor/bin/phpunit --filter ApiManifestTest` and commit the file with the change. A diff in `api.txt` is a public API change and needs a line in the CHANGELOG.
+
 If Xdebug is loaded, prefix with `php -d xdebug.mode=off` for speed. CI runs the same commands on PHP 8.4 and 8.5
 (`.github/workflows`).
 

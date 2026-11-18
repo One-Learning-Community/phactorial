@@ -1,0 +1,25 @@
+Phactorial\CommonMark\MathBlockListener | final class
+Phactorial\CommonMark\MathBlockListener::__invoke() | (League\CommonMark\Event\DocumentParsedEvent $event): void
+Phactorial\CommonMark\MathExtension | final class implements League\CommonMark\Extension\ConfigurableExtensionInterface, League\CommonMark\Extension\ExtensionInterface
+Phactorial\CommonMark\MathExtension::configureSchema() | (League\Config\ConfigurationBuilderInterface $builder): void
+Phactorial\CommonMark\MathExtension::register() | (League\CommonMark\Environment\EnvironmentBuilderInterface $environment): void
+Phactorial\CommonMark\MathOutput | enum implements BackedEnum, UnitEnum
+Phactorial\CommonMark\MathOutput::Mathml | case = 'mathml'
+Phactorial\CommonMark\MathOutput::Svg | case = 'svg'
+Phactorial\CommonMark\Node\MathBlock | final class extends League\CommonMark\Node\Block\AbstractBlock
+Phactorial\CommonMark\Node\MathBlock::$source | string = ''
+Phactorial\CommonMark\Node\MathBlock::$tex | string = ''
+Phactorial\CommonMark\Node\MathInline | final class extends League\CommonMark\Node\Inline\AbstractInline
+Phactorial\CommonMark\Node\MathInline::$display | readonly protected(set) bool
+Phactorial\CommonMark\Node\MathInline::$source | readonly protected(set) string
+Phactorial\CommonMark\Node\MathInline::$tex | readonly protected(set) string
+Phactorial\CommonMark\Node\MathInline::__construct() | (string $tex, bool $display = false, string $source = '')
+Phactorial\CommonMark\Parser\MathInlineParser | final class implements League\CommonMark\Parser\Inline\InlineParserInterface
+Phactorial\CommonMark\Parser\MathInlineParser::getMatchDefinition() | (): League\CommonMark\Parser\Inline\InlineParserMatch
+Phactorial\CommonMark\Parser\MathInlineParser::parse() | (League\CommonMark\Parser\InlineParserContext $inlineContext): bool
+Phactorial\CommonMark\Renderer\MathHtml | final class
+Phactorial\CommonMark\Renderer\MathHtml::__construct() | (League\Config\ConfigurationInterface $configuration)
+Phactorial\CommonMark\Renderer\MathHtml::render() | (string $tex, bool $display, bool $block = false, string $source = ''): string ; @param $source string
+Phactorial\CommonMark\Renderer\MathNodeRenderer | final class implements League\CommonMark\Renderer\NodeRendererInterface
+Phactorial\CommonMark\Renderer\MathNodeRenderer::__construct() | (Phactorial\CommonMark\Renderer\MathHtml $html)
+Phactorial\CommonMark\Renderer\MathNodeRenderer::render() | (League\CommonMark\Node\Node $node, League\CommonMark\Renderer\ChildNodeRendererInterface $childRenderer): ?string
