@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phactorial\Render;
 
+use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
 use Phactorial\Node\Fallback;
 use Phactorial\Node\Fenced;
@@ -61,7 +62,7 @@ final class TextWriter
             $n instanceof Space => $n->em >= 0.15 ? ' ' : '',
             $n instanceof Phantom => '',
             $n instanceof Row => self::row($n),
-            $n instanceof DisplayStyle, $n instanceof TexSource => self::node($n->content),
+            $n instanceof DisplayStyle, $n instanceof TexSource, $n instanceof Color => self::node($n->content),
             $n instanceof Fallback => $n->content === null ? '' : self::node($n->content),
             default => throw new \InvalidArgumentException('Unknown node ' . $n::class),
         };
@@ -153,7 +154,7 @@ final class TextWriter
             $n instanceof Fraction => ! $n->bar,
             $n instanceof Text => preg_match('/\s/u', $n->text) !== 1,
             $n instanceof Fallback => $n->content !== null && self::atom($n->content),
-            $n instanceof TexSource => self::atom($n->content),
+            $n instanceof TexSource, $n instanceof Color => self::atom($n->content),
             $n instanceof Row => count($n->children) === 1 && self::atom($n->children[0]),
             default => false,
         };

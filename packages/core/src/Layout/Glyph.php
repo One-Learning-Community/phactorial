@@ -10,6 +10,7 @@ namespace Phactorial\Layout;
  * not the letter typed; null for size-variant and assembly pieces
  * that stand for part of a larger symbol. $size is the font size in points.
  * $sx and $sy scale the outline along x and y about the glyph origin (1.0 unless a stretch assembly draws a run of one straight extender once).
+ * $color is the fill as `#rrggbb` (lowercase), or null for the drawing's default ink.
  */
 final readonly class Glyph implements DisplayItem
 {
@@ -22,12 +23,19 @@ final readonly class Glyph implements DisplayItem
         public float $size,
         public float $sx = 1.0,
         public float $sy = 1.0,
+        public ?string $color = null,
     ) {
     }
 
     /** This item moved by $dx and $dy points, as a new item; the original is unchanged. */
     public function translated(float $dx, float $dy): static
     {
-        return new self($this->gid, $this->text, $this->x + $dx, $this->y + $dy, $this->size, $this->sx, $this->sy);
+        return new self($this->gid, $this->text, $this->x + $dx, $this->y + $dy, $this->size, $this->sx, $this->sy, $this->color);
+    }
+
+    /** This glyph with the fill $color (`#rrggbb`), as a new item; the original is unchanged. */
+    public function withColor(string $color): static
+    {
+        return new self($this->gid, $this->text, $this->x, $this->y, $this->size, $this->sx, $this->sy, $color);
     }
 }

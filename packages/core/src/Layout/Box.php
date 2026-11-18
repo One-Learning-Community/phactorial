@@ -65,6 +65,13 @@ final class Box
     public float $trail = 0.0;
 
     /**
+     * The fill every glyph and rule below this box takes unless a box nearer to it sets its own, `#rrggbb`; null leaves them as they are.
+     *
+     * @internal Engine detail, not public API.
+     */
+    public ?string $color = null;
+
+    /**
      * @param float $italic italics correction of the last glyph, in points (used to place superscripts)
      * @param bool $simple true for a single token (letter, digit run, operator): scripts then ignore the base's height
      *
@@ -99,15 +106,18 @@ final class Box
      */
     public function each(callable $visit): void
     {
-        $this->walk($visit, 0.0, 0.0);
+        $this->walk($visit, 0.0, 0.0, null);
     }
 
     /** @param callable(DisplayItem, float, float): void $fn */
-    private function walk(callable $fn, float $dx, float $dy): void
+    private function walk(callable $fn, float $dx, float $dy, ?string $color): void
     {
+        $color = $this->color ?? $color;
         foreach ($this->entries as $e) {
             if (is_array($e)) {
-                $e[0]->walk($fn, $dx + $e[1], $dy + $e[2]);
+                $e[0]->walk($fn, $dx + $e[1], $dy + $e[2], $color);
+            } elseif ($color !== null && ($e instanceof Glyph || $e instanceof Rule) && $e->color === null) {
+                $fn($e->withColor($color), $dx, $dy);
             } else {
                 $fn($e, $dx, $dy);
             }
