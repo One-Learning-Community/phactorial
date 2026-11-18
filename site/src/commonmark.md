@@ -27,7 +27,7 @@ $environment->addExtension(new MathExtension());
 echo (new MarkdownConverter($environment))->convert('Area is $\pi r^2$.');
 ```
 
-In Laravel, pass the extension and its options to `Str::markdown()`:
+In Laravel, pass the extension and its options to `Str::markdown()`. [Laravel](./laravel.md) covers mail templates, spatie/laravel-markdown and caching too.
 
 ```php
 use Illuminate\Support\Str;
@@ -78,7 +78,7 @@ An invalid value throws `League\Config\Exception\ValidationException` on the fir
 
 ## SVG or MathML
 
-SVG output looks the same in every browser, email client and feed reader, and the glyphs are paths, so no font loads. It costs bytes: each formula carries its outlines, and the text is not selectable.
+SVG output looks the same in every browser, and the glyphs are paths, so no font loads. It costs bytes: each formula carries its outlines, and the text is not selectable. Gmail and Outlook remove SVG from email; [Laravel's mail recipe](./laravel.md#mail) sends PNG instead.
 
 MathML output is small and stays text, so readers can select it and screen readers can speak it. The browser draws it, so its look depends on the browser and the math font it finds. Current Chrome, Firefox and Safari all render MathML Core. Choose SVG when the look must match everywhere, and MathML when size and accessibility matter more.
 

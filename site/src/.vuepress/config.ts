@@ -50,6 +50,7 @@ export default defineUserConfig({
       { text: 'Recipes', link: '/recipes.html' },
       { text: 'Backends', link: '/backends.html' },
       { text: 'CommonMark', link: '/commonmark.html' },
+      { text: 'Laravel', link: '/laravel.html' },
       { text: 'Changelog', link: 'https://github.com/One-Learning-Community/phactorial/blob/main/CHANGELOG.md' },
       { text: 'Quoin', link: 'https://one-learning-community.github.io/quoin/' },
     ],
@@ -57,7 +58,7 @@ export default defineUserConfig({
     sidebar: [
       {
         text: 'Phactorial',
-        children: ['/', '/recipes.md', '/input.md', '/output.md', '/backends.md', '/commonmark.md'],
+        children: ['/', '/recipes.md', '/input.md', '/output.md', '/backends.md', '/commonmark.md', '/laravel.md'],
       },
     ],
   }),
