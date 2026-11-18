@@ -112,9 +112,18 @@ final class MathmlColorTest extends TestCase
 
     public function test_writer_output_for_an_inline_color_wraps_each_item_in_place(): void
     {
+        $xml = MathmlWriter::write(Math::tex('a \color{red} b + c'));
+        self::assertSame(
+            '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>a</mi><mstyle mathcolor="#ff0000"><mi>b</mi></mstyle><mstyle mathcolor="#ff0000"><mo>+</mo></mstyle><mstyle mathcolor="#ff0000"><mi>c</mi></mstyle></mrow></math>',
+            $xml,
+        );
+    }
+
+    public function test_a_braced_color_group_is_one_colored_row(): void
+    {
         $xml = MathmlWriter::write(Math::tex('a {\color{red} b + c} d'));
         self::assertSame(
-            '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>a</mi><mstyle mathcolor="#ff0000"><mi>b</mi></mstyle><mstyle mathcolor="#ff0000"><mo>+</mo></mstyle><mstyle mathcolor="#ff0000"><mi>c</mi></mstyle><mi>d</mi></mrow></math>',
+            '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>a</mi><mstyle mathcolor="#ff0000"><mrow><mi>b</mi><mo>+</mo><mi>c</mi></mrow></mstyle><mi>d</mi></mrow></math>',
             $xml,
         );
     }
@@ -137,7 +146,7 @@ final class MathmlColorTest extends TestCase
     public function test_a_colored_limit_operator_keeps_its_color(): void
     {
         $xml = MathmlWriter::write(Math::tex('\textcolor{red}{\sum}_{i}'));
-        self::assertSame('<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><msub><mstyle mathcolor="#ff0000"><mo form="prefix">∑</mo></mstyle><mi>i</mi></msub></math>', $xml);
+        self::assertSame('<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><munder><mstyle mathcolor="#ff0000"><mo form="prefix">∑</mo></mstyle><mi>i</mi></munder></math>', $xml);
     }
 
     public function test_a_middle_inside_an_inline_color_stretches_in_mathml(): void
@@ -261,5 +270,28 @@ final class MathmlColorTest extends TestCase
             (new \ReflectionProperty(Color::class, $prop))->setValue($color, $value);
         }
         self::assertSame('<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi>x</mi></math>', MathmlWriter::write($color));
+    }
+
+    /** @return list<?string> the fill of each glyph, in drawing order */
+    private static function fills(string $inner): array
+    {
+        return array_column(array_filter(self::fingerprint(self::read($inner)), static fn (array $g): bool => $g[0] >= 0), 1);
+    }
+
+    public function test_mathcolor_on_a_table_cell_and_row_is_drawn(): void
+    {
+        self::assertSame([null, '#ff0000'], self::fills('<mtable><mtr><mtd><mi>a</mi></mtd><mtd mathcolor="red"><mi>b</mi></mtd></mtr></mtable>'));
+        self::assertSame(['#0000ff', '#0000ff'], self::fills('<mtable><mtr mathcolor="blue"><mtd><mi>a</mi></mtd><mtd><mi>b</mi></mtd></mtr></mtable>'));
+        // The cell is inside the row, so the cell's color wins.
+        self::assertSame(['#0000ff', '#ff0000'], self::fills('<mtable><mtr mathcolor="blue"><mtd><mi>a</mi></mtd><mtd mathcolor="red"><mi>b</mi></mtd></mtr></mtable>'));
+    }
+
+    public function test_a_rejected_table_color_gives_the_note(): void
+    {
+        foreach (['<mtr mathcolor="nope"><mtd><mi>a</mi></mtd></mtr>', '<mtr><mtd mathcolor="nope"><mi>a</mi></mtd></mtr>'] as $rows) {
+            $notes = MathmlReader::read('<math><mtable>' . $rows . '</mtable></math>')->notes();
+            self::assertCount(1, $notes, $rows);
+            self::assertStringStartsWith('unknown color `nope`', $notes[0]->reason);
+        }
     }
 }

@@ -435,6 +435,7 @@ final class TexReader
                 $rest = function () use ($stops, $hex): Node {
                     $parts = [];
                     $middle = false;
+                    $last = 0;
                     while (true) {
                         // \over and its kin end the body: they take the whole group, switch included, as their numerator.
                         array_push($parts, ...$this->parseUntil(...$stops, ...self::FRACTION_COMMANDS));
@@ -442,8 +443,7 @@ final class TexReader
                         if ($middle && $next !== null && $next[0] === 'cs' && in_array($next[1], self::FRACTION_COMMANDS, true)) {
                             // Past a \middle, the fraction takes only what follows the last one, as it does uncolored.
                             $this->c->p++;
-                            $last = (int) array_key_last(array_filter($parts, static fn (Node $n): bool => $n instanceof Middle));
-                            $numerator = array_splice($parts, $last + 1);
+                            $numerator = array_splice($parts, $last);
                             $parts[] = self::generalizedFraction($next[1], $numerator, $this->parseUntil(...$stops));
                             $next = $this->c->peek();
                         }
@@ -454,8 +454,10 @@ final class TexReader
                         $mid = $this->delimiter();
                         if ($mid !== null && $mid !== '') {
                             $parts[] = new Middle($mid);
-                            $middle = true;
                         }
+                        // `\middle.` draws nothing but still ends what a fraction after it takes.
+                        $middle = true;
+                        $last = count($parts);
                     }
 
                     return $middle ? new Row($parts) : self::row($parts);
@@ -684,7 +686,7 @@ final class TexReader
     /** A bare color switch read as a whole argument (`\mathrm\color{red} x`) in a group of its own, so it colors nothing after it. */
     private static function ownGroup(Node $node): Node
     {
-        return $node instanceof TexSource && $node->close === '' && str_starts_with($node->tex, '\\color')
+        return $node instanceof TexSource && $node->isColorSwitch()
             ? new TexSource($node->content, '{' . $node->tex, '}')
             : $node;
     }
@@ -1434,7 +1436,15 @@ final class TexReader
                     ? $this->note(NoteLevel::Approximated, '\\textcolor', Colors::unknown($spec), $at, fn (): Node => $this->parseArgument(), 'color|' . $spec)
                     : new Color($this->parseArgument(), $hex);
 
-                return [new TexSource($node, '\\textcolor' . $spelling . '{', '}'), 'ord', null];
+                // A colored large operator keeps the class its bare symbol has: a sum still takes its limits above and below in display
+                // style, an integral keeps them beside it.
+                $op = Fallback::unwrap($node);
+                $kind = 'ord';
+                if ($op instanceof Operator && $op->isLargeop(OperatorDictionary::FORM_PREFIX)) {
+                    $kind = $op->hasMovableLimits(OperatorDictionary::FORM_PREFIX) ? 'op' : 'int';
+                }
+
+                return [new TexSource($node, '\\textcolor' . $spelling . '{', '}'), $kind, null];
             case 'boxed':
                 return [new TexSource($this->note(NoteLevel::Approximated, '\\boxed', 'the box is not drawn', $at, fn (): Node => $this->parseArgument()), '\\boxed{', '}'), 'ord', null];
             case 'fbox':
@@ -1800,7 +1810,7 @@ final class TexReader
     private function classed(string $class, string $name, int $at): array
     {
         $arg = $this->parseArgument(false);
-        $lone = self::lone($arg);
+        [$lone, $rewrap] = self::loneWrapped($arg);
         $char = match (true) {
             $lone instanceof Operator => $lone->char,
             $lone instanceof Identifier => $lone->name,
@@ -1811,9 +1821,50 @@ final class TexReader
             return [$this->note(NoteLevel::Approximated, '\\' . $name, 'the class applies to a single symbol only', $at, $arg), $class === 'op' ? 'op' : 'ord', null];
         }
         [$l, $r] = TexClass::SPACING[$class];
+        // A large operator already is an op atom: \mathop{\int} spaces as \int does, with the dictionary's spacing.
+        if ($class === 'op' && $lone instanceof Operator && $lone->lspace === null && $lone->rspace === null && $lone->isLargeop(OperatorDictionary::FORM_PREFIX)) {
+            return [$rewrap($lone), 'op', null];
+        }
         $spaced = $lone instanceof Operator ? $this->withOp($lone, lspace: (float) $l, rspace: (float) $r) : new Operator($char, lspace: (float) $l, rspace: (float) $r);
 
-        return [$spaced, $class === 'op' && $spaced->isLargeop(OperatorDictionary::FORM_PREFIX) ? 'op' : 'ord', null];
+        // The color (and the source that spells it) around the symbol survives the class.
+        return [$rewrap($spaced), $class === 'op' && $spaced->isLargeop(OperatorDictionary::FORM_PREFIX) ? 'op' : 'ord', null];
+    }
+
+    /**
+     * lone() that also sees through TexSource and Color, with a closure that puts those wrappers back around a node built from the symbol.
+     * A Fallback is a wrapper too, so the note it carries survives.
+     *
+     * @return array{Node, \Closure(Node): Node}
+     */
+    private static function loneWrapped(Node $n): array
+    {
+        $wrappers = [];
+        while (true) {
+            if ($n instanceof Row && count($n->children) === 1) {
+                $n = $n->children[0];
+            } elseif ($n instanceof Fallback && $n->content !== null) {
+                $wrappers[] = $n;
+                $n = $n->content;
+            } elseif ($n instanceof TexSource || $n instanceof Color) {
+                $wrappers[] = $n;
+                $n = $n->content;
+            } else {
+                break;
+            }
+        }
+
+        return [$n, static function (Node $inner) use ($wrappers): Node {
+            foreach (array_reverse($wrappers) as $w) {
+                $inner = match (true) {
+                    $w instanceof Color => new Color($inner, $w->color, $w->inline),
+                    $w instanceof Fallback => new Fallback($inner, $w->note),
+                    default => new TexSource($inner, $w->tex, $w->close),
+                };
+            }
+
+            return $inner;
+        }];
     }
 
     /** The one node a Row or Fallback wraps, or the node itself. */

@@ -318,8 +318,8 @@ final class TexColorTest extends TestCase
         yield 'mathit' => ['\\mathit{\\color{red} x} y', '{\\color{red} \\mathit{x}} y'];
         yield 'boldsymbol' => ['\\boldsymbol{\\color{red} x} y', '{\\color{red} \\boldsymbol{x}} y'];
         yield 'mathbb' => ['\\mathbb{\\color{red} x} y', '{\\color{red} \\mathbb{x}} y'];
-        yield 'mathop' => ['\\mathop{\\color{red} x} y', '{\\color{red} x} y'];
-        yield 'mathrel' => ['\\mathrel{\\color{red} x} y', '{\\color{red} x} y'];
+        yield 'mathop' => ['\\mathop{\\color{red} x} y', '{\\color{red} \\mathop{x}} y'];
+        yield 'mathrel' => ['\\mathrel{\\color{red} x} y', '{\\color{red} \\mathrel{x}} y'];
         yield 'mathchoice' => ['\\mathchoice{\\color{red} a}{b}{c}{d} y', '{{\\color{red} a} b c d} y'];
         yield 'sideset' => ['\\sideset{}{}{\\color{red} x} y', '{\\color{red} x} y'];
         yield 'sideset with a script' => ['\\sideset{_a}{}{\\color{red} x} y', '{}_a{{\\color{red} x}} y'];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phactorial\Tests\Layout;
 
 use PHPUnit\Framework\TestCase;
+use Phactorial\Layout\DisplayItem;
 use Phactorial\Layout\Glyph;
 use Phactorial\Layout\Rule;
 use Phactorial\Math;
@@ -154,5 +155,30 @@ final class ColorBoxTest extends TestCase
         $colored = Color::box($box, '#ff0000');
 
         self::assertInstanceOf(CountedItem::class, $colored->items[0]);
+    }
+
+    public function test_each_colored_passes_the_resolved_color_without_copying_items(): void
+    {
+        $box = Math::layout(Math::row('a', new Color(Math::frac('b', new Color(Math::row('c'), '#0000ff')), '#ff0000'), '+d'));
+
+        $copied = [];
+        $box->each(static function (DisplayItem $item, float $dx, float $dy) use (&$copied): void {
+            $copied[] = [$item instanceof Glyph || $item instanceof Rule ? $item->color : null, round($dx, 6), round($dy, 6)];
+        });
+        $resolved = [];
+        $box->eachColored(static function (DisplayItem $item, float $dx, float $dy, ?string $color) use (&$resolved): void {
+            // The item is as laid out: it carries no color of a box above it.
+            $resolved[] = [$color, round($dx, 6), round($dy, 6)];
+        });
+
+        self::assertSame($copied, $resolved);
+        self::assertContains('#ff0000', array_column($resolved, 0));
+        self::assertContains('#0000ff', array_column($resolved, 0));
+        self::assertContains(null, array_column($resolved, 0));
+        $box->eachColored(static function (DisplayItem $item, float $dx, float $dy, ?string $color): void {
+            if ($color !== null && ($item instanceof Glyph || $item instanceof Rule)) {
+                self::assertTrue($item->color === null || $item->color === $color);
+            }
+        });
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Phactorial\Layout;
 
+use Phactorial\Colors;
+
 /**
  * A glyph placed by its origin (x, y), y being the baseline position, y down.
  * $text is the character drawn, for selection and ToUnicode: for a letter set in mathematical italic it is the italic code point,
@@ -33,9 +35,13 @@ final readonly class Glyph implements DisplayItem
         return new self($this->gid, $this->text, $this->x + $dx, $this->y + $dy, $this->size, $this->sx, $this->sy, $this->color);
     }
 
-    /** This glyph with the fill $color (`#rrggbb`), as a new item; the original is unchanged. */
+    /** This glyph with the fill $color (`#rrggbb`), as a new item; the original is unchanged. Throws InvalidArgumentException unless $color is lowercase `#rrggbb`. */
     public function withColor(string $color): static
     {
+        if (! Colors::isHex($color)) {
+            throw new \InvalidArgumentException('A color is `#rrggbb` in lowercase hex.');
+        }
+
         return new self($this->gid, $this->text, $this->x, $this->y, $this->size, $this->sx, $this->sy, $color);
     }
 }

@@ -39,7 +39,7 @@ final class SvgRenderer
         );
         $svg .= $this->group();
         $open = null;
-        $box->each(function (DisplayItem $item, float $dx, float $dy) use (&$svg, &$open, $ox, $oy): void {
+        $box->eachColored(function (DisplayItem $item, float $dx, float $dy, ?string $color) use (&$svg, &$open, $ox, $oy): void {
             if ($item instanceof Glyph) {
                 $element = $this->glyphPath($item, $ox + $dx, $oy + $dy);
             } elseif ($item instanceof Rule) {
@@ -48,7 +48,7 @@ final class SvgRenderer
                 return;
             }
             if ($element !== '') {
-                $svg .= self::switchColor($open, $item->color) . $element;
+                $svg .= self::switchColor($open, $color) . $element;
             }
         });
 

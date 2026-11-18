@@ -140,6 +140,26 @@ final class UnderOver extends Node
     }
 
     /**
+     * The color an operator part is drawn in: the innermost Color on the path operatorOf() walks, the one-child Row's
+     * child winning over the wrappers around the Row.
+     *
+     * @internal Engine detail, not public API.
+     */
+    public static function colorOf(?Node $part): ?string
+    {
+        if ($part === null) {
+            return null;
+        }
+        $color = Fallback::color($part);
+        $n = Fallback::unwrap($part);
+        if ($n instanceof Row && count($n->children) === 1) {
+            $color = Fallback::color($n->children[0]) ?? $color;
+        }
+
+        return $color;
+    }
+
+    /**
      * The operator a node is: itself, or the only child of a Row.
      *
      * @internal Engine detail, not public API.
@@ -334,29 +354,14 @@ final class UnderOver extends Node
     /** $box in the color of the Color wrappers around $part, which stack() skips when it draws an operator from its character. */
     private static function tinted(Box $box, ?Node $part): Box
     {
-        $color = self::partColor($part);
+        $color = self::colorOf($part);
 
         return $color === null ? $box : Color::box($box, $color);
     }
 
-    /** The innermost color on the path operatorOf() walks to a part's operator, one-child Row included. */
-    private static function partColor(?Node $part): ?string
-    {
-        if ($part === null) {
-            return null;
-        }
-        $color = Fallback::color($part);
-        $n = Fallback::unwrap($part);
-        if ($n instanceof Row && count($n->children) === 1) {
-            $color = Fallback::color($n->children[0]) ?? $color;
-        }
-
-        return $color;
-    }
-
     private static function tintedRule(Rule $rule, ?Node $part): Rule
     {
-        $color = self::partColor($part);
+        $color = self::colorOf($part);
 
         return $color === null ? $rule : $rule->withColor($color);
     }

@@ -22,7 +22,7 @@ A formula author who writes `\color{blue}` or `mathcolor="blue"` today gets blac
 
 ## Anti-goals
 
-- Any attacker-shaped string in an attribute. A value not on the whitelist never reaches a drawing writer (SVG, PNG, MathML, OMML). TeX write-back keeps today's behavior: the value, filtered by `colorName()` to safe characters (letters, digits, `#.,!:-` and space, the space being needed for `[rgb]{1, 0, 0}`), is written back through `TexSource`, so `\color{red!50}` still round-trips as the docs promise. (Call made after review.)
+- Any attacker-shaped string in an attribute. A value not on the whitelist never reaches a drawing writer (SVG, PNG, MathML, OMML). TeX write-back keeps today's behavior: a value made only of safe characters (letters, digits, `#.,!:-` and space, the space being needed for `[rgb]{1, 0, 0}`) is written back unchanged through `TexSource`, so `\color{red!50}` still round-trips as the docs promise; a value that the character filter or the markup check would change is written as `{}`, never as a changed color. (Call made after review.)
 - A slowdown for formulas without color. The extra cost belongs to colored groups only.
 - A break for existing layout consumers. A backend that ignores the new `color` field draws exactly what it draws today.
 
@@ -30,7 +30,7 @@ A formula author who writes `\color{blue}` or `mathcolor="blue"` today gets blac
 
 Three ways were weighed for getting color from the tree onto what is painted.
 
-- **A. The color rides on the box (chosen).** The color node lays out its content and places that box inside a new box tagged with the color. The walk in `Box::each()` and `Box::$items` carries the current color down; a tagged box replaces it for everything beneath, so the innermost color wins. Items under a color are handed out as copies with `color` set. Layout code that makes glyphs (runs, stretchers, radicals, fences, fractions) is untouched, and stretchy pieces and rules inside a colored group take the color for free. Cost: one copy per colored item per walk; uncolored items are handed out as today.
+- **A. The color rides on the box (chosen).** The color node lays out its content and places that box inside a new box tagged with the color. The walk in `Box::each()` and `Box::$items` carries the current color down; a tagged box replaces it for everything beneath, so the innermost color wins. Items under a color are handed out as copies with `color` set. Layout code that makes glyphs (runs, stretchers, radicals, fences, fractions) is untouched, and stretchy pieces and rules inside a colored group take the color for free. Cost: `each()` and `$items` make one copy per colored item per walk; uncolored items are handed out as today. The renderers use an internal walk that passes the resolved color beside the uncopied item, so drawing copies nothing.
 - **B. Color set when each item is made.** The layout context carries the current color and every place that creates a `Glyph` or `Rule` passes it in. No copies, but roughly ten creation sites change, and every future one must remember to pass the color.
 - **C. A color attribute on every node.** Spreads across all node types, and both TeX and MathML treat color as a scope rather than a token property. Poor fit for the interchange tree.
 

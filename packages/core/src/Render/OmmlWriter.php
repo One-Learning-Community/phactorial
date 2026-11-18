@@ -384,11 +384,7 @@ final class OmmlWriter
         if ($op === null || ! self::single($op->char) || ! $op->isLargeop(OperatorDictionary::FORM_PREFIX)) {
             return null;
         }
-        $base = Fallback::unwrap($n->base);
-        $opColor = Fallback::color($n->base);
-        if ($base instanceof Row && count($base->children) === 1) {
-            $opColor = Fallback::color($base->children[0]) ?? $opColor;
-        }
+        $opColor = UnderOver::colorOf($n->base);
 
         return $n instanceof UnderOver ? [$op, $n->under, $n->over, true, $opColor] : [$op, $n->sub, $n->sup, false, $opColor];
     }
@@ -420,10 +416,10 @@ final class OmmlWriter
             $under = UnderOver::blank($u->under) ? null : $u->under;
             if ($over === null && $under === null) {
                 // KaTeX draws the long arrows for these.
-                return self::node(new Operator(UnderOver::LONG_ARROWS[$arrow->char] ?? $arrow->char), self::colored($f, self::partColor($u->base)));
+                return self::node(new Operator(UnderOver::LONG_ARROWS[$arrow->char] ?? $arrow->char), self::colored($f, UnderOver::colorOf($u->base)));
             }
 
-            return self::labeledArrow($over, $under, $arrow->char, $f, self::colored($f, self::partColor($u->base)));
+            return self::labeledArrow($over, $under, $arrow->char, $f, self::colored($f, UnderOver::colorOf($u->base)));
         }
         $out = self::node($u->base, $f);
         // A part that draws nothing is no limit: it would write an empty <m:lim>.
@@ -431,7 +427,7 @@ final class OmmlWriter
         $overPart = UnderOver::blank($u->over) ? null : $u->over;
         if ($underPart !== null) {
             $op = UnderOver::operatorOf($underPart);
-            $pf = self::colored($f, self::partColor($underPart));
+            $pf = self::colored($f, UnderOver::colorOf($underPart));
             $out = match (true) {
                 $op !== null && in_array($op->char, UnderOver::BARS, true) => self::bar($out, 'bot', $pf),
                 $op !== null && UnderOver::isBrace($op, false) => self::groupChr($out, $op->char, 'bot', 'top', $pf),
@@ -441,7 +437,7 @@ final class OmmlWriter
         }
         if ($overPart !== null) {
             $op = UnderOver::operatorOf($overPart);
-            $pf = self::colored($f, self::partColor($overPart));
+            $pf = self::colored($f, UnderOver::colorOf($overPart));
             $out = match (true) {
                 $op !== null && in_array($op->char, UnderOver::BARS, true) => self::bar($out, 'top', $pf),
                 $op !== null && $u->accent => self::accent($out, Styles::accentMark($op->char) ?? $op->char, $pf, $overPart),
@@ -451,16 +447,6 @@ final class OmmlWriter
         }
 
         return $out;
-    }
-
-    /** The color of a Color around a part, or around the one node inside a Row around it. */
-    private static function partColor(Node $part): ?string
-    {
-        $row = Fallback::unwrap($part);
-
-        $inner = $row instanceof Row && count($row->children) === 1 ? Fallback::color($row->children[0]) : null;
-
-        return $inner ?? Fallback::color($part);
     }
 
     /**

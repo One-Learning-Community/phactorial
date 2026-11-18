@@ -8,12 +8,15 @@ and the project follows [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Color in formulas. `\color`, `\textcolor` and MathML `mathcolor` are drawn by SVG and PNG, written by the MathML and TeX writers, and carried into Word equations as `w:color`. The tree gains `Node\Color`.
-- `Glyph::$color` and `Rule::$color`, each a `?string` that is null or a lowercase `#rrggbb`, and `withColor()` on both. A backend that ignores them draws one color, as before.
+- `Glyph::$color` and `Rule::$color`, each a `?string` that is null or a lowercase `#rrggbb`, and `withColor()` on both. A backend that ignores them draws one color, as before. Both `withColor()` methods throw `InvalidArgumentException` for anything but a lowercase `#rrggbb`.
+- MathML color on a delimiter that pairs into a fence is not drawn, and the reader notes it: "color on a paired delimiter is not drawn".
 
 ### Changed
 
 - Word output with a `RunFormat` color now carries `m:ctrlPr`, so fraction bars, radicals and brackets take that color as well as the runs.
 - The TeX writer keeps the spacing of a color switch.
+- `\mathop{\int}` and `\mathop{\sum}` space as `\int` and `\sum` do, as in TeX, where they used to take extra class spacing. They write back as `\int\limits` and `\sum`.
+- A script on a lone colored token is written without braces: `\textcolor{red}{x}^2`, not `{\textcolor{red}{x}}^2`. A colored `\sum` is written bare when its limits are stacked, and braced when its scripts sit beside it, since a bare one would take them as limits. A colored integral takes its scripts beside it and is never braced.
 - Goldens, each changed on purpose:
   - The TeX corpus entries `color` and `color-more` expect no notes, since color is drawn.
   - `TexEnvironmentTest` now expects no notes for accepted values, and it and `TexFinalReviewTest` check the rejected-color note with `red!50`, because `red` is now accepted.
@@ -28,6 +31,11 @@ and the project follows [Semantic Versioning](https://semver.org/).
 - A color switch as a script or an argument gained braces on every round trip.
 - `\over` after a color switch split the group wrongly.
 - A color switch inside `\mathrm{…}` and other font or class arguments leaked out on a round trip.
+- `\textcolor{red}{\sum}_i^n` in display style lost its limits above and below, and the TeX writer put `\nolimits` after a colored operator, which LaTeX and KaTeX reject.
+- `\mathbin{\textcolor{red}{x}}` and the other class commands lost their class around a color.
+- MathML `mathcolor` on `mtr` and `mtd` was ignored.
+- `a \color{red} + b` is spaced like `a + b`, also when the color is rejected. A braced group, `a {\color{red} + b}`, is one atom as in TeX, and is spaced like `a {+ b}`.
+- `\over` after a `\middle.` inside a color switch took the whole group as its numerator.
 - `\left( \color{red} a \middle| b \right)` was written back as `\left( {\color{red} a} \middle| b \right)`, which narrowed the switch to the part before the `\middle`.
 
 ## [0.19.0] - 2026-11-18

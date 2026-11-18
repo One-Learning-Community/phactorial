@@ -41,4 +41,25 @@ final class TexSource extends Node
     {
         return $this->content->layout($c);
     }
+
+    /**
+     * Whether this is a color switch written without a brace of its own (`\color{red}` inside its group): the source of a
+     * switch that colors the rest of the row it stands in, accepted or rejected.
+     *
+     * @internal Engine detail, not public API.
+     */
+    public function isColorSwitch(): bool
+    {
+        return $this->close === '' && str_starts_with($this->tex, '\\color');
+    }
+
+    /**
+     * Whether this is a color switch that opens a group (`{\color{red} x}`): an atom of the row around it, as in TeX.
+     *
+     * @internal Engine detail, not public API.
+     */
+    public function isBracedColorSwitch(): bool
+    {
+        return $this->close === '}' && str_starts_with($this->tex, '{\\color');
+    }
 }

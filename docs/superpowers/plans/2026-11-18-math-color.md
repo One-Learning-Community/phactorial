@@ -22,7 +22,7 @@
 
 ## Review Focus
 
-1. **Hostile values.** `\color{red" onload="x}`, `\textcolor{url(#a)}{x}`, `mathcolor="red;fill:url(x)"`, `mathcolor="javascript:x"`. Each is rejected with a note. The SVG, MathML and OMML output contains no part of the value. TeX write-back keeps only `colorName()`'s safe characters. (Task 5 and Task 6 tests.)
+1. **Hostile values.** `\color{red" onload="x}`, `\textcolor{url(#a)}{x}`, `mathcolor="red;fill:url(x)"`, `mathcolor="javascript:x"`. Each is rejected with a note. The SVG, MathML and OMML output contains no part of the value. TeX write-back keeps a value of safe characters unchanged and writes any value the character filter or markup check would change as `{}`. (Task 5 and Task 6 tests.)
 2. **Colored script bases.** `\textcolor{red}{x}^2` and `\textcolor{red}{f}'` place their scripts exactly where the uncolored forms do, because the color box copies `italic`, `simple`, `firstGid`, `lastGid`, `lastAscent`, `lastDescent` and `trail`. (Task 2 test.)
 3. **Empty groups.** `\textcolor{red}{}`, `{\color{red}}`, `\color{red}` at the end of a formula, and `<mstyle mathcolor="red"/>` give zero width and no exception. (Task 5 and Task 6 tests.)
 4. **Delimiters and cells.** `\textcolor{red}{\left( \frac{a}{b} \right)}` colors the stretched parentheses. In `\left( a \color{red} \middle| b \right)`, the middle stretches and is red. A colored matrix cell aligns like an uncolored one. (Task 3 and Task 4 tests.)

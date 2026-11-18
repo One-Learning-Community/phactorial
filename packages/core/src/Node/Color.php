@@ -12,13 +12,18 @@ use Phactorial\Layout\Context;
  * Color on part of a formula: $color is `#rrggbb` (lowercase) and fills every glyph and rule of $content.
  * $inline is true when the source gave the color as a command that applies to the rest of its group
  * (TeX `\color`) and false when it wrapped a single argument (`\textcolor`, `mathcolor`); writers use it to round-trip.
+ * It also drives layout: a Row spreads the content of an inline color that is an unbraced TeX switch into its own
+ * items (see Row::items()), so the operators inside space against their neighbors as if the color were absent.
+ * A switch that opens a group (`{\color{red} x}`) is an atom and does not spread.
  */
 final class Color extends Node
 {
     /** @internal Engine detail, not public API. */
     public function __construct(public readonly Node $content, public readonly string $color, public readonly bool $inline = false)
     {
-        assert(Colors::isHex($color));
+        if (! Colors::isHex($color)) {
+            throw new \InvalidArgumentException('A color is `#rrggbb` in lowercase hex.');
+        }
     }
 
     /**

@@ -96,8 +96,6 @@ Any other value, an xcolor mix such as `red!50` included, is drawn in the defaul
 
 SVG groups each run of same-colored items in one `<g fill>`. Ink without a color keeps the renderer's color; an explicit color is fixed. [Output](./output.md#svg) says how that plays with a dark theme.
 
-`\colorbox` and `\fcolorbox` are not read, and `\boxed` is read but not drawn.
-
 Scripts before a base are read from `{}^{a}_{b}X`, `\prescript{a}{b}{X}` and `\sideset`, and drawn right-aligned against the base. `\sideset` draws the scripts in its first two arguments; anything else in them is dropped and noted.
 
 ### Chemistry

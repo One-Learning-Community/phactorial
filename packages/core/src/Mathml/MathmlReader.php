@@ -75,8 +75,6 @@ final class MathmlReader
     /** @var \WeakMap<Node, string> where each Color was read, for notes about it */
     private \WeakMap $paths;
 
-    private const string UNKNOWN_COLOR = 'unknown color';
-
     private int $depth = 0;
 
     private int $elements = 0;
@@ -428,7 +426,10 @@ final class MathmlReader
                     continue;
                 }
                 array_push($cellNotes, ...self::ignoredOn($td, 'mtd', $cellWhere));
-                $cells[] = $this->children($td, $cellWhere);
+                // The row's color is outermost, so the cell's own color, being inside it, wins.
+                $cell = $this->children($td, $cellWhere);
+                $cell = $this->colored($td, $cell, $cellWhere) ?? $cell;
+                $cells[] = $this->colored($tr, $cell, $rowWhere) ?? $cell;
             }
             $rows[] = $cells;
         }
@@ -968,7 +969,7 @@ final class MathmlReader
             if ($n instanceof Color) {
                 $first ??= $n;
                 $n = $n->content;
-            } elseif ($n instanceof Fallback && $n->content !== null && str_starts_with($n->note->reason, self::UNKNOWN_COLOR)) {
+            } elseif ($n instanceof Fallback && $n->content !== null && Colors::isUnknown($n->note->reason)) {
                 $wrappers[] = $n;
                 $n = $n->content;
             } else {

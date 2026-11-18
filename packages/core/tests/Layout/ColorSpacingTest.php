@@ -245,7 +245,7 @@ final class ColorSpacingTest extends TestCase
     public function test_switch_form_keeps_binary_spacing(): void
     {
         $plain = Math::layout(new Row([self::a(), self::plus(), self::b()]), 12.0, true);
-        $switch = new TexSource(new Color(new Row([self::plus(), self::b()]), self::RED, true), '{\color{red} ', '}');
+        $switch = new TexSource(new Color(new Row([self::plus(), self::b()]), self::RED, true), '\color{red} ', '');
         $colored = Math::layout(new Row([self::a(), $switch]), 12.0, true);
 
         self::assertEqualsWithDelta($plain->width, $colored->width, 1e-9);

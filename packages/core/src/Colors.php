@@ -64,6 +64,12 @@ final class Colors
         return "unknown color `{$spec}`; drawn in the default color";
     }
 
+    /** Whether $reason is a note made by unknown(). */
+    public static function isUnknown(string $reason): bool
+    {
+        return str_starts_with($reason, 'unknown color `');
+    }
+
     /** A rejected spelling made safe to show in a note: every character outside letters, digits, `#.,!:-` and space becomes `?`. */
     public static function masked(string $spec): string
     {

@@ -113,4 +113,11 @@ final class ColorsTest extends TestCase
     {
         self::assertSame('unknown color `red!50`; drawn in the default color', Colors::unknown('red!50'));
     }
+
+    public function test_unknown_recognizes_its_own_note_and_no_other(): void
+    {
+        self::assertTrue(Colors::isUnknown(Colors::unknown('red!50')));
+        self::assertFalse(Colors::isUnknown('color on a paired delimiter is not drawn'));
+        self::assertFalse(Colors::isUnknown('unknown colour'));
+    }
 }

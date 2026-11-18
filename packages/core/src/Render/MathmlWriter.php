@@ -240,13 +240,11 @@ final class MathmlWriter
     private static function styled(Node $node, string $xml, ?string $inline = null): string
     {
         $displays = Fallback::displays($node);
-        $color = Fallback::color($node);
         $inner = Fallback::unwrap($node);
         if ($inner instanceof Row && count($inner->children) === 1) {
             $displays = [...$displays, ...Fallback::displays($inner->children[0])];
-            $color = Fallback::color($inner->children[0]) ?? $color;
         }
-        $color ??= $inline;
+        $color = UnderOver::colorOf($node) ?? $inline;
         if ($color !== null) {
             $xml = self::mstyle($color, $xml);
         }

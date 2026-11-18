@@ -83,21 +83,38 @@ final class Row extends Node
         return $this->items = $out;
     }
 
-    /** @return ?array{Row, string} the Row inside an inline Color child and that color, or null when the child is no such thing */
+    /**
+     * @return ?array{Row, ?string} the Row an unbraced color switch spreads into its parent and its color (null for a
+     *                              rejected switch, which colors nothing), or null when the child is no such thing
+     */
     private static function inlineRow(Node $n): ?array
     {
+        $switch = false;
         while (($n instanceof TexSource) || ($n instanceof Fallback && $n->content !== null)) {
+            if ($n instanceof TexSource) {
+                // A braced group is an atom, as in TeX: only a switch without a brace of its own spreads into its row.
+                if ($n->isBracedColorSwitch()) {
+                    return null;
+                }
+                $switch = $switch || $n->isColorSwitch();
+            }
             $n = $n->content;
         }
-        if (! $n instanceof Color || ! $n->inline) {
+        $color = null;
+        if ($n instanceof Color) {
+            if (! $n->inline) {
+                return null;
+            }
+            $color = $n->color;
+            $n = $n->content;
+            while (($n instanceof TexSource) || ($n instanceof Fallback && $n->content !== null)) {
+                $n = $n->content;
+            }
+        } elseif (! $switch) {
             return null;
         }
-        $content = $n->content;
-        while (($content instanceof TexSource) || ($content instanceof Fallback && $content->content !== null)) {
-            $content = $content->content;
-        }
 
-        return $content instanceof self ? [$content, $n->color] : null;
+        return $n instanceof self ? [$n, $color] : null;
     }
 
     /**
