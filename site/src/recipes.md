@@ -6,15 +6,7 @@ Each recipe starts from TeX. `MathRender::fromMathml()` or `MathRender::of()` wi
 
 Use SVG on the web. It stays sharp at any zoom and needs no math font.
 
-```php
-use Phactorial\MathRender;
-
-echo '<p>The area of a circle is ' . MathRender::fromTex('\pi r^2')->svg() . '.</p>';
-
-echo '<p class="equation">'
-    . MathRender::fromTex('\sum_{n=1}^\infty \frac{1}{n^2} = \frac{\pi^2}{6}')->display()->svg(size: 18, pad: 2)
-    . '</p>';
-```
+@[code{3-} php](../recipes/php/web-page.php)
 
 `size` is the pixel size of the surrounding text. The color is `currentColor`, the parent's text color, so the formula follows a dark theme; pass `color:` for any other CSS color.
 
@@ -41,28 +33,17 @@ Other math fonts with CFF outlines load the same way: New Computer Modern Math, 
 
 Screen readers can't read paths. `svg()` gives the SVG `role="img"` and an `aria-label` of the formula as linear text:
 
-```php
-echo MathRender::fromTex('x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}')->svg();
-// <svg role="img" aria-label="x = (−b ± √(b² − 4ac))/(2a)" …>
-```
+@[code{5-} php](../recipes/php/accessible.php)
 
 Pass `label:` to write your own. To give screen readers MathML instead, pass an empty label, which marks the SVG `aria-hidden="true"`, and put the MathML beside it, visually hidden:
 
-```php
-$formula = MathRender::fromTex('a^2 + b^2 = c^2');
-
-echo $formula->svg(label: '') . '<span class="visually-hidden">' . $formula->mathml() . '</span>';
-```
+@[code{5-} php](../recipes/php/accessible-mathml.php)
 
 ## In email
 
 Gmail and Outlook do not display SVG. Send PNG. It needs the Imagick extension.
 
-```php
-$png = MathRender::fromTex('E = mc^2')->png();
-
-echo $png->img('cid:formula-1');
-```
+@[code{5-} php](../recipes/php/email.php)
 
 Attach `$png->bytes` to the message as an inline image with the content ID `formula-1`.
 
@@ -74,10 +55,7 @@ Many email clients block `data:` images, so attach the PNG and reference it by `
 
 `omml()` writes Office Math, the format of Word's equation editor, so readers get live equations they can edit.
 
-```php
-$inline = MathRender::fromTex('a^2 + b^2 = c^2')->omml();                          // goes between runs in a paragraph
-$block = MathRender::fromTex('\int_0^1 x\,dx = \tfrac12')->display()->omml();      // fills a paragraph of its own
-```
+@[code{5-} php](../recipes/php/word.php)
 
 The output uses the `m:` and `w:` prefixes without declaring them, so the document root must declare `xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"` beside the usual `w:`. Put display output in a `<w:p>` of its own; it is centered unless you pass `'left'` or `'right'`. Word always sets equations in Cambria Math.
 
@@ -85,10 +63,7 @@ The output uses the `m:` and `w:` prefixes without declaring them, so the docume
 
 Every reader returns the same tree, and every writer takes it.
 
-```php
-$mathml = MathRender::fromTex('\sqrt{x^2 + 1}')->mathml();
-$tex = MathRender::fromMathml('<math><mfrac><mi>a</mi><mi>b</mi></mfrac></math>')->tex();   // \frac{a}{b}
-```
+@[code{5-} php](../recipes/php/converting.php)
 
 TeX from `tex()` reads back as the same formula. MathML details TeX can't express, such as an unusual `mathvariant`, become the nearest TeX.
 
@@ -102,16 +77,6 @@ User input can be malformed, huge or hostile. The readers are built for it.
 
 `notes()` returns the reports:
 
-```php
-use Phactorial\NoteLevel;
-
-$formula = MathRender::fromTex($userInput);
-
-foreach ($formula->notes() as $note) {
-    if ($note->level === NoteLevel::Dropped) {
-        // Part of the formula was not drawn. Tell the author.
-    }
-}
-```
+@[code{4-} php](../recipes/php/untrusted.php)
 
 A formula at the limits is still large; its SVG can run to megabytes. If your formulas are short, cap input well below 16 KB.

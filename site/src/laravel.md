@@ -10,12 +10,7 @@ composer require phactorial/commonmark
 
 `Str::markdown()` and `Str::inlineMarkdown()` take options and extensions as their second and third arguments:
 
-```php
-use Illuminate\Support\Str;
-use Phactorial\CommonMark\MathExtension;
-
-$html = Str::markdown($post->body, ['math' => ['output' => 'mathml']], [new MathExtension()]);
-```
+@[code{3-} php](../recipes/laravel/str-markdown.php)
 
 The fluent form takes the same arguments: `str($post->body)->markdown([], [new MathExtension()])`. Print the result unescaped, with `{!! $html !!}`. The extension escapes everything it writes, but the rest of the Markdown can carry raw HTML unless you pass `'html_input' => 'strip'`, so strip it for text your users wrote.
 
@@ -41,11 +36,7 @@ Add the extension to `config/markdown.php`, and its options to `commonmark_optio
 
 For a formula in a template, outside any Markdown, make an anonymous component at `resources/views/components/math.blade.php`:
 
-```blade
-@props(['tex', 'display' => false])
-@php($math = \Phactorial\MathRender::fromTex($tex))
-{!! ($display ? $math->display() : $math)->svg() !!}
-```
+@[code blade](../recipes/laravel/components/math.blade.php)
 
 ```blade
 <p>The area of a circle is <x-math tex="\pi r^2" />.</p>
@@ -70,56 +61,7 @@ Gmail and Outlook remove SVG from email, and Gmail blocks `data:` images, so mai
 
 `MathExtension` finds the math. `EmailMath` replaces its renderer with one that draws each formula as a PNG, saves it to the public disk and links it:
 
-```php
-<?php
-
-namespace App\Markdown;
-
-use Illuminate\Support\Facades\Storage;
-use League\CommonMark\Environment\EnvironmentBuilderInterface;
-use League\CommonMark\Extension\CommonMark\Node\Block\FencedCode;
-use League\CommonMark\Extension\ExtensionInterface;
-use League\CommonMark\Node\Node;
-use League\CommonMark\Renderer\ChildNodeRendererInterface;
-use League\CommonMark\Renderer\NodeRendererInterface;
-use Phactorial\CommonMark\Node\MathBlock;
-use Phactorial\CommonMark\Node\MathInline;
-use Phactorial\MathRender;
-
-final class EmailMath implements ExtensionInterface, NodeRendererInterface
-{
-    public function register(EnvironmentBuilderInterface $environment): void
-    {
-        $environment
-            ->addRenderer(MathInline::class, $this, 10)
-            ->addRenderer(MathBlock::class, $this, 10)
-            ->addRenderer(FencedCode::class, $this, 100);
-    }
-
-    public function render(Node $node, ChildNodeRendererInterface $childRenderer): ?string
-    {
-        [$tex, $display] = match (true) {
-            $node instanceof MathInline => [$node->tex, $node->display],
-            $node instanceof MathBlock => [$node->tex, true],
-            $node instanceof FencedCode && ($node->getInfoWords()[0] ?? '') === 'math' => [trim($node->getLiteral()), true],
-            default => [null, false],
-        };
-
-        if ($tex === null) {
-            return null;
-        }
-
-        $math = MathRender::fromTex($tex);
-        $png = ($display ? $math->display() : $math->inline())->png(pad: 1);
-
-        $path = 'math/' . hash('sha256', $png->bytes) . '.png';
-        Storage::disk('public')->put($path, $png->bytes);
-        $img = $png->img(Storage::disk('public')->url($path));
-
-        return $node instanceof MathInline ? $img : '<p style="text-align: center">' . $img . '</p>';
-    }
-}
-```
+@[code php](../recipes/laravel/EmailMath.php)
 
 Then write math in any Markdown mail template:
 
@@ -141,14 +83,6 @@ A mail sent once to one reader can carry its images instead of linking them: ren
 
 A page of 50 formulas takes about 30 milliseconds to typeset the first time a PHP process draws it, without opcache, and under 10 milliseconds after that. For pages read far more often than they change, cache the HTML under a hash of the source:
 
-```php
-use Illuminate\Support\Facades\Cache;
-
-$html = Cache::remember(
-    'markdown:' . hash('xxh128', $post->body),
-    now()->addWeek(),
-    fn () => Str::markdown($post->body, [], [new MathExtension()]),
-);
-```
+@[code{3-} php](../recipes/laravel/cache.php)
 
 A changed post gets a new key, so nothing needs clearing, and the old entry expires within the week. Clear the cache after you change the `math` options or upgrade Phactorial. spatie/laravel-markdown caches this way already.
