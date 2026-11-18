@@ -32,7 +32,8 @@ final class SyntaxTest extends TestCase
     {
         yield 'inline' => ['area $\pi r^2$ here', ['<span class="math math-inline">' => 1, '<span class="math math-display">' => 0, '<div class="math' => 0, '<math' => 1]];
         yield 'backtick inline' => ['Euler $`e^{i\pi}+1=0`$', ['<span class="math math-inline">' => 1, '<math' => 1]];
-        yield 'display span in paragraph' => ['a $$\sum k$$ b', ['<span class="math math-display">' => 1, '<div' => 0, '<p>' => 1, '<math' => 1]];
+        yield 'double dollar in text is inline' => ['a $$\sum k$$ b', ['<span class="math math-inline">' => 1, '<span class="math math-display">' => 0, '<div' => 0, '<p>' => 1, '<math' => 1]];
+        yield 'display span in a display paragraph' => ["\$\$a\$\$ and \$\$b\$\$", ['<span class="math math-display">' => 2, '<div' => 0, '<p>' => 1, '<math' => 2]];
         yield 'display block' => ["$$\nx\n$$", ['<div class="math math-display">' => 1, '<p>' => 0, '<math' => 1]];
         yield 'one-line display block' => ['$$x = 1$$', ['<div class="math math-display">' => 1, '<p>' => 0, '<math' => 1]];
         yield 'math fence' => ["```math\nx^2\n```", ['<div class="math math-display">' => 1, '<pre>' => 0, '<math' => 1]];
@@ -45,7 +46,7 @@ final class SyntaxTest extends TestCase
         yield 'blockquote' => ["> \$\$\n> x\n> \$\$", ['<blockquote>' => 1, '<div class="math math-display">' => 1, '<math' => 1, '<p>' => 0]];
         yield 'list item' => ["- item\n\n  \$\$\n  x\n  \$\$", ['<li>' => 1, '<div class="math math-display">' => 1, '<math' => 1]];
         yield 'multibyte' => ['é $x$ ü', ['<p>é <span class="math math-inline">' => 1, '</span> ü</p>' => 1, '<math' => 1]];
-        yield 'strong and link' => ['**bold $v$** and [link $x^2$](https://example.com)', ['<strong>bold <span class="math math-inline">' => 1, '<a href="https://example.com">link <span class="math math-inline">' => 1, '<math' => 2]];
+        yield 'strong and link' => ['**bold $v$** and [link $x^2$](https://example.com)', ['<strong>bold <span class="math math-inline">' => 1, '<a href="https://example.com">link $x^2$</a>' => 1, '<math' => 1]];
     }
 
     /** @param array<string, int> $expected */
@@ -115,6 +116,26 @@ final class SyntaxTest extends TestCase
         $elapsed = microtime(true) - $start;
 
         self::assertLessThan(0.5, $elapsed, "20000 unclosed '$opener' openers took {$elapsed}s");
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function lateCloser(): iterable
+    {
+        yield 'inline double, closer on a later line' => [str_repeat('$$a ', 20000) . "\n\$\$."];
+        yield 'inline double, closers followed by letters' => [str_repeat('$$a ', 20000) . '$$b'];
+        yield 'display double, escaped last closer' => ['$$' . str_repeat('a $$b ', 20000) . '\\$$'];
+        yield 'single dollar and letters' => [str_repeat('$a$b ', 20000)];
+        yield 'code spans inside openers' => [str_repeat('$a `b` ', 20000)];
+    }
+
+    #[DataProvider('lateCloser')]
+    public function test_openers_with_a_distant_or_unusable_closer_parse_in_linear_time(string $markdown): void
+    {
+        $start = microtime(true);
+        $this->convert($markdown);
+        $elapsed = microtime(true) - $start;
+
+        self::assertLessThan(0.5, $elapsed, "took {$elapsed}s");
     }
 
     public function test_backtick_dollar_closer_on_a_later_line_of_the_paragraph_matches(): void

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Phactorial\CommonMark;
 
 use League\CommonMark\Environment\EnvironmentBuilderInterface;
+use League\CommonMark\Event\DocumentParsedEvent;
 use League\CommonMark\Extension\CommonMark\Node\Block\FencedCode;
 use League\CommonMark\Extension\ConfigurableExtensionInterface;
 use League\Config\ConfigurationBuilderInterface;
 use Nette\Schema\Expect;
 use Phactorial\CommonMark\Node\MathBlock;
 use Phactorial\CommonMark\Node\MathInline;
-use Phactorial\CommonMark\Parser\MathBlockStartParser;
 use Phactorial\CommonMark\Parser\MathInlineParser;
 use Phactorial\CommonMark\Renderer\MathHtml;
 use Phactorial\CommonMark\Renderer\MathNodeRenderer;
@@ -39,8 +39,8 @@ final class MathExtension implements ConfigurableExtensionInterface
         // The configuration is frozen only after registration, so the renderer reads it on its first render.
         $renderer = new MathNodeRenderer(new MathHtml($environment->getConfiguration()));
         $environment
-            ->addBlockStartParser(new MathBlockStartParser(), 75)
             ->addInlineParser(new MathInlineParser(), 50)
+            ->addEventListener(DocumentParsedEvent::class, new MathBlockListener())
             ->addRenderer(MathInline::class, $renderer)
             ->addRenderer(MathBlock::class, $renderer)
             ->addRenderer(FencedCode::class, $renderer, 10);
