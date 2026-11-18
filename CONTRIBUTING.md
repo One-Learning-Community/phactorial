@@ -116,7 +116,7 @@ every split.
 3. If the minor version changed, bump the `extra.branch-alias` of both packages, the `versions` pin in the
    extension's path repository, the extension's `phactorial/phactorial` requirement (`^X.Y`), and both `versions`
    pins in `site/recipes/composer.json`.
-4. Commit, then tag from `main`: `git tag -s vX.Y.Z -m "Phactorial X.Y.Z" && git push origin main vX.Y.Z`.
+4. Commit, then tag from `main`: `git tag -a vX.Y.Z -m "Phactorial X.Y.Z" && git push origin main vX.Y.Z`.
 5. Verify in a scratch project: `composer require phactorial/phactorial phactorial/commonmark`, then render one
    formula.
 
