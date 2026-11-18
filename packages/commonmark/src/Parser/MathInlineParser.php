@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phactorial\CommonMark\Parser;
 
+use League\CommonMark\Parser\Cursor;
 use League\CommonMark\Parser\Inline\InlineParserInterface;
 use League\CommonMark\Parser\Inline\InlineParserMatch;
 use League\CommonMark\Parser\InlineParserContext;
@@ -11,7 +12,11 @@ use Phactorial\CommonMark\Node\MathInline;
 
 /**
  * GitHub's inline forms: $`…`$, $$…$$ (display) and $…$. A single dollar opens only before a non-space and closes
- * only after a non-space that is not followed by a digit, so "costs $5 and $10" stays text. It never spans a backtick, which leaves code spans to the code parser.
+ * only after a non-space that is not followed by a digit, so "costs $5 and $10" stays text. It never spans a
+ * backtick, which leaves code spans to the code parser.
+ *
+ * An opener with no closer after it must not rescan the line, or a paragraph of unclosed openers parses in quadratic
+ * time. The last closer's position is found once per line and compared with each opener's position.
  */
 final class MathInlineParser implements InlineParserInterface
 {
@@ -20,6 +25,9 @@ final class MathInlineParser implements InlineParserInterface
         ['/^\$\$(.+?)\$\$/s', true],
         ['/^\$(?![\s$])((?:\\\\.|[^\\\\$`])+?)(?<!\s)\$(?!\d)/s', false],
     ];
+
+    /** @var \WeakMap<\League\CommonMark\Parser\Cursor, array{string, int}>|null */
+    private ?\WeakMap $lastBacktickCloser = null;
 
     public function getMatchDefinition(): InlineParserMatch
     {
@@ -30,7 +38,11 @@ final class MathInlineParser implements InlineParserInterface
     {
         $cursor = $inlineContext->getCursor();
         $rest = $cursor->getRemainder();
-        foreach (self::FORMS as [$pattern, $display]) {
+        $backtickForm = $cursor->getBytePosition() + 2 <= $this->lastBacktickCloser($cursor);
+        foreach (self::FORMS as $i => [$pattern, $display]) {
+            if ($i === 0 && ! $backtickForm) {
+                continue;
+            }
             if (preg_match($pattern, $rest, $m) === 1) {
                 $cursor->advanceBy(mb_strlen($m[0], 'UTF-8'));
                 $inlineContext->getContainer()->appendChild(new MathInline($m[1], $display));
@@ -40,5 +52,20 @@ final class MathInlineParser implements InlineParserInterface
         }
 
         return false;
+    }
+
+    /** The byte offset of the last "`$" on the cursor's line, or -1; cached while the line is unchanged. */
+    private function lastBacktickCloser(Cursor $cursor): int
+    {
+        $this->lastBacktickCloser ??= new \WeakMap();
+        $line = $cursor->getLine();
+        $cached = $this->lastBacktickCloser[$cursor] ?? null;
+        if ($cached === null || $cached[0] !== $line) {
+            $position = strrpos($line, '`$');
+            $cached = [$line, $position === false ? -1 : $position];
+            $this->lastBacktickCloser[$cursor] = $cached;
+        }
+
+        return $cached[1];
     }
 }

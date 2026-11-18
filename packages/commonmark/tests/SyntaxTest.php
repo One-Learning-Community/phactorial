@@ -96,4 +96,24 @@ final class SyntaxTest extends TestCase
         self::assertStringContainsString('role="img"', $html);
         self::assertStringNotContainsString('<math', $html);
     }
+
+    /** @return iterable<string, array{string}> */
+    public static function unclosedOpeners(): iterable
+    {
+        yield 'backtick dollar' => ['$`a '];
+        yield 'single dollar' => ['$a '];
+        yield 'double dollar' => ['$$a '];
+    }
+
+    #[DataProvider('unclosedOpeners')]
+    public function test_unclosed_backtick_dollar_openers_parse_in_linear_time(string $opener): void
+    {
+        $markdown = str_repeat($opener, 20000);
+
+        $start = microtime(true);
+        $this->convert($markdown);
+        $elapsed = microtime(true) - $start;
+
+        self::assertLessThan(0.5, $elapsed, "20000 unclosed '$opener' openers took {$elapsed}s");
+    }
 }
