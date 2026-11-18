@@ -49,10 +49,13 @@ final class SecurityTest extends TestCase
 
     public function test_html_around_math_is_escaped(): void
     {
-        $html = $this->convert('<img src="$x$">');
+        $html = $this->convert('<b>$x$</b> <img src="$x$">');
 
+        self::assertStringContainsString('&lt;b&gt;', $html);
         self::assertStringContainsString('&lt;img', $html);
+        self::assertStringNotContainsString('<b>', $html);
         self::assertStringNotContainsString('<img', $html);
+        self::assertStringContainsString('<svg', $html);
     }
 
     /** @param array<string, mixed> $math */
@@ -80,20 +83,15 @@ final class SecurityTest extends TestCase
         $html = $this->convert('$' . str_repeat('x+', 4999) . 'x$');
 
         self::assertLessThan(5.0, microtime(true) - $started);
-        self::assertStringContainsString('math', $html);
+        self::assertStringContainsString('<svg', $html);
+        self::assertStringNotContainsString('math-error', $html);
     }
 
     public function test_a_thousand_formulas_finish_quickly(): void
     {
         $markdown = implode("\n\n", array_map(static fn (int $i): string => "Formula \$x_{$i}^2 + y\$ and \$\\nosuchcommand\$.", range(1, 1000)));
-        $limit = (string) ini_get('memory_limit');
-        ini_set('memory_limit', '1G');
         $started = microtime(true);
-        try {
-            $html = $this->convert($markdown);
-        } finally {
-            ini_set('memory_limit', $limit);
-        }
+        $html = $this->convert($markdown);
         $elapsed = microtime(true) - $started;
 
         self::assertLessThan(5.0, $elapsed);

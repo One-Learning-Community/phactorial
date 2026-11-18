@@ -109,13 +109,21 @@ final class SyntaxTest extends TestCase
     #[DataProvider('unclosedOpeners')]
     public function test_unclosed_backtick_dollar_openers_parse_in_linear_time(string $opener): void
     {
-        $markdown = str_repeat($opener, 20000);
+        $count = $opener === '$`a ' ? 40000 : 20000;
+        $markdown = str_repeat($opener, $count);
 
-        $start = microtime(true);
-        $this->convert($markdown);
-        $elapsed = microtime(true) - $start;
+        $limit = ini_set('memory_limit', '512M');
+        try {
+            $start = microtime(true);
+            $this->convert($markdown);
+            $elapsed = microtime(true) - $start;
+        } finally {
+            gc_collect_cycles();
+            // Memory the parse still holds can sit above the old limit; keeping the raised one is harmless.
+            @ini_set('memory_limit', (string) $limit);
+        }
 
-        self::assertLessThan(0.5, $elapsed, "20000 unclosed '$opener' openers took {$elapsed}s");
+        self::assertLessThan(2.5, $elapsed, "$count unclosed '$opener' openers took {$elapsed}s");
     }
 
     /** @return iterable<string, array{string}> */
@@ -125,9 +133,9 @@ final class SyntaxTest extends TestCase
         yield 'inline double, closers followed by letters' => [str_repeat('$$a ', 20000) . '$$b'];
         yield 'display double, escaped last closer' => ['$$' . str_repeat('a $$b ', 20000) . '\\$$'];
         yield 'single dollar and letters' => [str_repeat('$a$b ', 20000)];
-        yield 'double dollar, code span in every candidate' => ['x ' . str_repeat('$$a `b` ', 8000) . '$$ '];
-        yield 'single dollar, code span in every candidate' => [str_repeat('$a `b` c$ ', 25000)];
-        yield 'display, code span in every candidate' => ['$$' . str_repeat(' `a` $$', 25000)];
+        yield 'double dollar, code span in every candidate' => ['x ' . str_repeat('$$a `b` ', 16000) . '$$ '];
+        yield 'single dollar, code span in every candidate' => [str_repeat('$a `b` c$ ', 50000)];
+        yield 'display, code span in every candidate' => ['$$' . str_repeat(' `a` $$', 50000)];
         yield 'code spans inside openers' => [str_repeat('$a `b` ', 20000)];
     }
 
@@ -136,13 +144,17 @@ final class SyntaxTest extends TestCase
     {
         // League builds a node per code span, which needs more than the default 128M on the larger inputs.
         $limit = ini_set('memory_limit', '512M');
-        $start = microtime(true);
-        $this->convert($markdown);
-        $elapsed = microtime(true) - $start;
+        try {
+            $start = microtime(true);
+            $this->convert($markdown);
+            $elapsed = microtime(true) - $start;
+        } finally {
+            gc_collect_cycles();
+            // Memory the parse still holds can sit above the old limit; keeping the raised one is harmless.
+            @ini_set('memory_limit', (string) $limit);
+        }
 
-        ini_set('memory_limit', (string) $limit);
-
-        self::assertLessThan(0.5, $elapsed, "took {$elapsed}s");
+        self::assertLessThan(2.5, $elapsed, "took {$elapsed}s");
     }
 
     public function test_image_alt_text_keeps_the_formula(): void

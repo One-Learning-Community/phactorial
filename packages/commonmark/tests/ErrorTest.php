@@ -38,6 +38,14 @@ final class ErrorTest extends TestCase
         self::assertStringNotContainsString('math-error', $html);
     }
 
+    public function test_a_formula_the_reader_only_approximated_still_draws(): void
+    {
+        $html = $this->convert('$\color{red}{x}$');
+
+        self::assertStringContainsString('<svg', $html);
+        self::assertStringNotContainsString('math-error', $html);
+    }
+
     public function test_valid_formula_is_not_an_error(): void
     {
         $html = $this->convert('$x^2$');
