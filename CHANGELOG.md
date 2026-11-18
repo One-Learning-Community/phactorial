@@ -19,4 +19,4 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 - The deprecated `TrueTypeFont` alias.
 
-Releases through 0.17.0 were published as quoin/math; their notes are in [Quoin's changelog](https://gh.ali360.cloudns.ch/One-Learning-Community/quoin/blob/main/CHANGELOG.md).
+Releases through 0.17.0 were published as quoin/math; their notes are in [Quoin's changelog](https://github.com/One-Learning-Community/quoin/blob/main/CHANGELOG.md).
