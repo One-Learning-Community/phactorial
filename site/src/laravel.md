@@ -139,7 +139,7 @@ A mail sent once to one reader can carry its images instead of linking them: ren
 
 ## Caching
 
-A page of 50 formulas takes about 20 milliseconds to typeset the first time a PHP process draws it, and a few milliseconds after that. For pages read far more often than they change, cache the HTML under a hash of the source:
+A page of 50 formulas takes about 30 milliseconds to typeset the first time a PHP process draws it, without opcache, and under 10 milliseconds after that. For pages read far more often than they change, cache the HTML under a hash of the source:
 
 ```php
 use Illuminate\Support\Facades\Cache;
