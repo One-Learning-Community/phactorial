@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Phactorial\Tests\Render;
 
 use Phactorial\Math;
+use Phactorial\Node\Color;
+use Phactorial\Node\Identifier;
 use Phactorial\Node\Node;
 use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
 use Phactorial\Node\UnderOver;
 use Phactorial\Render\TextWriter;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -101,5 +104,17 @@ final class TextWriterTest extends TestCase
         self::assertSame('y _(a + b)x', TextWriter::write(Math::tex('y{}_{a+b}x')));
         // The compact form reads as itself and needs no separator.
         self::assertSame('y¹⁴C', TextWriter::write(Math::tex('y{}^{14}C')));
+    }
+
+    public function test_inline_color_before_an_infix_operator(): void
+    {
+        $red = new Color(new Row([new Identifier('a'), new Identifier('b')]), '#ff0000', true);
+        self::assertSame('ab - c', TextWriter::write(new Row([$red, new Operator('-'), new Identifier('c')])));
+    }
+
+    public function test_inline_color_containing_an_infix_operator(): void
+    {
+        $red = new Color(new Row([new Operator('+'), new Identifier('b')]), '#ff0000', true);
+        self::assertSame('a + b', TextWriter::write(new Row([new Identifier('a'), $red])));
     }
 }

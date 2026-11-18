@@ -196,13 +196,14 @@ final class MathmlWriter
 
     private static function row(Row $r): string
     {
-        $count = count($r->children);
+        $nodes = $r->nodes();
+        $count = count($nodes);
         if ($count === 1) {
-            return self::node($r->children[0]);
+            return self::node($nodes[0]);
         }
         $forms = $r->forms();
         $out = '';
-        foreach ($r->children as $i => $child) {
+        foreach ($nodes as $i => $child) {
             $resolved = $forms[$i];
             // What a browser infers from the position in the mrow: first prefix, last postfix, else infix.
             $inferred = $i === 0 ? OperatorDictionary::FORM_PREFIX : ($i === $count - 1 ? OperatorDictionary::FORM_POSTFIX : OperatorDictionary::FORM_INFIX);

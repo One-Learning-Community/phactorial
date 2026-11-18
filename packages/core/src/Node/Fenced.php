@@ -58,9 +58,10 @@ final class Fenced extends Node
         if ($row !== null) {
             /** @var array<int, Box> $reuse */
             $reuse = $boxes ?? [];
-            foreach ($row->children as $i => $child) {
+            foreach ($row->items() as $i => [$child, $inline]) {
                 if (Fallback::unwrap($child) instanceof Middle) {
-                    $reuse[$i] = self::stretchMiddle($child, $req)->layout($rc);
+                    $b = self::stretchMiddle($child, $req)->layout($rc);
+                    $reuse[$i] = $inline !== null ? Color::box($b, $inline) : $b;
                 }
             }
             $boxes = [];
@@ -86,14 +87,14 @@ final class Fenced extends Node
         return $out;
     }
 
-    /** The Row the content is (through notes and display switches) when a Middle is among its children, else null. */
+    /** The Row the content is (through notes and display switches) when a Middle is among its items (see Row::items()), else null. */
     private static function middleRow(Node $content): ?Row
     {
         $content = Fallback::unwrap($content);
         if (! $content instanceof Row) {
             return null;
         }
-        foreach ($content->children as $n) {
+        foreach ($content->nodes() as $n) {
             if (Fallback::unwrap($n) instanceof Middle) {
                 return $content;
             }

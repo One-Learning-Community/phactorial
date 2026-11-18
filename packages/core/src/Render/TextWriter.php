@@ -104,7 +104,7 @@ final class TextWriter
         $forms = $r->forms();
         $out = '';
         $prev = null;
-        foreach ($r->children as $i => $child) {
+        foreach ($r->nodes() as $i => $child) {
             $op = Fallback::unwrap($child);
             if ($prev !== null && self::isArrowStack(Fallback::unwrap($prev)) && $op instanceof Space && $op->em >= 0.15) {
                 // The arrow has set off its right side already.

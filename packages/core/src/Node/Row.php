@@ -30,14 +30,96 @@ final class Row extends Node
         return $this->children;
     }
 
+    /** @var ?list<array{Node, ?string}> */
+    private ?array $items = null;
+
+    private ?bool $splices = null;
+
+    /** Whether any child is an inline color to splice; when none is, layout reads $children directly. */
+    private function splices(): bool
+    {
+        if ($this->splices === null) {
+            $this->splices = false;
+            foreach ($this->children as $child) {
+                if (self::inlineRow($child) !== null) {
+                    $this->splices = true;
+
+                    break;
+                }
+            }
+        }
+
+        return $this->splices;
+    }
+
     /**
-     * @return list<?string> operator form of each child (prefix, infix, postfix) or null for non-operators
+     * The children as laid out, each paired with the innermost inline color around it. An inline Color child (the TeX
+     * switch form, seen through TexSource and contentful Fallback) whose content is a Row is replaced by that row's own
+     * items, so its operators space against the neighbors as if the color were absent. children() is unchanged.
+     *
+     * @return list<array{Node, ?string}>
+     *
+     * @internal Engine detail, not public API.
+     */
+    public function items(): array
+    {
+        if ($this->items !== null) {
+            return $this->items;
+        }
+        $out = [];
+        foreach ($this->children as $child) {
+            $inner = self::inlineRow($child);
+            if ($inner === null) {
+                $out[] = [$child, null];
+
+                continue;
+            }
+            [$row, $color] = $inner;
+            foreach ($row->items() as [$node, $own]) {
+                $out[] = [$node, $own ?? $color];
+            }
+        }
+
+        return $this->items = $out;
+    }
+
+    /** @return ?array{Row, string} the Row inside an inline Color child and that color, or null when the child is no such thing */
+    private static function inlineRow(Node $n): ?array
+    {
+        while (($n instanceof TexSource) || ($n instanceof Fallback && $n->content !== null)) {
+            $n = $n->content;
+        }
+        if (! $n instanceof Color || ! $n->inline) {
+            return null;
+        }
+        $content = $n->content;
+        while (($content instanceof TexSource) || ($content instanceof Fallback && $content->content !== null)) {
+            $content = $content->content;
+        }
+
+        return $content instanceof self ? [$content, $n->color] : null;
+    }
+
+    /**
+     * The nodes of items() without their colors: $children itself when nothing splices. Writers index this, and forms().
+     *
+     * @return list<Node>
+     *
+     * @internal Engine detail, not public API.
+     */
+    public function nodes(): array
+    {
+        return $this->splices() ? array_column($this->items(), 0) : $this->children;
+    }
+
+    /**
+     * @return list<?string> operator form of each item (see items()): prefix, infix, postfix, or null for non-operators
      *
      * @internal Engine detail, not public API.
      */
     public function forms(): array
     {
-        return Forms::of($this->children);
+        return Forms::of($this->nodes());
     }
 
     /** An operator with the thick space of a relation before it (TeX: Op-Rel is thick only, no thin on top). */
@@ -68,7 +150,7 @@ final class Row extends Node
     }
 
     /**
-     * The row laid out, with the box of every child in `$boxes` and, for a child index in `$reuse`, that box in place of
+     * The row laid out, with the box of every item (see items()) in `$boxes` and, for an item index in `$reuse`, that box in place of
      * laying the child out again (a fence re-places its Middles at their stretched size without redoing the rest).
      *
      * @param array<int, Box> $reuse
@@ -83,7 +165,14 @@ final class Row extends Node
         $prev = null;
         $last = null;
         $forms = $this->forms();
-        foreach ($this->children as $i => $child) {
+        $items = $this->splices() ? $this->items() : null;
+        for ($i = 0, $n = $items === null ? count($this->children) : count($items); $i < $n; $i++) {
+            if ($items === null) {
+                $child = $this->children[$i];
+                $inline = null;
+            } else {
+                [$child, $inline] = $items[$i];
+            }
             // A fraction next to an operand (mixed number "3 1/2", "2 x/y") gets a thin space so it does not read as one blob.
             $seen = Fallback::unwrap($child);
             // A Middle spaces itself like an operator.
@@ -113,6 +202,9 @@ final class Row extends Node
             if (! isset($reuse[$i]) && $seen instanceof Operator && ($color = Fallback::color($child)) !== null) {
                 $b = Color::box($b, $color);
             }
+            if (! isset($reuse[$i]) && $inline !== null) {
+                $b = Color::box($b, $inline);
+            }
             if ($boxes !== null) {
                 $boxes[$i] = $b;
             }
@@ -133,7 +225,7 @@ final class Row extends Node
             $out->lastGid = $last->lastGid;
             $out->lastAscent = $last->lastAscent ?? $last->ascent;
             $out->lastDescent = $last->lastDescent ?? $last->descent;
-            $out->simple = count($this->children) === 1 && $last->simple;
+            $out->simple = ($items === null ? count($this->children) : count($items)) === 1 && $last->simple;
         }
 
         return $out;

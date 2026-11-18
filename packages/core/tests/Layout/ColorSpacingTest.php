@@ -16,6 +16,7 @@ use Phactorial\Node\Node;
 use Phactorial\Node\Number;
 use Phactorial\Node\Operator;
 use Phactorial\Node\Row;
+use Phactorial\Node\TexSource;
 use Phactorial\Node\UnderOver;
 use PHPUnit\Framework\TestCase;
 
@@ -223,5 +224,99 @@ final class ColorSpacingTest extends TestCase
             }
         });
         self::assertSame([$blue], array_keys($colors));
+    }
+
+    /** @return list<string> glyph colors in drawing order, "-" for none */
+    private static function colorsOf(Box $b): array
+    {
+        return array_map(static fn (array $g): string => $g['color'] ?? '-', self::glyphs($b));
+    }
+
+    private static function a(): Identifier
+    {
+        return new Identifier('a');
+    }
+
+    private static function b(): Identifier
+    {
+        return new Identifier('b');
+    }
+
+    public function test_switch_form_keeps_binary_spacing(): void
+    {
+        $plain = Math::layout(new Row([self::a(), self::plus(), self::b()]), 12.0, true);
+        $switch = new TexSource(new Color(new Row([self::plus(), self::b()]), self::RED, true), '{\color{red} ', '}');
+        $colored = Math::layout(new Row([self::a(), $switch]), 12.0, true);
+
+        self::assertEqualsWithDelta($plain->width, $colored->width, 1e-9);
+        self::assertSame(['-', self::RED, self::RED], self::colorsOf($colored));
+    }
+
+    public function test_switch_middle_stretches(): void
+    {
+        $fence = static fn (Node $content): Box => Math::layout(new Fenced('(', ')', $content), 12.0, true);
+        $plain = $fence(new Row([Math::frac('a', 'b'), new Middle('|'), self::b()]));
+        $colored = $fence(new Row([Math::frac('a', 'b'), new Color(new Row([new Middle('|'), self::b()]), self::RED, true)]));
+
+        self::assertEqualsWithDelta($plain->width, $colored->width, 1e-9);
+        self::assertEqualsWithDelta($plain->ascent, $colored->ascent, 1e-9);
+        $p = self::glyphs($plain);
+        $c = self::glyphs($colored);
+        self::assertCount(count($p), $c);
+        foreach ($p as $i => $g) {
+            self::assertSame($g['gid'], $c[$i]['gid']);
+            self::assertEqualsWithDelta($g['y'], $c[$i]['y'], 1e-9);
+        }
+        $red = array_filter($c, static fn (array $g): bool => $g['color'] === self::RED);
+        self::assertGreaterThan(1, count($red)); // the stretched middle's pieces and b
+    }
+
+    public function test_non_inline_row_stays_one_atom(): void
+    {
+        $atom = Math::layout(new Row([self::a(), new Row([self::plus(), self::b()])]), 12.0, true);
+        $colored = Math::layout(new Row([self::a(), new Color(new Row([self::plus(), self::b()]), self::RED)]), 12.0, true);
+        $spliced = Math::layout(new Row([self::a(), self::plus(), self::b()]), 12.0, true);
+
+        self::assertEqualsWithDelta($atom->width, $colored->width, 1e-9);
+        self::assertNotEquals($spliced->width, $colored->width);
+    }
+
+    public function test_nested_inline(): void
+    {
+        $blue = '#0000ff';
+        $inner = new Color(new Row([self::b()]), $blue, true);
+        $outer = new Color(new Row([self::plus(), $inner]), self::RED, true);
+        $box = Math::layout(new Row([self::a(), $outer]), 12.0, true);
+        $plain = Math::layout(new Row([self::a(), self::plus(), self::b()]), 12.0, true);
+
+        self::assertEqualsWithDelta($plain->width, $box->width, 1e-9);
+        self::assertSame(['-', self::RED, $blue], self::colorsOf($box));
+    }
+
+    public function test_children_are_not_spliced(): void
+    {
+        $color = new Color(new Row([self::plus(), self::b()]), self::RED, true);
+        $row = new Row([self::a(), $color]);
+
+        self::assertSame([self::a()::class, Color::class], array_map(static fn (Node $n): string => $n::class, $row->children()));
+        self::assertCount(3, $row->items());
+    }
+
+    public function test_operator_color_and_inline_color_on_one_item(): void
+    {
+        $blue = '#0000ff';
+        $inline = new Color(new Row([new Color(self::plus(), $blue), self::b()]), self::RED, true);
+        $box = Math::layout(new Row([self::a(), $inline]), 12.0, true);
+
+        self::assertSame(['-', $blue, self::RED], self::colorsOf($box));
+    }
+
+    public function test_empty_inline_color_adds_nothing(): void
+    {
+        $plain = Math::layout(new Row([self::a()]), 12.0, true);
+        $empty = Math::layout(new Row([self::a(), new Color(new Row([]), self::RED, true)]), 12.0, true);
+
+        self::assertEqualsWithDelta($plain->width, $empty->width, 1e-9);
+        self::assertSame($plain->simple, $empty->simple);
     }
 }
