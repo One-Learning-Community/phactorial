@@ -38,9 +38,7 @@ final class MathBlockListener
         foreach ($paragraphs as $paragraph) {
             $only = $paragraph->firstChild();
             if ($only instanceof MathInline && $only->display && $only === $paragraph->lastChild()) {
-                $block = new MathBlock();
-                $block->tex = trim($only->tex);
-                $block->source = $only->source;
+                $block = new MathBlock(trim($only->tex), $only->source);
                 $paragraph->replaceWith($block);
             }
         }

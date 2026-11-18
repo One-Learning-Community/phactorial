@@ -16,6 +16,7 @@ use Phactorial\NoteLevel;
  * so laying out a formula costs time linear in its size however deeply it nests. Because the parent holds the child (not a copy),
  * a box must not be changed after it has been placed (no add() or place() on a placed child); every node builds a box fully before
  * placing it. Read the list through each() (no flat copy) or $items (flattened on every read).
+ * Users must treat a box's dimensions as read-only; only the engine writes them.
  */
 final class Box
 {
@@ -35,9 +36,6 @@ final class Box
             });
 
             return $out;
-        }
-        set(array $v) {
-            $this->entries = $v;
         }
     }
 

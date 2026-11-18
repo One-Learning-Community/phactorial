@@ -17,8 +17,8 @@ final class Font
     /** @var array<string, array{int, int}> tag => [offset, length] */
     private array $tables = [];
 
-    public int $unitsPerEm;
-    public int $numGlyphs;
+    public readonly int $unitsPerEm;
+    public readonly int $numGlyphs;
     private int $locaFormat;
     private int $numHMetrics;
 

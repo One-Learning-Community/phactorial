@@ -3,15 +3,15 @@ Phactorial\Exception\MissingExtension::$extension | readonly protected(set) stri
 Phactorial\Exception\UnsupportedFont | final class extends InvalidArgumentException implements Stringable, Throwable
 Phactorial\Exception\UnsupportedFont::$path | readonly protected(set) string
 Phactorial\Font\Font | final class
-Phactorial\Font\Font::$numGlyphs | int
-Phactorial\Font\Font::$unitsPerEm | int
+Phactorial\Font\Font::$numGlyphs | readonly protected(set) int
+Phactorial\Font\Font::$unitsPerEm | readonly protected(set) int
 Phactorial\Font\Font::fromFile() | static (string $path): self
 Phactorial\Font\Font::gid() | (int $codePoint): int
 Phactorial\Font\Font::outlinePath() | (int $gid): string
 Phactorial\Layout\Box | final class
 Phactorial\Layout\Box::$ascent | float
 Phactorial\Layout\Box::$descent | float
-Phactorial\Layout\Box::$items | hooks{get,set} array ; @var list<DisplayItem>
+Phactorial\Layout\Box::$items | hooks{get} array ; @var list<DisplayItem>
 Phactorial\Layout\Box::$width | float
 Phactorial\Layout\Box::each() | (callable $visit): void ; @param $visit callable(DisplayItem, float, float): void
 Phactorial\Layout\Box::height() | (): float
