@@ -78,9 +78,25 @@ Write TeX in single-quoted strings or a nowdoc (`<<<'TEX'`). In double quotes PH
 
 The input is math mode. A `$…$`, `$$…$$`, `\(…\)` or `\[…\]` wrapper is optional. The reader covers what [KaTeX supports](https://katex.org/docs/supported.html) for math: fractions, roots, scripts and primes, `\left`, `\right` and `\middle`, `\big` sizes, accents, braces, extensible arrows, large operators with limits, font and style commands, `\text`, spacing, and the environments `matrix` and its variants, `array`, `cases`, `aligned`, `align`, `gathered` and `gather`. Macros work: `\newcommand`, `\renewcommand`, `\providecommand`, `\def` and `\DeclareMathOperator`, each scoped to its group.
 
-These are read but not drawn, and each one is reported: color (`\color`, `\textcolor`), boxes (`\boxed`, `\fbox`, `\cancel`), `\hline` and column rules, `\tag`, commutative diagrams, `\newenvironment`, `\tensor` and `\mathchoice`. `\scriptstyle` and `\scriptscriptstyle` are drawn in text style, and `smallmatrix` at normal size. An unknown command is drawn as its own name, as KaTeX shows it.
+These are read but not drawn, and each one is reported: boxes (`\boxed`, `\fbox`, `\cancel`), `\hline` and column rules, `\tag`, commutative diagrams, `\newenvironment`, `\tensor` and `\mathchoice`. `\scriptstyle` and `\scriptscriptstyle` are drawn in text style, and `smallmatrix` at normal size. An unknown command is drawn as its own name, as KaTeX shows it; `\colorbox` and `\fcolorbox` are not read, so they come out that way.
 
-The TeX writer keeps what the reader does not draw. `\boxed`, `\fbox`, `\color`, `\textcolor`, `\cancel`, `\bcancel`, `\xcancel` and `\sout` are written back with their content normalized, and `\tag` is written back at the top level of a formula. TeX in, TeX out loses none of them, though the other writers still draw only the content.
+The TeX writer keeps what the reader does not draw. `\boxed`, `\fbox`, `\cancel`, `\bcancel`, `\xcancel` and `\sout` are written back with their content normalized, and `\tag` is written back at the top level of a formula. TeX in, TeX out loses none of them, though the other writers still draw only the content. Color is drawn and written back, as described next.
+
+### Color
+
+`\color{c}` switches color from that point to the end of the enclosing group, as in LaTeX. The switch keeps the spacing around operators, so `a \color{red} + b` is spaced like `a + b`, and it holds past `\middle` inside `\left…\right`. `\textcolor{c}{x}` colors its argument. The innermost color wins.
+
+The TeX reader accepts these values:
+
+- The 19 base names of xcolor, with xcolor's values: black, blue, brown, cyan, darkgray, gray, green, lightgray, lime, magenta, olive, orange, pink, purple, red, teal, violet, white and yellow. `purple` is `#bf0040`, not the CSS purple.
+- `#rgb` and `#rrggbb`.
+- The models `[HTML]{2350FF}`, `[rgb]{0.14,0.31,1}`, `[RGB]{35,80,255}` and `[gray]{0.5}`, with spaces allowed after commas.
+
+Any other value, an xcolor mix such as `red!50` included, is drawn in the default color, with a note: ``unknown color `red!50`; drawn in the default color``. Characters in the note other than letters, digits, `#.,!:-` and space show as `?`. TeX written from such a formula keeps the rejected value as it was, so `red!50` round-trips; a value with markup, or with characters TeX cannot read, is written back as an empty group, `\color{}`.
+
+SVG groups each run of same-colored items in one `<g fill>`. Ink without a color keeps the renderer's color; an explicit color is fixed. [Output](./output.md#svg) says how that plays with a dark theme.
+
+`\colorbox` and `\fcolorbox` are not read, and `\boxed` is read but not drawn.
 
 Scripts before a base are read from `{}^{a}_{b}X`, `\prescript{a}{b}{X}` and `\sideset`, and drawn right-aligned against the base. `\sideset` draws the scripts in its first two arguments; anything else in them is dropped and noted.
 
@@ -161,7 +177,9 @@ Entity declarations in a DOCTYPE are ignored.
 
 A formula is a tree of `Phactorial\Node` objects, and `Math::tex()` and `Math::mathml()` return its root. To visit every node, call `children()`, which lists a node's children in reading order. See [Stability](./stability.md#the-node-tree).
 
-`<mmultiscripts>` is read as prescripts and scripts, one pair on each side; more pairs are noted. What is not drawn as written: `<menclose>` is drawn as its content, `<maction>` as its first choice, and table lines, spacing and spans are ignored. Images and other media inside a formula are dropped, and so is content that an HTML tag pushed out of a `<math>` element in markup that isn't well-formed. `mathcolor`, `mathsize` and `mathbackground` are ignored.
+`<mmultiscripts>` is read as prescripts and scripts, one pair on each side; more pairs are noted. What is not drawn as written: `<menclose>` is drawn as its content, `<maction>` as its first choice, and table lines, spacing and spans are ignored. Images and other media inside a formula are dropped, and so is content that an HTML tag pushed out of a `<math>` element in markup that isn't well-formed. `mathsize` and `mathbackground` are ignored.
+
+`mathcolor` is read on any element, `<mstyle>` included, and the innermost one wins. It takes `#rgb`, `#rrggbb` and the 16 HTML 4 color names with their CSS values, in any case. A value outside those is drawn in the default color, with the same note as in TeX. A delimiter colored on its own `<mo>` that pairs into a stretched fence loses its color, and the reader notes it: `color on a paired delimiter is not drawn`.
 
 | Limit | Value | Past it |
 |---|---|---|

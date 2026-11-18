@@ -72,6 +72,8 @@ echo $svg->render($box, pad: 2.0);
 
 The SVG is `width + 2 × pad` wide and `ascent + descent + 2 × pad` high. `SvgRenderer::baselineOffset($box, $pad)` is the distance from its top edge to the baseline. Each glyph is one `<path>` whose outline is stored in font units and placed with a `transform="matrix(…)"`; fraction bars and radical rules are `<rect>`s. Pass the same font you laid out with.
 
+Each run of same-colored items sits in one `<g fill="#rrggbb">`. Uncolored ink keeps the renderer's `color`. `MathRender::svg()` uses `currentColor` by default, so uncolored ink follows the page theme, while an explicit color is fixed and does not follow a dark theme.
+
 ## PNG
 
 ```php
@@ -119,7 +121,9 @@ OmmlWriter::oMathPara($formula);                                           // a 
 OmmlWriter::oMath($formula, new RunFormat(colorHex: 'C00000', sizeHalfPoints: 24));
 ```
 
-Letters are written plain and Word italicizes them; `Math::text()` becomes ordinary text. Word always uses Cambria Math. It does not stretch `=` over labels, so `\xlongequal` keeps its normal width. See [In Word](./recipes.md#in-word) for where the XML goes.
+Letters are written plain and Word italicizes them; `Math::text()` becomes ordinary text. Word always uses Cambria Math. It does not stretch `=` over labels, so `\xlongequal` keeps its normal width.
+
+Each colored run gets `w:color`. Fraction bars, radicals, delimiters, n-ary signs, accents, bars and group characters take their color through `m:ctrlPr`, and so does the `RunFormat` color. Two gaps: a `\middle` whose color differs from its fence's is written as a colored run instead of `m:sepChr`, and a color around only an n-ary sign colors the sign, not its limits or body. See [In Word](./recipes.md#in-word) for where the XML goes.
 
 ## Plain text
 

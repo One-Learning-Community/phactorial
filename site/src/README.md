@@ -47,7 +47,7 @@ Phactorial is the PHP-only alternative. It reads the TeX KaTeX reads (gaps liste
 
 phpoffice/math converts between MathML and Word's format but does not typeset. Phactorial also reads TeX and draws the formula.
 
-Not yet supported: line breaks inside long formulas, color and boxes within a formula, and equation numbers.
+Not yet supported: line breaks inside long formulas, boxes and backgrounds within a formula, and equation numbers.
 
 ## Speed and safety
 

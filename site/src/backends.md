@@ -23,6 +23,8 @@ There are two kinds of item.
 - **`Rule`**: a filled rectangle, such as a fraction bar or the top of a radical. `x` and `y` are its top-left corner, `w` and `h` its size.
 - **`Glyph`**: one glyph of the math font. `gid` is the glyph id, `(x, y)` its origin on the baseline, `size` the font size. `sx` and `sy` stretch the outline about the origin; they are 1.0 except on a stretched delimiter or arrow, where one straight piece is scaled to cover a long run. Ignore them and a tall bracket comes out short.
 
+Both kinds carry `color`, a `?string`: null for the renderer's own color, or a lowercase `#rrggbb` inside a colored part of the formula. `withColor($color)` on either kind returns a copy with it set. A backend that ignores `color` draws everything in one color, as it did before color existed.
+
 `$box->items` gives the same items as a flat list with absolute positions. It is read-only and built on every read, so read it once, or prefer `each()`.
 
 The set of item kinds is closed. Through all of 1.x, `each()` and `$items` yield only `Glyph` and `Rule`, so a backend that draws those two never meets an item it cannot draw. A future kind would arrive behind an optional parameter of `Math::layout()` that a caller must pass to receive it. `DisplayItem` is sealed: do not implement it. `translated($dx, $dy)` on either kind returns a copy moved by that offset.

@@ -5,6 +5,31 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Color in formulas. `\color`, `\textcolor` and MathML `mathcolor` are drawn by SVG and PNG, written by the MathML and TeX writers, and carried into Word equations as `w:color`. The tree gains `Node\Color`.
+- `Glyph::$color` and `Rule::$color`, each a `?string` that is null or a lowercase `#rrggbb`, and `withColor()` on both. A backend that ignores them draws one color, as before.
+
+### Changed
+
+- Word output with a `RunFormat` color now carries `m:ctrlPr`, so fraction bars, radicals and brackets take that color as well as the runs.
+- The TeX writer keeps the spacing of a color switch.
+- Goldens, each changed on purpose:
+  - The TeX corpus entries `color` and `color-more` expect no notes, since color is drawn.
+  - `TexEnvironmentTest` now expects no notes for accepted values, and it and `TexFinalReviewTest` check the rejected-color note with `red!50`, because `red` is now accepted.
+  - `TexSourceTest` expects `\frac{\boxed{a}}{\color{red} b}`; the doubled braces around the switch are gone.
+  - `MathmlWriterTest` gains a row that shows an inline color switch written per item.
+  - `OmmlWriterTest::test_run_format` counts the `m:ctrlPr` of each object along with the runs.
+
+### Fixed
+
+- A `#rrggbb` value in `\color` lost the `#` and its first digit on a round trip.
+- A `\tag` after a color switch was dropped.
+- A color switch as a script or an argument gained braces on every round trip.
+- `\over` after a color switch split the group wrongly.
+- A color switch inside `\mathrm{…}` and other font or class arguments leaked out on a round trip.
+- `\left( \color{red} a \middle| b \right)` was written back as `\left( {\color{red} a} \middle| b \right)`, which narrowed the switch to the part before the `\middle`.
+
 ## [0.19.0] - 2026-11-18
 
 ### Fixed
