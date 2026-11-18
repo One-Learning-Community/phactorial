@@ -114,6 +114,7 @@ final class Fenced extends Node
             $n instanceof Fallback && $n->content !== null => new Fallback(self::stretchMiddles($n->content, $req), $n->note),
             $n instanceof DisplayStyle => new DisplayStyle(self::stretchMiddles($n->content, $req), $n->display),
             $n instanceof TexSource => new TexSource(self::stretchMiddles($n->content, $req), $n->tex, $n->close),
+            $n instanceof Color => new Color(self::stretchMiddles($n->content, $req), $n->color, $n->inline),
             default => $n,
         };
     }
@@ -125,6 +126,7 @@ final class Fenced extends Node
             $n instanceof Fallback && $n->content !== null => new Fallback(self::stretchMiddle($n->content, $req), $n->note),
             $n instanceof DisplayStyle => new DisplayStyle(self::stretchMiddle($n->content, $req), $n->display),
             $n instanceof TexSource => new TexSource(self::stretchMiddle($n->content, $req), $n->tex, $n->close),
+            $n instanceof Color => new Color(self::stretchMiddle($n->content, $req), $n->color, $n->inline),
             default => $n,
         };
     }

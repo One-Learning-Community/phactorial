@@ -8,6 +8,7 @@ use Phactorial\Font\Font;
 use Phactorial\Layout\Box;
 use Phactorial\Layout\Context;
 use Phactorial\Mathml\MathmlReader;
+use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
 use Phactorial\Node\Fallback;
 use Phactorial\Node\Fenced;
@@ -401,7 +402,7 @@ final class Math
         return new Grid($cells, $align, 'baseline', true, $gaps, true);
     }
 
-    /** $cell with its leading operator, if the cell starts with one (seen through Fallback and DisplayStyle), given the infix form. */
+    /** $cell with its leading operator, if the cell starts with one (seen through Fallback, DisplayStyle, TexSource and Color), given the infix form. */
     private static function infixLead(Node $cell): Node
     {
         if ($cell instanceof Fallback && $cell->content !== null) {
@@ -412,6 +413,9 @@ final class Math
         }
         if ($cell instanceof TexSource) {
             return new TexSource(self::infixLead($cell->content), $cell->tex, $cell->close);
+        }
+        if ($cell instanceof Color) {
+            return new Color(self::infixLead($cell->content), $cell->color, $cell->inline);
         }
         if ($cell instanceof Operator) {
             return new Operator(

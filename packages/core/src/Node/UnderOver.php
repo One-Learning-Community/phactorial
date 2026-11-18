@@ -253,6 +253,7 @@ final class UnderOver extends Node
             if ($drawnPair) {
                 $pairDrop = max(0.0, $baseBox->descent - self::stretched($c, '→', $target)[0]->descent);
             }
+            $baseBox = self::tinted($baseBox, $this->base);
         }
         if ($baseBox === null) {
             throw new \LogicException('UnderOver base was not laid out');
@@ -265,11 +266,13 @@ final class UnderOver extends Node
         }
         if ($overOp !== null && ($overKind === 'accent' || $overKind === 'stretch')) {
             [$overBox, $overAnchor] = self::stretched($c, $overChar ?? $overOp->char, $overOp->stretchy === false ? 0.0 : $widest);
+            $overBox = self::tinted($overBox, $this->over);
         } elseif ($overKind === 'accent' && $overBox !== null) {
             $overAnchor = $overBox->width / 2;
         }
         if ($underOp !== null && ($underKind === 'accent' || $underKind === 'stretch')) {
             [$underBox] = self::stretched($c, $underOp->char, $widest);
+            $underBox = self::tinted($underBox, $this->under);
         }
 
         $asc = $baseBox->ascent;
@@ -281,7 +284,7 @@ final class UnderOver extends Node
 
         if ($overKind === 'bar') {
             $y = $baseBox->ascent + $c->k('overbarVerticalGap') + $thick;
-            $rules[] = new Rule(0.0, -$y, $wb, $thick);
+            $rules[] = self::tintedRule(new Rule(0.0, -$y, $wb, $thick), $this->over);
             $asc = max($asc, $y + $c->k('overbarExtraAscender'));
         } elseif ($overBox !== null) {
             $up = match (true) {
@@ -302,7 +305,7 @@ final class UnderOver extends Node
         if ($underKind === 'bar') {
             $y = $baseBox->descent + $c->k('underbarVerticalGap');
             $t = $c->k('underbarRuleThickness');
-            $rules[] = new Rule(0.0, $y, $wb, $t);
+            $rules[] = self::tintedRule(new Rule(0.0, $y, $wb, $t), $this->under);
             $desc = max($desc, $y + $t + $c->k('underbarExtraDescender'));
         } elseif ($underBox !== null) {
             $down = match (true) {
@@ -326,6 +329,36 @@ final class UnderOver extends Node
         }
 
         return $out;
+    }
+
+    /** $box in the color of the Color wrappers around $part, which stack() skips when it draws an operator from its character. */
+    private static function tinted(Box $box, ?Node $part): Box
+    {
+        $color = self::partColor($part);
+
+        return $color === null ? $box : Color::box($box, $color);
+    }
+
+    /** The innermost color on the path operatorOf() walks to a part's operator, one-child Row included. */
+    private static function partColor(?Node $part): ?string
+    {
+        if ($part === null) {
+            return null;
+        }
+        $color = Fallback::color($part);
+        $n = Fallback::unwrap($part);
+        if ($n instanceof Row && count($n->children) === 1) {
+            $color = Fallback::color($n->children[0]) ?? $color;
+        }
+
+        return $color;
+    }
+
+    private static function tintedRule(Rule $rule, ?Node $part): Rule
+    {
+        $color = self::partColor($part);
+
+        return $color === null ? $rule : $rule->withColor($color);
     }
 
     /**

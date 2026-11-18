@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phactorial\Mathml;
 
 use Phactorial\MathNote;
+use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
 use Phactorial\Node\Fallback;
 use Phactorial\Node\Fenced;
@@ -827,13 +828,15 @@ final class MathmlReader
         /** @var list<array{int, Operator}> $stack */
         $stack = [];
         foreach ($nodes as $n) {
-            if (! $n instanceof Operator || $n->stretchy === false) {
+            // A colored operator pairs like a plain one; the Fenced has no per-delimiter color; the reader notes the dropped color.
+            $op = self::peelColor($n);
+            if (! $op instanceof Operator || $op->stretchy === false) {
                 $out[] = $n;
                 continue;
             }
-            $ch = $n->char;
+            $ch = $op->char;
             if (OperatorDictionary::isOpening($ch)) {
-                $stack[] = [count($out), $n];
+                $stack[] = [count($out), $op];
                 $out[] = $n;
             } elseif (OperatorDictionary::isClosing($ch)) {
                 $found = null;
@@ -899,6 +902,19 @@ final class MathmlReader
     }
 
     /**
+     * The node under any Color wrappers. Only Color is peeled, not a Fallback: a delimiter that carries a note is not paired,
+     * or the fence would drop the note.
+     */
+    private static function peelColor(Node $n): Node
+    {
+        while ($n instanceof Color) {
+            $n = $n->content;
+        }
+
+        return $n;
+    }
+
+    /**
      * Pairs `|` with the next `|` and `‖` with the next `‖` among these siblings; a lone bar stays plain.
      *
      * @param list<Node> $nodes
@@ -907,15 +923,20 @@ final class MathmlReader
      */
     private static function bars(array $nodes): array
     {
-        $isBar = static fn (Node $n, string $ch): bool => $n instanceof Operator && $n->stretchy !== false && $n->char === $ch;
+        $isBar = static function (Node $n, string $ch): bool {
+            $n = self::peelColor($n);
+
+            return $n instanceof Operator && $n->stretchy !== false && $n->char === $ch;
+        };
         $out = [];
         $count = count($nodes);
         for ($i = 0; $i < $count; $i++) {
             $n = $nodes[$i];
+            $op = self::peelColor($n);
             $close = null;
-            if ($n instanceof Operator && $n->stretchy !== false && ($n->char === '|' || $n->char === '‖')) {
+            if ($op instanceof Operator && $op->stretchy !== false && ($op->char === '|' || $op->char === '‖')) {
                 for ($j = $i + 1; $j < $count; $j++) {
-                    if ($isBar($nodes[$j], $n->char)) {
+                    if ($isBar($nodes[$j], $op->char)) {
                         $close = $j;
                         break;
                     }
@@ -925,7 +946,7 @@ final class MathmlReader
                 $out[] = $n;
                 continue;
             }
-            $out[] = new Fenced($n->char, $n->char, self::row(self::bars(array_slice($nodes, $i + 1, $close - $i - 1))));
+            $out[] = new Fenced($op->char, $op->char, self::row(self::bars(array_slice($nodes, $i + 1, $close - $i - 1))));
             $i = $close;
         }
 

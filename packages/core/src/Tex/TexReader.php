@@ -6,6 +6,7 @@ namespace Phactorial\Tex;
 
 use Phactorial\Math;
 use Phactorial\MathNote;
+use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
 use Phactorial\Node\Fallback;
 use Phactorial\Node\Fenced;
@@ -1489,7 +1490,7 @@ final class TexReader
     /** @return list<MathNote> the notes in a cell that has nothing else in it */
     private static function lostNotes(Node $n): array
     {
-        if ($n instanceof TexSource) {
+        if ($n instanceof TexSource || $n instanceof Color) {
             return self::lostNotes($n->content);
         }
         if ($n instanceof Fallback) {
@@ -1516,7 +1517,7 @@ final class TexReader
     /** A cell with nothing in it (rule commands that draw nothing do not count). */
     private static function blank(Node $n): bool
     {
-        if ($n instanceof TexSource) {
+        if ($n instanceof TexSource || $n instanceof Color) {
             // An equation number or a color around nothing: the row it stood in is dropped, and the source with it.
             return self::blank($n->content);
         }

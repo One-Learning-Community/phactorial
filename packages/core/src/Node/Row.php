@@ -109,6 +109,10 @@ final class Row extends Node
                 $ctx = $ctx->withDisplay($display);
             }
             $b = $reuse[$i] ?? ($seen instanceof Operator ? $seen->layoutAs($ctx, $form ?? throw new \LogicException('Forms::of gave an operator no form')) : $child->layout($c));
+            // layoutAs() bypasses the wrappers, so a color around the operator is applied here.
+            if (! isset($reuse[$i]) && $seen instanceof Operator && ($color = Fallback::color($child)) !== null) {
+                $b = Color::box($b, $color);
+            }
             if ($boxes !== null) {
                 $boxes[$i] = $b;
             }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phactorial\Render;
 
+use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
 use Phactorial\Node\Fallback;
 use Phactorial\Node\Fenced;
@@ -44,7 +45,7 @@ final class MathmlWriter
     /** A function name, alone or as the base of scripts or limits: what MathML's invisible function application follows. */
     private static function isFunction(Node $n): bool
     {
-        while (($n instanceof Fallback && $n->content !== null) || $n instanceof TexSource) {
+        while (($n instanceof Fallback && $n->content !== null) || $n instanceof TexSource || $n instanceof Color) {
             $n = $n->content;
         }
         if ($n instanceof Scripts || $n instanceof UnderOver) {
@@ -80,7 +81,7 @@ final class MathmlWriter
 
     private static function isStandardName(Node $n): bool
     {
-        while (($n instanceof Fallback && $n->content !== null) || $n instanceof TexSource) {
+        while (($n instanceof Fallback && $n->content !== null) || $n instanceof TexSource || $n instanceof Color) {
             $n = $n->content;
         }
         if ($n instanceof Scripts || $n instanceof UnderOver) {
