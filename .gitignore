@@ -1,0 +1,10 @@
+/packages/*/vendor/
+/packages/*/composer.lock
+/packages/*/.phpunit.cache/
+/.idea/
+/.temp/
+/.cache/
+/site/node_modules/
+/site/src/.vuepress/.cache/
+/site/src/.vuepress/.temp/
+/site/src/.vuepress/dist/
