@@ -54,6 +54,8 @@ The rules match GitHub's renderer.
 | `\$` | A literal dollar sign. |
 | `[link $x$](…)` | Plain text. GitHub does not typeset math inside link text. |
 
+With `latex_delimiters` on, two more forms are math. `\(…\)` is inline math on one line. `\[…\]` is display math that may span lines, and a paragraph holding only one becomes a display block. A `\)` or `\]` closes the formula only when its own backslash is not escaped, so `\[a\\]` stays text. An unclosed opener, blank TeX or a code span inside leaves the backslash an ordinary escape: `\(x` reads `(x`.
+
 ## Output
 
 Inline math becomes `<span class="math math-inline">` around an `<svg>` or `<math>` element. Each `<svg>` has `role="img"` and an `aria-label` that spells the formula out as text, so screen readers speak it; see [Accessible formulas](./recipes.md#accessible-formulas). A `$$…$$` formula inside a paragraph is `<span class="math math-display">`, and a display block is `<div class="math math-display">`. Add this rule to your CSS to center display math that sits inside a paragraph:
@@ -73,6 +75,7 @@ All options live under the `math` key.
 | `output` | `svg`, `mathml` | `svg` | `svg` draws each formula as an inline `<svg>` that looks the same everywhere. `mathml` writes MathML Core for the browser to draw. |
 | `size` | a number above 0 | `16` | The font size in pixels for SVG output. |
 | `on_error` | `source`, `render` | `source` | What a formula the reader could not fully parse becomes. `source` shows the formula's Markdown unchanged. `render` draws what the reader recovered. |
+| `latex_delimiters` | `true`, `false` | `false` | `true` also reads `\(…\)` as inline math and `\[…\]` as display math, the way LaTeX and chatbots write them. It is off by default because `\(` and `\[` are Markdown's escaped parentheses and brackets: with it on, `\[citation needed\]` becomes a formula. |
 
 An invalid value throws `League\Config\Exception\ValidationException` on the first render.
 
@@ -103,8 +106,8 @@ These parts are the extension's contract. They change only in a major release, a
 - the option keys and values above; a minor release may add keys and values;
 - the HTML shapes under [Output](#output) and [Errors](#errors), including the class names;
 - a fence whose first info word is `math` is typeset, and every other fence goes to the next renderer;
-- a paragraph that is only `$$…$$` becomes a display block, and math inside link text or image alt text returns to its source text;
-- the priorities: the inline parser registers at 50, the `FencedCode` renderer at 50, and the `MathInline` and `MathBlock` renderers at the default 0. A renderer registered at a higher number wins, which is how [Laravel's mail recipe](./laravel.md#mail) overrides them;
+- a paragraph that is only `$$…$$`, or only `\[…\]` with `latex_delimiters` on, becomes a display block, and math inside link text or image alt text returns to its source text;
+- the priorities: the dollar parser registers at 50, the parser for `\(` and `\[` at 90, ahead of league/commonmark's escape parser at 80, the `FencedCode` renderer at 50, and the `MathInline` and `MathBlock` renderers at the default 0. A renderer registered at a higher number wins, which is how [Laravel's mail recipe](./laravel.md#mail) overrides them;
 - the node properties `MathInline::$tex`, `$display` and `$source`, and `MathBlock::$tex` and `$source`. They are read-only.
 
 The wiring classes behind these (the parser, the renderers, the listener and the output helper) are internal. Register `MathExtension` and nothing else. See [Stability](./stability.md#the-commonmark-extension).

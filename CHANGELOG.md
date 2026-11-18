@@ -37,6 +37,7 @@ Breaking. Each item says how to migrate.
 
 ### Added
 
+- A `latex_delimiters` option in `phactorial/commonmark`. Set to `true`, it reads `\(…\)` as inline math and `\[…\]` as display math, the way LaTeX and chatbots write them. It is off by default, because `\[` and `\(` are Markdown's escaped brackets and parentheses, and turning it on would change existing documents.
 - `Node::children()` is public. It returns a node's children in reading order, so a walker can recurse through a tree without knowing every node type.
 - `Glyph::translated()` and `Rule::translated()` are public, through `DisplayItem::translated()`.
 - [Stability](https://one-learning-community.github.io/phactorial/stability.html) states the compatibility policy for 1.0: what a minor release may add, what breaks, the sealed `Node` and `DisplayItem`, the closed set of display items, and the output, defaults and coverage rules.
