@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phactorial\Render;
 
 use Phactorial\Math;
+use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
 use Phactorial\Node\Fallback;
 use Phactorial\Node\Fenced;
@@ -99,6 +100,9 @@ final class TexWriter
         return match (true) {
             $n instanceof Fallback => $n->content === null ? '' : self::w($n->content, $inFence),
             $n instanceof TexSource => self::source($n, $inFence),
+            $n instanceof Color => $n->inline
+                ? '{\color{' . $n->color . '} ' . self::w($n->content, false) . '}'
+                : '\textcolor{' . $n->color . '}{' . self::w($n->content, false) . '}',
             $n instanceof Row => self::row($n, $inFence),
             $n instanceof Identifier => self::identifier($n),
             // A MathML-only number such as '1,000' is written raw: the nearest TeX.
@@ -189,7 +193,14 @@ final class TexWriter
             return isset(self::$topLevel[spl_object_id($s)]) ? $s->tex : '';
         }
         $inner = self::strip($s->content);
-        $body = str_starts_with($s->tex, '\\fbox') && $inner instanceof Text ? self::textEscape($inner->text) : self::w($s->content, false);
+        if ($inner instanceof Color) {
+            // The head keeps the color's spelling, so only what the color holds is written after it.
+            $inner = $inner->content;
+            $content = $inner;
+        } else {
+            $content = $s->content;
+        }
+        $body = str_starts_with($s->tex, '\\fbox') && $inner instanceof Text ? self::textEscape($inner->text) : self::w($content, false);
 
         return $s->tex . $body . $s->close;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phactorial\Tex;
 
+use Phactorial\Colors;
 use Phactorial\Math;
 use Phactorial\MathNote;
 use Phactorial\Node\Color;
@@ -327,9 +328,9 @@ final class TexReader
      *
      * @param Node|\Closure(): Node|null $content
      */
-    private function note(NoteLevel $level, string $element, string $reason, int $offset, Node|\Closure|null $content = null): Node
+    private function note(NoteLevel $level, string $element, string $reason, int $offset, Node|\Closure|null $content = null, ?string $key = null): Node
     {
-        $key = $element . '|' . $reason;
+        $key ??= $element . '|' . $reason;
         $seen = isset($this->noted[$key]);
         $this->noted[$key] = true;
         if ($content instanceof \Closure) {
@@ -405,10 +406,20 @@ final class TexReader
 
                 return $nodes;
             } elseif ($ty === 'cs' && $t[1] === 'color') {
+                // A switch that opens a group (`{\color{red} x}`) is written back with its brace; one that does not keeps none.
+                $before = $this->c->p - 1;
+                while (($this->c->t[$before][0] ?? '') === 'sp') {
+                    $before--;
+                }
+                $braced = ($this->c->t[$before][0] ?? '') === '{';
                 $this->c->p++;
-                $color = self::colorName($this->c->rawGroup());
-                $node = $this->note(NoteLevel::Approximated, '\\color', 'color is not drawn', $t[2], fn (): Node => self::row($this->parseUntil(...$stops)));
-                $nodes[] = new TexSource($node, '{\\color{' . $color . '} ', '}');
+                [$spelling, $hex, $spec] = $this->colorArg();
+                $space = $this->c->peekIs('sp') ? ' ' : '';
+                $rest = fn (): Node => self::row($this->parseUntil(...$stops));
+                $node = $hex === null
+                    ? $this->note(NoteLevel::Approximated, '\\color', Colors::unknown($spec), $t[2], $rest, 'color|' . $spec)
+                    : new Color($rest(), $hex, true);
+                $nodes[] = new TexSource($node, ($braced ? '{' : '') . '\\color' . $spelling . $space, $braced ? '}' : '');
 
                 return $nodes;
             } elseif ($ty === 'cs' && isset(TexSymbols::FONT_SWITCHES[$t[1]])) {
@@ -1347,13 +1358,16 @@ final class TexReader
             case 'notag':
                 return null; // equation numbers are not drawn, so there is nothing to switch off
             case 'color':
-                $color = self::colorName($this->c->rawGroup());
+                [$spelling, $hex, $spec] = $this->colorArg();
 
-                return [new TexSource($this->note(NoteLevel::Approximated, '\\color', 'color is not drawn', $at), '\\color{' . $color . '}', ''), 'ord', null];
+                return [new TexSource($hex === null ? $this->note(NoteLevel::Approximated, '\\color', Colors::unknown($spec), $at, null, 'color|' . $spec) : new Row([]), '\\color' . $spelling, ''), 'ord', null];
             case 'textcolor':
-                $color = self::colorName($this->c->rawGroup());
+                [$spelling, $hex, $spec] = $this->colorArg();
+                $node = $hex === null
+                    ? $this->note(NoteLevel::Approximated, '\\textcolor', Colors::unknown($spec), $at, fn (): Node => $this->parseArgument(), 'color|' . $spec)
+                    : new Color($this->parseArgument(), $hex);
 
-                return [new TexSource($this->note(NoteLevel::Approximated, '\\textcolor', 'color is not drawn', $at, fn (): Node => $this->parseArgument()), '\\textcolor{' . $color . '}{', '}'), 'ord', null];
+                return [new TexSource($node, '\\textcolor' . $spelling . '{', '}'), 'ord', null];
             case 'boxed':
                 return [new TexSource($this->note(NoteLevel::Approximated, '\\boxed', 'the box is not drawn', $at, fn (): Node => $this->parseArgument()), '\\boxed{', '}'), 'ord', null];
             case 'fbox':
@@ -1961,10 +1975,69 @@ final class TexReader
         };
     }
 
-    /** A color argument reduced to the characters a color name or hex code has, so it can be written back as TeX. */
-    private static function colorName(string $raw): string
+    /**
+     * The argument of \color or \textcolor: an optional `[model]` (letters only) and the group. Returns the spelling as
+     * written, padding included (`[HTML]{2350FF}`), or `{}` when the group holds a character or markup a color cannot
+     * have; the `#rrggbb` value, or null when rejected; and the spec the note names.
+     *
+     * @return array{string, ?string, string}
+     */
+    private function colorArg(): array
     {
-        return preg_replace('/[^A-Za-z0-9#.,!:-]/', '', $raw) ?? '';
+        $model = null;
+        $i = $this->c->p;
+        while (($this->c->t[$i][0] ?? '') === 'sp') {
+            $i++;
+        }
+        if (($this->c->t[$i][0] ?? '') === 'ch' && $this->c->t[$i][1] === '[') {
+            $name = '';
+            for ($j = $i + 1; ($this->c->t[$j][0] ?? '') === 'ch' && ctype_alpha($this->c->t[$j][1]); $j++) {
+                $name .= $this->c->t[$j][1];
+            }
+            if ($name !== '' && ($this->c->t[$j][0] ?? '') === 'ch' && $this->c->t[$j][1] === ']') {
+                $model = $name;
+                $this->c->p = $j + 1;
+            }
+        }
+        [$from, $to] = $this->groupSpan();
+        $raw = trim($this->c->source($from, $to));
+        $padded = $this->c->rawGroup(true);
+        $spec = trim($padded);
+        $prefix = $model === null ? '' : '[' . $model . ']';
+        if ($raw !== $spec || preg_match('/[^A-Za-z0-9#.,!:\- ]/u', $spec) !== 0) {
+            // A character or markup TeX cannot read in a color name: reject it, never write back a changed color.
+            // Written as an empty spec, which reads back rejected too; the note shows the spelling with each such
+            // character as `?`.
+            return [$prefix . '{}', null, preg_replace('/[^A-Za-z0-9#.,!:\- ]/u', '?', $raw) ?? ''];
+        }
+
+        return [$prefix . '{' . $padded . '}', Colors::tex($spec, $model), $spec];
+    }
+
+    /**
+     * The token range inside the group (or the one token) at the cursor, without moving the cursor.
+     *
+     * @return array{int, int}
+     */
+    private function groupSpan(): array
+    {
+        $i = $this->c->p;
+        while (($this->c->t[$i][0] ?? '') === 'sp') {
+            $i++;
+        }
+        if (($this->c->t[$i][0] ?? '') !== '{') {
+            return [$i, isset($this->c->t[$i]) ? $i + 1 : $i];
+        }
+        $depth = 1;
+        for ($j = $i + 1; isset($this->c->t[$j]); $j++) {
+            if ($this->c->t[$j][0] === '{') {
+                $depth++;
+            } elseif ($this->c->t[$j][0] === '}' && --$depth === 0) {
+                return [$i + 1, $j];
+            }
+        }
+
+        return [$i + 1, $j];
     }
 
     private function textInGroup(): Node

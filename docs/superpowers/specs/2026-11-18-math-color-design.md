@@ -22,7 +22,7 @@ A formula author who writes `\color{blue}` or `mathcolor="blue"` today gets blac
 
 ## Anti-goals
 
-- Any attacker-shaped string in an attribute. A value not on the whitelist never reaches a drawing writer (SVG, PNG, MathML, OMML). TeX write-back keeps today's behavior: the value, filtered by `colorName()` to safe characters, is written back through `TexSource`, so `\color{red!50}` still round-trips as the docs promise. (Call made after review.)
+- Any attacker-shaped string in an attribute. A value not on the whitelist never reaches a drawing writer (SVG, PNG, MathML, OMML). TeX write-back keeps today's behavior: the value, filtered by `colorName()` to safe characters (letters, digits, `#.,!:-` and space, the space being needed for `[rgb]{1, 0, 0}`), is written back through `TexSource`, so `\color{red!50}` still round-trips as the docs promise. (Call made after review.)
 - A slowdown for formulas without color. The extra cost belongs to colored groups only.
 - A break for existing layout consumers. A backend that ignores the new `color` field draws exactly what it draws today.
 
