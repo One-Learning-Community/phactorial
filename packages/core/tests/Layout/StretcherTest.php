@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Font\AssemblyPart;
-use Quoin\Math\Font\Font;
-use Quoin\Math\Layout\Stretcher;
-use Quoin\Math\Math;
+use Phactorial\Font\AssemblyPart;
+use Phactorial\Font\Font;
+use Phactorial\Layout\Stretcher;
+use Phactorial\Math;
 use PHPUnit\Framework\TestCase;
 
 final class StretcherTest extends TestCase

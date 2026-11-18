@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math;
+namespace Phactorial;
 
 /**
  * Mathematical alphanumeric mapping (ziamath styles.py, italic only).

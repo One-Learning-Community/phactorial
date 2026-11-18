@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math;
+namespace Phactorial;
 
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Scripts;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Node\Scripts;
 
 /**
  * Plain string to mi/mn/mo nodes. Letters become identifiers (one per letter, italic), digit runs

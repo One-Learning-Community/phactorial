@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex\Chem;
+namespace Phactorial\Tests\Tex\Chem;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Space;
-use Quoin\Math\Node\Text;
-use Quoin\Math\Node\TexSource;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Tests\TreeAssert;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Node\Number;
+use Phactorial\Node\Row;
+use Phactorial\Node\Space;
+use Phactorial\Node\Text;
+use Phactorial\Node\TexSource;
+use Phactorial\NoteLevel;
+use Phactorial\Render\TexWriter;
+use Phactorial\Tests\TreeAssert;
+use Phactorial\Tex\TexReader;
 
 final class UnitReaderTest extends TestCase
 {

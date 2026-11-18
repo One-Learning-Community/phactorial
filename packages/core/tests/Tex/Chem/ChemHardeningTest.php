@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex\Chem;
+namespace Phactorial\Tests\Tex\Chem;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Tex\TexReader;
 
 final class ChemHardeningTest extends TestCase
 {

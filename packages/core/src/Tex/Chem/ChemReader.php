@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex\Chem;
+namespace Phactorial\Tex\Chem;
 
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Node\Fraction;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Node\Space;
-use Quoin\Math\Node\Text;
-use Quoin\Math\Tex\TexSymbols;
+use Phactorial\NoteLevel;
+use Phactorial\Node\Fraction;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Node\Scripts;
+use Phactorial\Node\Space;
+use Phactorial\Node\Text;
+use Phactorial\Tex\TexSymbols;
 
 /**
  * Reads the argument of mhchem's `\ce` into the semantic tree: one upright identifier per element symbol, counts as

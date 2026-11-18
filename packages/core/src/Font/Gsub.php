@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Font;
+namespace Phactorial\Font;
 
 /**
  * The part of GSUB that math layout needs: the `ssty` (script style) feature, read from single (type 1)

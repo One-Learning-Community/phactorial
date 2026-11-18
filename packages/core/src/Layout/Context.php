@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Layout;
+namespace Phactorial\Layout;
 
-use Quoin\Math\Font\Font;
+use Phactorial\Font\Font;
 
 /**
  * Immutable layout state: font, base size, script level and math style (display or inline/text).

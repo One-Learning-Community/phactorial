@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math;
+namespace Phactorial;
 
 /**
- * The Unicode superscript and subscript characters quoin/math reads and writes, keyed by the plain
+ * The Unicode superscript and subscript characters the reader and writers handle, keyed by the plain
  * character they stand for. Shared by Tokenizer (characters to scripts) and Render\TextWriter (scripts to characters).
  *
  * @internal Engine detail, not public API. It may change in any release.

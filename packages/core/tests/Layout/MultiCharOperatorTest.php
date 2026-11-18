@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Math;
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Glyph;
+use Phactorial\Math;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\Node\Operator;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
 use PHPUnit\Framework\TestCase;
 
 final class MultiCharOperatorTest extends TestCase

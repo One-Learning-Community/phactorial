@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Font;
+namespace Phactorial\Font;
 
 /**
  * The OpenType MATH table: MathConstants, MathItalicsCorrectionInfo and MathVariants (vertical and

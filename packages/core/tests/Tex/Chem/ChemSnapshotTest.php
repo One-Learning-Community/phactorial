@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex\Chem;
+namespace Phactorial\Tests\Tex\Chem;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\SvgRenderer;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\SvgRenderer;
+use Phactorial\Tex\TexReader;
 
 /** MathML, OMML and SVG snapshots of chemistry and unit formulas. Regenerate with UPDATE_SNAPSHOTS=1. */
 final class ChemSnapshotTest extends TestCase

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex;
+namespace Phactorial\Tex;
 
 /**
  * A position in a token list (see {@see TexLexer}), with the small readers every part of the TeX reader shares.

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\DisplayItem;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Rule;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\DisplayItem;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Rule;
+use Phactorial\Math;
+use Phactorial\Node\Node;
 use PHPUnit\Framework\TestCase;
 
 final class BoxTest extends TestCase

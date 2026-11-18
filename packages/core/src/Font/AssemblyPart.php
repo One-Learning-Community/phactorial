@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Font;
+namespace Phactorial\Font;
 
 /**
  * @internal Engine detail, not public API. It may change in any release.

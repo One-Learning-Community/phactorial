@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Render;
+namespace Phactorial\Tests\Render;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\RunFormat;
-use Quoin\Math\Styles;
-use Quoin\Math\Tests\Fixtures;
+use Phactorial\Math;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Operator;
+use Phactorial\Node\UnderOver;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\RunFormat;
+use Phactorial\Styles;
+use Phactorial\Tests\Fixtures;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

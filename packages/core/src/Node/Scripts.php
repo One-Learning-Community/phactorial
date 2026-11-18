@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
 
 /**
  * msub / msup / msubsup / mmultiscripts in one class: a base with a subscript, a superscript, or both, and optionally the same on its

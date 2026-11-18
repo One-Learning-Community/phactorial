@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
 
 /** mstyle displaystyle: lays its content out in display or inline (text) style whatever the surrounding style is. */
 final class DisplayStyle extends Node

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Font;
+namespace Phactorial\Font;
 
 /**
  * Glyph outlines from an OpenType `CFF ` table. The reader parses the INDEX structures and the top and private dicts,

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node;
-use Quoin\Math\NoteLevel;
+use Phactorial\Math;
+use Phactorial\Node\Node;
+use Phactorial\NoteLevel;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -65,7 +65,7 @@ final class InvalidUtf8Test extends TestCase
 
     public function test_public_node_constructors_scrub_silently(): void
     {
-        foreach ([new \Quoin\Math\Node\Identifier("a\xff"), new \Quoin\Math\Node\Text("a\xff"), new \Quoin\Math\Node\Number("1\xff"), new \Quoin\Math\Node\Fenced("\xff", ')', Math::row('x'))] as $node) {
+        foreach ([new \Phactorial\Node\Identifier("a\xff"), new \Phactorial\Node\Text("a\xff"), new \Phactorial\Node\Number("1\xff"), new \Phactorial\Node\Fenced("\xff", ')', Math::row('x'))] as $node) {
             self::assertGreaterThan(0.0, Math::layout($node)->width);
         }
     }

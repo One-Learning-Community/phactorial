@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\{Box, Glyph, Rule};
-use Quoin\Math\Math;
-use Quoin\Math\Node\{Grid, Node, Scripts};
+use Phactorial\Layout\{Box, Glyph, Rule};
+use Phactorial\Math;
+use Phactorial\Node\{Grid, Node, Scripts};
 use PHPUnit\Framework\TestCase;
 
 final class GridTest extends TestCase

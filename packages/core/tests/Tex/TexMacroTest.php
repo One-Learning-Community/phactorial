@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Tests\TreeAssert;
-use Quoin\Math\Tex\TexLexer;
-use Quoin\Math\Tex\TexMacros;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Node\Node;
+use Phactorial\NoteLevel;
+use Phactorial\Tests\TreeAssert;
+use Phactorial\Tex\TexLexer;
+use Phactorial\Tex\TexMacros;
+use Phactorial\Tex\TexReader;
 use PHPUnit\Framework\TestCase;
 
 final class TexMacroTest extends TestCase

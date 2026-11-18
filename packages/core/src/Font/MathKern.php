@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Font;
+namespace Phactorial\Font;
 
 /**
  * One MathKern table: kern values stepped by correction height, all in font units.

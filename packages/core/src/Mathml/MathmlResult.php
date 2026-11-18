@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Mathml;
+namespace Phactorial\Mathml;
 
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\Node;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\Node;
 
 /** A formula read from MathML: the tree, and whether the source asked for display (block) style. */
 final readonly class MathmlResult

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Mathml;
+namespace Phactorial\Tests\Mathml;
 
-use Quoin\Math\Math;
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Text;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Render\MathmlWriter;
+use Phactorial\Math;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Node\Text;
+use Phactorial\Node\UnderOver;
+use Phactorial\NoteLevel;
+use Phactorial\Render\MathmlWriter;
 use PHPUnit\Framework\TestCase;
 
 final class MathmlTokenTest extends TestCase
@@ -102,7 +102,7 @@ final class MathmlTokenTest extends TestCase
         $start = microtime(true);
         $r = MathmlReader::read($src);
         self::assertLessThan(2.0, microtime(true) - $start);
-        self::assertStringContainsString('x', \Quoin\Math\Render\TextWriter::write($r->node));
+        self::assertStringContainsString('x', \Phactorial\Render\TextWriter::write($r->node));
     }
 
     public function test_minsize_reads_from_mathml(): void

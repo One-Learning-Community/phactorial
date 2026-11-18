@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Stretcher;
-use Quoin\Math\Utf8;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Stretcher;
+use Phactorial\Utf8;
 
 /** mfenced: open and close delimiters that stretch (size variant, then assembly) to the height of the content. */
 final class Fenced extends Node

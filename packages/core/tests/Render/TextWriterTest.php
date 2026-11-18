@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Render;
+namespace Phactorial\Tests\Render;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Math;
+use Phactorial\Node\Node;
+use Phactorial\Node\Operator;
+use Phactorial\Node\UnderOver;
+use Phactorial\Render\TextWriter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

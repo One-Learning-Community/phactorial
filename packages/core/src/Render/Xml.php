@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Render;
+namespace Phactorial\Render;
 
 /**
  * @internal Engine detail, not public API. It may change in any release.

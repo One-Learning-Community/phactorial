@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Render;
+namespace Phactorial\Tests\Render;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Math;
-use Quoin\Math\Render\SvgRenderer;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Glyph;
+use Phactorial\Math;
+use Phactorial\Render\SvgRenderer;
 
 final class SvgRendererTest extends TestCase
 {

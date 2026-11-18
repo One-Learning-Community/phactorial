@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex;
+namespace Phactorial\Tex;
 
 /**
  * TeX's atom classes and the space they put before and after themselves, in mu (1/18 em).

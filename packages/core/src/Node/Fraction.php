@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\Rule;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\Rule;
 
 /** mfrac. Display style keeps numerator/denominator at the current size; inline style shrinks them one script level. */
 final class Fraction extends Node

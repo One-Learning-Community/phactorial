@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex\Chem;
+namespace Phactorial\Tests\Tex\Chem;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Tests\TreeAssert;
-use Quoin\Math\Tex\Chem\ChemArrows;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Node\Node;
+use Phactorial\Node\Row;
+use Phactorial\Render\TexWriter;
+use Phactorial\Tests\TreeAssert;
+use Phactorial\Tex\Chem\ChemArrows;
+use Phactorial\Tex\TexReader;
 
 /** Every `\ce` formula in the chemistry corpus reads to the tree its plain-TeX spelling reads to. */
 final class ChemCorpusTest extends TestCase

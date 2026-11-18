@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
 
 /**
  * Content with the TeX it was read from, for a construct the reader takes in but does not draw (a box, a color, a

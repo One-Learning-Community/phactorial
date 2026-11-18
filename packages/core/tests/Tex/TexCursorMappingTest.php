@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Tex\TexCursor;
-use Quoin\Math\Tex\TexLexer;
+use Phactorial\Tex\TexCursor;
+use Phactorial\Tex\TexLexer;
 
 final class TexCursorMappingTest extends TestCase
 {

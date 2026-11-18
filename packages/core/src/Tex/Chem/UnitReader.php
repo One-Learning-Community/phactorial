@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex\Chem;
+namespace Phactorial\Tex\Chem;
 
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Node\Space;
-use Quoin\Math\Node\Text;
+use Phactorial\NoteLevel;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Node\Scripts;
+use Phactorial\Node\Space;
+use Phactorial\Node\Text;
 
 /**
  * Reads the argument of mhchem's `\pu` into the semantic tree: a number (with `e` exponents drawn as a power of ten),

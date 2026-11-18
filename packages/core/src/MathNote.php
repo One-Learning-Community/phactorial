@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math;
+namespace Phactorial;
 
 /** What a reader could not render faithfully: the element, why, and where in the formula it was. */
 final readonly class MathNote

@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Font;
+namespace Phactorial\Tests\Font;
 
-use Quoin\Math\Exception\UnsupportedFont;
-use Quoin\Math\Font\Font;
-use Quoin\Math\Font\TrueTypeFont;
-use Quoin\Math\Math;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use Phactorial\Exception\UnsupportedFont;
+use Phactorial\Font\Font;
+use Phactorial\Math;
 use PHPUnit\Framework\TestCase;
 
 final class FontTest extends TestCase
@@ -131,25 +129,5 @@ final class FontTest extends TestCase
         self::assertFileExists(Math::stixTwoMathPath());
         $font = Font::fromFile(Math::stixTwoMathPath());
         self::assertSame(1000, $font->unitsPerEm);
-    }
-
-    #[RunInSeparateProcess]
-    public function test_deprecated_alias_satisfies_a_type_declaration_without_being_autoloaded(): void
-    {
-        $takesAlias = static fn (TrueTypeFont $font): int => $font->unitsPerEm;
-        self::assertSame(1000, $takesAlias(Math::stixTwoMath()));
-    }
-
-    #[RunInSeparateProcess]
-    public function test_deprecated_alias_is_found_by_instanceof_without_being_autoloaded(): void
-    {
-        $isAlias = static fn (mixed $value): bool => $value instanceof TrueTypeFont;
-        self::assertTrue($isAlias(Math::stixTwoMath()));
-    }
-
-    #[RunInSeparateProcess]
-    public function test_deprecated_alias_can_open_a_font(): void
-    {
-        self::assertInstanceOf(Font::class, TrueTypeFont::fromFile(Math::stixTwoMathPath()));
     }
 }

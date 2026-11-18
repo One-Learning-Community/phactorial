@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Rule;
-use Quoin\Math\Math;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Rule;
+use Phactorial\Math;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

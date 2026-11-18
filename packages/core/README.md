@@ -1,17 +1,18 @@
-# quoin/math
+# Phactorial
 
 Math typesetting in plain PHP. It reads TeX or MathML and writes SVG, PNG, MathML, TeX, Word equations (OMML) or plain
 text. It needs PHP 8.4. No Node, no browser, no fonts on the server.
 
-It is part of a [monorepo](https://github.com/One-Learning-Community/quoin) that uses it for equations in
-PDF, Word and HTML documents, but it does not depend on the rest of it.
+Quoin uses it for equations in PDF, Word and HTML documents.
+
+phpoffice/math converts between MathML and Word's format; Phactorial also reads TeX and draws the formula.
 
 ```
-composer require quoin/math
+composer require phactorial/phactorial
 ```
 
 ```php
-use Quoin\Math\MathRender;
+use Phactorial\MathRender;
 
 echo MathRender::fromTex('x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}')->display()->svg(pad: 1);
 ```
@@ -34,12 +35,12 @@ echo MathRender::fromTex('\ce{CH4 + 2O2 -> CO2 + 2H2O}')->svg();
 
 ## Documentation
 
-- [Overview](https://one-learning-community.github.io/quoin/math/), with a comparison to KaTeX and MathJax
-- [Recipes](https://one-learning-community.github.io/quoin/math/recipes.html): web pages, email, Word, conversion,
+- [Overview](https://one-learning-community.github.io/phactorial/phactorial/), with a comparison to KaTeX and MathJax
+- [Recipes](https://one-learning-community.github.io/phactorial/phactorial/recipes.html): web pages, email, Word, conversion,
   alt text, untrusted input
-- [Input](https://one-learning-community.github.io/quoin/math/input.html): the builder, TeX, MathML, notes and limits
-- [Output](https://one-learning-community.github.io/quoin/math/output.html): one-call output, layout options and every writer
-- [Custom backends](https://one-learning-community.github.io/quoin/math/backends.html): the display list, glyph
+- [Input](https://one-learning-community.github.io/phactorial/phactorial/input.html): the builder, TeX, MathML, notes and limits
+- [Output](https://one-learning-community.github.io/phactorial/phactorial/output.html): one-call output, layout options and every writer
+- [Custom backends](https://one-learning-community.github.io/phactorial/phactorial/backends.html): the display list, glyph
   outlines, fonts
 
 ## Testing

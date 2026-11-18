@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\OperatorDictionary;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\OperatorDictionary;
 
 /** mrow: children side by side on a shared baseline. Operator forms come from Forms::of(). */
 final class Row extends Node

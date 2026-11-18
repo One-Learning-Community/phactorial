@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\Rule;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Forms;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Render\TextWriter;
-use Quoin\Math\Styles;
+use Phactorial\Layout\Rule;
+use Phactorial\Math;
+use Phactorial\Node\Forms;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Render\TextWriter;
+use Phactorial\Styles;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -100,7 +100,7 @@ final class SmallConstructsTest extends TestCase
     public function test_styled_builds_an_upright_identifier(): void
     {
         $id = Math::styled('R', 'double-struck');
-        self::assertInstanceOf(\Quoin\Math\Node\Identifier::class, $id);
+        self::assertInstanceOf(\Phactorial\Node\Identifier::class, $id);
         self::assertSame('ℝ', $id->name);
         self::assertTrue($id->upright);
     }
@@ -191,9 +191,9 @@ final class SmallConstructsTest extends TestCase
     {
         $f = Math::stixTwoMath();
         $box = Math::layout(Math::big('(', 1), 12.0);
-        $glyph = array_values(array_filter($box->items, static fn ($i): bool => $i instanceof \Quoin\Math\Layout\Glyph))[0];
+        $glyph = array_values(array_filter($box->items, static fn ($i): bool => $i instanceof \Phactorial\Layout\Glyph))[0];
         $adv = $f->advance($glyph->gid) * 12.0 / $f->unitsPerEm;
-        $entry = \Quoin\Math\OperatorDictionary::lookup('(', 'prefix');
+        $entry = \Phactorial\OperatorDictionary::lookup('(', 'prefix');
         $spacing = (($entry['lspace'] + $entry['rspace']) / 18) * 12.0;
         self::assertEqualsWithDelta($spacing, $box->width - $adv, 1e-6);
         self::assertEqualsWithDelta(($entry['rspace'] / 18) * 12.0, $box->trail, 1e-6);

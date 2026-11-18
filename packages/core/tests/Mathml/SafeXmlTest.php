@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Mathml;
+namespace Phactorial\Tests\Mathml;
 
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\Mathml\SafeXml;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\Mathml\SafeXml;
+use Phactorial\Render\TextWriter;
 use PHPUnit\Framework\TestCase;
 
 final class SafeXmlTest extends TestCase

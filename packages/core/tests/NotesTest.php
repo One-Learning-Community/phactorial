@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fraction;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fraction;
+use Phactorial\Node\Scripts;
+use Phactorial\NoteLevel;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\TextWriter;
 
 final class NotesTest extends TestCase
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex;
+namespace Phactorial\Tex;
 
-use Quoin\Math\Styles;
+use Phactorial\Styles;
 
 /**
  * LaTeX command to Unicode tables, shared by the TeX writer and the reader (the common few hundred symbols, not all of
@@ -110,8 +110,8 @@ final class TexSymbols
         'smallint' => '∫', 'intop' => '∫', 'ointctrclockwise' => '∲', 'varointclockwise' => '∲', 'fint' => '⨏',
     ];
 
-    public const FUNCS = \Quoin\Math\OperatorDictionary::PLAIN_FUNCTION_NAMES;
-    public const FUNCS_LIM = \Quoin\Math\OperatorDictionary::LIMIT_NAMES;
+    public const FUNCS = \Phactorial\OperatorDictionary::PLAIN_FUNCTION_NAMES;
+    public const FUNCS_LIM = \Phactorial\OperatorDictionary::LIMIT_NAMES;
     public const FUNCS_TEXT = ['injlim' => 'inj lim', 'projlim' => 'proj lim', 'varinjlim' => 'lim', 'varprojlim' => 'lim', 'varliminf' => 'lim', 'varlimsup' => 'lim'];
 
     /** \left / \right / \big delimiter names. */

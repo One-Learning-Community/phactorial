@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Font\Font;
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\NoteLevel;
+use Phactorial\Font\Font;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\NoteLevel;
 use PHPUnit\Framework\TestCase;
 
 final class MissingGlyphNotesTest extends TestCase

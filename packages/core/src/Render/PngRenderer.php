@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Render;
+namespace Phactorial\Render;
 
-use Quoin\Math\Exception\MissingExtension;
-use Quoin\Math\Font\Font;
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\DisplayItem;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Rule;
+use Phactorial\Exception\MissingExtension;
+use Phactorial\Font\Font;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\DisplayItem;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Rule;
 
 /**
  * PNG with a transparent background, drawn from the display list with Imagick. Needs ext-imagick, see available().

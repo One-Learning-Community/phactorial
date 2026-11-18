@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Render\TexWriter;
+use Phactorial\Math;
+use Phactorial\Node\Node;
+use Phactorial\Node\Scripts;
+use Phactorial\Render\TexWriter;
 
 /** An empty group after scripts continues them (tensor indices); after anything else it carries prescripts. */
 final class TexScriptChainTest extends TestCase

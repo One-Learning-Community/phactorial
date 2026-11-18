@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\OperatorDictionary;
+use Phactorial\OperatorDictionary;
 
 /**
  * Operator forms by position. An operator is prefix when it is first in its row or follows another

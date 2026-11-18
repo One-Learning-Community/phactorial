@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
-use Quoin\Math\Math;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Tests\Fixtures;
-use Quoin\Math\Tests\TreeAssert;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Render\TexWriter;
+use Phactorial\Tests\Fixtures;
+use Phactorial\Tests\TreeAssert;
+use Phactorial\Tex\TexReader;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

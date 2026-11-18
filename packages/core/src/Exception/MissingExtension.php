@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Exception;
+namespace Phactorial\Exception;
 
 /** A PHP extension this feature needs is not loaded. */
 final class MissingExtension extends \RuntimeException

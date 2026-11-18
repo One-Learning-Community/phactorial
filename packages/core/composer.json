@@ -1,12 +1,12 @@
 {
-    "name": "quoin/math",
-    "description": "Math layout for PHP: fractions, roots, scripts and stretchy delimiters from an OpenType MATH font, read from MathML and TeX, with SVG, MathML, TeX and Word OMML writers.",
+    "name": "phactorial/phactorial",
+    "description": "Math typesetting in plain PHP: reads TeX and MathML, writes SVG, PNG, MathML, TeX, Word equations (OMML) and text.",
     "type": "library",
     "license": "MIT",
-    "homepage": "https://github.com/One-Learning-Community/quoin",
+    "homepage": "https://github.com/One-Learning-Community/phactorial",
     "support": {
-        "issues": "https://github.com/One-Learning-Community/quoin/issues",
-        "source": "https://github.com/One-Learning-Community/quoin"
+        "issues": "https://github.com/One-Learning-Community/phactorial/issues",
+        "source": "https://github.com/One-Learning-Community/phactorial"
     },
     "authors": [
         {
@@ -23,7 +23,7 @@
         "omml",
         "svg",
         "opentype",
-        "quoin"
+        "phactorial"
     ],
     "require": {
         "php": "^8.4",
@@ -40,15 +40,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Quoin\\Math\\": "src/"
-        },
-        "files": [
-            "src/aliases.php"
-        ]
+            "Phactorial\\": "src/"
+        }
     },
     "autoload-dev": {
         "psr-4": {
-            "Quoin\\Math\\Tests\\": "tests/"
+            "Phactorial\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -62,7 +59,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.17.x-dev"
+            "dev-main": "0.18.x-dev"
         }
     }
 }

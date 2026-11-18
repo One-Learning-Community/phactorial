@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Layout;
+namespace Phactorial\Layout;
 
 /**
  * A glyph placed by its origin (x, y), y being the baseline position, y down.

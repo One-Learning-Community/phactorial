@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex;
+namespace Phactorial\Tex;
 
-use Quoin\Math\NoteLevel;
+use Phactorial\NoteLevel;
 
 /**
  * Macro expansion on the token list, before the reader sees it: `\newcommand`, `\renewcommand`, `\providecommand`,

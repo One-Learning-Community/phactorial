@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Exception;
+namespace Phactorial\Exception;
 
 /** The font file cannot be used for math layout: it is a collection, CFF2 or CID-keyed, malformed, or has no MATH table. */
 final class UnsupportedFont extends \InvalidArgumentException

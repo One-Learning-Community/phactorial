@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\TexSource;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Node;
+use Phactorial\Node\Row;
+use Phactorial\Node\TexSource;
 use PHPUnit\Framework\Assert;
 
 /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\{Fallback, Fenced, Grid, Node, Row};
+use Phactorial\Math;
+use Phactorial\Node\{Fallback, Fenced, Grid, Node, Row};
 use PHPUnit\Framework\TestCase;
 
 final class GridFenceTest extends TestCase
@@ -33,7 +33,7 @@ final class GridFenceTest extends TestCase
 
     public function test_the_gap_also_applies_through_a_fallback(): void
     {
-        $note = new \Quoin\Math\MathNote(\Quoin\Math\NoteLevel::Approximated, 'x', 'p');
+        $note = new \Phactorial\MathNote(\Phactorial\NoteLevel::Approximated, 'x', 'p');
         $with = self::width(new Fenced('{', '', new Fallback(self::grid(), $note)));
         $without = self::width(new Fenced('{', '', new Row([self::grid()])));
         $this->assertEqualsWithDelta(3 / 18 * self::SIZE, $with - $without, 1e-9);

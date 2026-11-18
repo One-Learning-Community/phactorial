@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex\Chem;
+namespace Phactorial\Tex\Chem;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Row;
+use Phactorial\Math;
+use Phactorial\Node\Node;
+use Phactorial\Node\Row;
 
 /**
  * The reaction arrows of mhchem and the nodes they are drawn as. An arrow stretches to its labels and keeps the

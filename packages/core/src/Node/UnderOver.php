@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\DisplayItem;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Rule;
-use Quoin\Math\Layout\Stretcher;
-use Quoin\Math\OperatorDictionary;
-use Quoin\Math\Styles;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\DisplayItem;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Rule;
+use Phactorial\Layout\Stretcher;
+use Phactorial\OperatorDictionary;
+use Phactorial\Styles;
 
 /**
  * munder / mover / munderover in one class: a base with a part below, above, or both. Depending on the base and the

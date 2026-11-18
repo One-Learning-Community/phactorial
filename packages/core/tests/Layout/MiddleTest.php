@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\DisplayStyle;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Middle;
-use Quoin\Math\Node\Row;
-use Quoin\Math\NoteLevel;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\Glyph;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\DisplayStyle;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Middle;
+use Phactorial\Node\Row;
+use Phactorial\NoteLevel;
 use PHPUnit\Framework\TestCase;
 
 final class MiddleTest extends TestCase

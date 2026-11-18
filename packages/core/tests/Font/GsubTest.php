@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Font;
+namespace Phactorial\Tests\Font;
 
-use Quoin\Math\Font\Binary;
-use Quoin\Math\Font\Gsub;
-use Quoin\Math\Math;
+use Phactorial\Font\Binary;
+use Phactorial\Font\Gsub;
+use Phactorial\Math;
 use PHPUnit\Framework\TestCase;
 
 final class GsubTest extends TestCase

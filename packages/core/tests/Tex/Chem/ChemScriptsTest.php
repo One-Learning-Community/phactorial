@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex\Chem;
+namespace Phactorial\Tests\Tex\Chem;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Math;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Scripts;
+use Phactorial\Render\TextWriter;
 
 /** Where scripts in `\ce` attach: command scripts, and prescripts after brackets or before the next atom. */
 final class ChemScriptsTest extends TestCase

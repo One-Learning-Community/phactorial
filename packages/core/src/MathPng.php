@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math;
+namespace Phactorial;
 
-use Quoin\Math\Render\Xml;
+use Phactorial\Render\Xml;
 
 /**
  * A formula drawn as PNG by {@see MathRender::png()}, with what an `<img>` needs to show it at its size and on the baseline.

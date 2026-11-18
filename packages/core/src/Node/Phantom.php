@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
 
 /** mphantom: takes the content's width, height and depth and draws nothing. */
 final class Phantom extends Node

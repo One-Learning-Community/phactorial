@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex;
+namespace Phactorial\Tex;
 
 /**
  * LaTeX source to tokens. A token is [type, value, offset] with the offset in bytes: cs (control word or symbol,

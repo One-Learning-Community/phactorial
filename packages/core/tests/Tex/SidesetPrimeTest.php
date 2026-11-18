@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Tests\TreeAssert;
+use Phactorial\Math;
+use Phactorial\Render\TexWriter;
+use Phactorial\Tests\TreeAssert;
 
 final class SidesetPrimeTest extends TestCase
 {

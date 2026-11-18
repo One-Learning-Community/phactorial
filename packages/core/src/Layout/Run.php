@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Layout;
+namespace Phactorial\Layout;
 
 /**
  * Lays glyphs side by side on the baseline (no pair kerning). At script levels it swaps in the font's `ssty` forms.

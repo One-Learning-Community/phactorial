@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Node\Node;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Tests\TreeAssert;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Grid;
+use Phactorial\Node\Node;
+use Phactorial\NoteLevel;
+use Phactorial\Tests\TreeAssert;
+use Phactorial\Tex\TexReader;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -228,7 +228,7 @@ final class TexEnvironmentTest extends TestCase
         $node = Math::tex('\begin{matrix} \left( a \end{matrix} b');
         $notes = self::notes('\begin{matrix} \left( a \end{matrix} b');
         self::assertSame(['\left'], array_map(static fn (MathNote $n): string => $n->element, $notes));
-        self::assertInstanceOf(\Quoin\Math\Node\Row::class, $node);
+        self::assertInstanceOf(\Phactorial\Node\Row::class, $node);
         self::assertSame(1, self::grid($node->children[0])->columns);
         self::assertCount(2, $node->children);
         $notes = self::notes('\begin{matrix} \left( a \middle| b \right) \end{matrix}');
@@ -341,10 +341,10 @@ final class TexEnvironmentTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('alignatFamily')]
     public function test_alignat_family_has_no_pair_gap_and_round_trips(string $src): void
     {
-        $a = \Quoin\Math\Math::tex($src);
-        $b = \Quoin\Math\Math::tex(\Quoin\Math\Render\TexWriter::write($a));
-        \Quoin\Math\Tests\TreeAssert::assertSameTree($a, $b);
-        $grid = $a instanceof \Quoin\Math\Node\Grid ? $a : null;
+        $a = \Phactorial\Math::tex($src);
+        $b = \Phactorial\Math::tex(\Phactorial\Render\TexWriter::write($a));
+        \Phactorial\Tests\TreeAssert::assertSameTree($a, $b);
+        $grid = $a instanceof \Phactorial\Node\Grid ? $a : null;
         self::assertNotNull($grid);
         self::assertSame(0.0, $grid->columnSpacing[1] ?? 0.0);
     }

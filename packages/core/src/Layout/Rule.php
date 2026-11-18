@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Layout;
+namespace Phactorial\Layout;
 
 /** A filled rectangle (fraction bar, radical overbar). (x, y) is its top-left corner, y down. */
 final readonly class Rule implements DisplayItem

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
-use Quoin\Math\Math;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\TextWriter;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Tests\TreeAssert;
+use Phactorial\Math;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\TextWriter;
+use Phactorial\Render\TexWriter;
+use Phactorial\Tests\TreeAssert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

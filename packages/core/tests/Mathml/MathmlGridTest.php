@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Mathml;
+namespace Phactorial\Tests\Mathml;
 
-use Quoin\Math\Math;
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Math;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Grid;
+use Phactorial\Node\Node;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\NoteLevel;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\TextWriter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

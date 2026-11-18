@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Font;
+namespace Phactorial\Font;
 
 /**
  * Size variants of a glyph (ascending) and an optional assembly recipe, bottom/left part first.

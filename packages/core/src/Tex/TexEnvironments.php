@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex;
+namespace Phactorial\Tex;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Row;
-use Quoin\Math\NoteLevel;
+use Phactorial\Math;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Grid;
+use Phactorial\Node\Node;
+use Phactorial\Node\Row;
+use Phactorial\NoteLevel;
 
 /**
  * What each LaTeX environment means: its rows of cells and column alignment become a node, with the notes for what is

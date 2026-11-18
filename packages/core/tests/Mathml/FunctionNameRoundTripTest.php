@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Mathml;
+namespace Phactorial\Tests\Mathml;
 
-use Quoin\Math\Math;
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Row;
-use Quoin\Math\OperatorDictionary;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Row;
+use Phactorial\OperatorDictionary;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\TexWriter;
+use Phactorial\Tex\TexReader;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

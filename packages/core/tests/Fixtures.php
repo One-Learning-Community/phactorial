@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
+use Phactorial\Math;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
 
 /**
  * Sample formulas for tests and visual checks (tests/render-fixtures.php renders them).

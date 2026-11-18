@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Font;
+namespace Phactorial\Tests\Font;
 
-use Quoin\Math\Font\Font;
-use Quoin\Math\Math;
+use Phactorial\Font\Font;
+use Phactorial\Math;
 use PHPUnit\Framework\TestCase;
 
 final class MathTableTest extends TestCase

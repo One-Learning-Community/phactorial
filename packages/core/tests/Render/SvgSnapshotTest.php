@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Render;
+namespace Phactorial\Tests\Render;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Render\SvgRenderer;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Render\SvgRenderer;
+use Phactorial\Tex\TexReader;
 
 /**
  * Deeply nested layouts. Offsets are summed from the outside in (Box::each), which can differ from the old per-level translation

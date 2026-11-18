@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
 
 /** mspace: horizontal space of $em times the font size, no height. A negative width pulls the next item back. */
 final class Space extends Node

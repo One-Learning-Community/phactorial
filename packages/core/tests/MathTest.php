@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Rule;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Fraction;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Render\SvgRenderer;
-use Quoin\Math\Styles;
-use Quoin\Math\Tokenizer;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Rule;
+use Phactorial\Math;
+use Phactorial\Node\Fraction;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Render\SvgRenderer;
+use Phactorial\Styles;
+use Phactorial\Tokenizer;
 
 final class MathTest extends TestCase
 {

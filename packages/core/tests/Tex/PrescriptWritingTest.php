@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Render\TextWriter;
-use Quoin\Math\Tests\TreeAssert;
+use Phactorial\Math;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Number;
+use Phactorial\Render\TexWriter;
+use Phactorial\Render\TextWriter;
+use Phactorial\Tests\TreeAssert;
 
 /** How the writers set prescripts: after a script, and before a base that starts with a letter. */
 final class PrescriptWritingTest extends TestCase

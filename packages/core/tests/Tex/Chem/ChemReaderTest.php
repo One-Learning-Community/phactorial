@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex\Chem;
+namespace Phactorial\Tests\Tex\Chem;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Layout\DisplayItem;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Text;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Render\TextWriter;
-use Quoin\Math\Tests\TreeAssert;
-use Quoin\Math\Tex\Chem\ChemArrows;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Layout\DisplayItem;
+use Phactorial\Layout\Glyph;
+use Phactorial\Math;
+use Phactorial\Node\Node;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Node\Text;
+use Phactorial\Node\UnderOver;
+use Phactorial\NoteLevel;
+use Phactorial\Render\TexWriter;
+use Phactorial\Render\TextWriter;
+use Phactorial\Tests\TreeAssert;
+use Phactorial\Tex\Chem\ChemArrows;
+use Phactorial\Tex\TexReader;
 
 final class ChemReaderTest extends TestCase
 {
@@ -356,7 +356,7 @@ final class ChemReaderTest extends TestCase
     {
         $found = [];
         $walk = static function (Node $n) use (&$walk, &$found): void {
-            if ($n instanceof \Quoin\Math\Node\Scripts && $n->base instanceof Row && $n->base->children === []) {
+            if ($n instanceof \Phactorial\Node\Scripts && $n->base instanceof Row && $n->base->children === []) {
                 $found[] = [$n->preSub === null ? null : TextWriter::write($n->preSub), $n->preSup === null ? null : TextWriter::write($n->preSup)];
             }
             foreach ($n->children() as $child) {
@@ -369,9 +369,9 @@ final class ChemReaderTest extends TestCase
 
     public function test_a_prescript_before_an_atom_still_attaches_to_it(): void
     {
-        $tree = \Quoin\Math\Node\Fallback::unwrap(Math::tex('\\ce{^{14}C}'));
-        self::assertInstanceOf(\Quoin\Math\Node\Scripts::class, $tree);
-        self::assertInstanceOf(\Quoin\Math\Node\Identifier::class, $tree->base);
+        $tree = \Phactorial\Node\Fallback::unwrap(Math::tex('\\ce{^{14}C}'));
+        self::assertInstanceOf(\Phactorial\Node\Scripts::class, $tree);
+        self::assertInstanceOf(\Phactorial\Node\Identifier::class, $tree->base);
     }
 
     /** @return iterable<string, array{string}> */

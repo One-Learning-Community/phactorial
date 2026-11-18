@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Rule;
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\NoteLevel;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Rule;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Node;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\NoteLevel;
 use PHPUnit\Framework\TestCase;
 
 final class RowTest extends TestCase

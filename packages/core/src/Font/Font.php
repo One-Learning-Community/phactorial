@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Font;
+namespace Phactorial\Font;
 
-use Quoin\Math\Exception\UnsupportedFont;
+use Phactorial\Exception\UnsupportedFont;
 
 /**
  * Minimal OpenType math font reader with TrueType (glyf) or CFF outlines: metrics, cmap (formats 4

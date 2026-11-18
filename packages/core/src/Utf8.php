@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math;
+namespace Phactorial;
 
 /**
- * Invalid UTF-8 in a builder string becomes U+FFFD. The twin of Quoin\Support\Utf8 in quoin/core, which this
- * package cannot depend on; keep the two in step.
+ * Invalid UTF-8 in a builder string becomes U+FFFD.
  *
  * @internal Engine detail, not public API. It may change in any release.
  */

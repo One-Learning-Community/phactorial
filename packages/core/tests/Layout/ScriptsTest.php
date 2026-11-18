@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Scripts;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Glyph;
+use Phactorial\Math;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Scripts;
 use PHPUnit\Framework\TestCase;
 
 final class ScriptsTest extends TestCase

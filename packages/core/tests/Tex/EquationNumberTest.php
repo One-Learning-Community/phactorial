@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\TexWriter;
+use Phactorial\Math;
+use Phactorial\Node\Grid;
+use Phactorial\Node\Node;
+use Phactorial\Node\Scripts;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\TexWriter;
 
 /** An equation number: kept by the writers, written once, and dropped with the row it stood alone in. */
 final class EquationNumberTest extends TestCase

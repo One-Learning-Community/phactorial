@@ -9,9 +9,9 @@ declare(strict_types=1);
  * renders each source in KaTeX and its mhchem extension, loaded from cdn.jsdelivr.net, for a side-by-side check.
  */
 
-use Quoin\Math\Math;
-use Quoin\Math\Render\SvgRenderer;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Render\SvgRenderer;
+use Phactorial\Tex\TexReader;
 
 require __DIR__ . '/../vendor/autoload.php';
 

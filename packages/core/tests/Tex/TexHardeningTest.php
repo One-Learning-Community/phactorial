@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
-use Quoin\Math\Math;
-use Quoin\Math\Node\DisplayStyle;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Tex\TexReader;
-use Quoin\Math\Tex\TexSymbols;
+use Phactorial\Math;
+use Phactorial\Node\DisplayStyle;
+use Phactorial\NoteLevel;
+use Phactorial\Tex\TexReader;
+use Phactorial\Tex\TexSymbols;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Font\Font;
-use Quoin\Math\Math;
-use Quoin\Math\MathRender;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\RunFormat;
-use Quoin\Math\Render\SvgRenderer;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Render\TextWriter;
-use Quoin\Math\Render\Xml;
+use Phactorial\Font\Font;
+use Phactorial\Math;
+use Phactorial\MathRender;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\RunFormat;
+use Phactorial\Render\SvgRenderer;
+use Phactorial\Render\TexWriter;
+use Phactorial\Render\TextWriter;
+use Phactorial\Render\Xml;
 
 final class MathRenderTest extends TestCase
 {

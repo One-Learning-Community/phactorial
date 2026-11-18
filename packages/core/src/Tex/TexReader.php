@@ -2,38 +2,38 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tex;
+namespace Phactorial\Tex;
 
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\DisplayStyle;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Fraction;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Middle;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Phantom;
-use Quoin\Math\Node\Root;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Node\Space;
-use Quoin\Math\Node\TexSource;
-use Quoin\Math\Node\Text;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\OperatorDictionary;
-use Quoin\Math\Styles;
-use Quoin\Math\Tex\Chem\ChemReader;
-use Quoin\Math\Tex\Chem\UnitReader;
-use Quoin\Math\Tokenizer;
-use Quoin\Math\Utf8;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\DisplayStyle;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Fraction;
+use Phactorial\Node\Grid;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Middle;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Phantom;
+use Phactorial\Node\Root;
+use Phactorial\Node\Row;
+use Phactorial\Node\Scripts;
+use Phactorial\Node\Space;
+use Phactorial\Node\TexSource;
+use Phactorial\Node\Text;
+use Phactorial\Node\UnderOver;
+use Phactorial\NoteLevel;
+use Phactorial\OperatorDictionary;
+use Phactorial\Styles;
+use Phactorial\Tex\Chem\ChemReader;
+use Phactorial\Tex\Chem\UnitReader;
+use Phactorial\Tokenizer;
+use Phactorial\Utf8;
 
 /**
- * LaTeX math to the node tree, the inverse of {@see \Quoin\Math\Render\TexWriter}. Never throws: what it cannot draw
+ * LaTeX math to the node tree, the inverse of {@see \Phactorial\Render\TexWriter}. Never throws: what it cannot draw
  * becomes a Fallback with a MathNote (an unknown command is drawn as its own name, as KaTeX shows its error text), one
  * note per element and reason. Single symbols are classified by the builder's Tokenizer, so TeX and the builder read
  * the same characters the same way.

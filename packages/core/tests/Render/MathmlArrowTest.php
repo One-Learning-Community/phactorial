@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Render;
+namespace Phactorial\Tests\Render;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Render\MathmlWriter;
+use Phactorial\Math;
+use Phactorial\Render\MathmlWriter;
 
 /** Arrows with no label are written long enough for a browser to draw them as the PDF does. */
 final class MathmlArrowTest extends TestCase

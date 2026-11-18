@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Math;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Layout\Glyph;
+use Phactorial\Math;
+use Phactorial\Tex\TexReader;
 use PHPUnit\Framework\TestCase;
 
 /** TeX's spacing around a function name (class Op): thin next to ordinaries, none next to an opening delimiter. */

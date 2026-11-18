@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Render;
+namespace Phactorial\Tests\Render;
 
-use Quoin\Math\Math;
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\TextWriter;
-use Quoin\Math\Tests\Fixtures;
+use Phactorial\Math;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\Node\Grid;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\TextWriter;
+use Phactorial\Tests\Fixtures;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -35,7 +35,7 @@ final class GridWritersTest extends TestCase
     /**
      * @param list<list<string>> $rows
      *
-     * @return list<list<\Quoin\Math\Node\Node>>
+     * @return list<list<\Phactorial\Node\Node>>
      */
     private static function cells(array $rows): array
     {

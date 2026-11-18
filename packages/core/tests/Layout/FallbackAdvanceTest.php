@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\{Box, Glyph};
-use Quoin\Math\Math;
+use Phactorial\Layout\{Box, Glyph};
+use Phactorial\Math;
 use PHPUnit\Framework\TestCase;
 
 final class FallbackAdvanceTest extends TestCase

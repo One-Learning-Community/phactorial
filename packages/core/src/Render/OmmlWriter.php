@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Render;
+namespace Phactorial\Render;
 
-use Quoin\Math\Node\DisplayStyle;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Fraction;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Middle;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Phantom;
-use Quoin\Math\Node\Root;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Node\Space;
-use Quoin\Math\Node\TexSource;
-use Quoin\Math\Node\Text;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\OperatorDictionary;
-use Quoin\Math\Styles;
+use Phactorial\Node\DisplayStyle;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Fraction;
+use Phactorial\Node\Grid;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Middle;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Phantom;
+use Phactorial\Node\Root;
+use Phactorial\Node\Row;
+use Phactorial\Node\Scripts;
+use Phactorial\Node\Space;
+use Phactorial\Node\TexSource;
+use Phactorial\Node\Text;
+use Phactorial\Node\UnderOver;
+use Phactorial\OperatorDictionary;
+use Phactorial\Styles;
 
 /**
  * Serializes a formula tree as Word OMML. The output declares no namespaces: the caller

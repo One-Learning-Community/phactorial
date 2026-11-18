@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\OperatorDictionary;
+use Phactorial\OperatorDictionary;
 
 final class OperatorDictionaryTest extends TestCase
 {

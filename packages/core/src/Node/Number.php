@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\Run;
-use Quoin\Math\Utf8;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\Run;
+use Phactorial\Utf8;
 
 /** mn: digits with an optional decimal point, drawn upright. Also holds Unicode super/subscript digits as ordinary characters. */
 final class Number extends Node

@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Node;
+namespace Phactorial\Tests\Node;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\Layout\Glyph;
+use Phactorial\Math;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Number;
+use Phactorial\Node\Scripts;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\TexWriter;
+use Phactorial\Render\TextWriter;
 
 final class PrescriptsTest extends TestCase
 {

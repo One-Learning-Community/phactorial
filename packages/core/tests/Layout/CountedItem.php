@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Layout;
+namespace Phactorial\Tests\Layout;
 
-use Quoin\Math\Layout\DisplayItem;
+use Phactorial\Layout\DisplayItem;
 
 /** A display item that counts how often it is copied. */
 final class CountedItem implements DisplayItem

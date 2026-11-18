@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Font;
+namespace Phactorial\Tests\Font;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Exception\UnsupportedFont;
-use Quoin\Math\Font\Binary;
-use Quoin\Math\Font\CffOutlines;
-use Quoin\Math\Font\Font;
-use Quoin\Math\Math;
-use Quoin\Math\Render\PngRenderer;
-use Quoin\Math\Render\SvgRenderer;
+use Phactorial\Exception\UnsupportedFont;
+use Phactorial\Font\Binary;
+use Phactorial\Font\CffOutlines;
+use Phactorial\Font\Font;
+use Phactorial\Math;
+use Phactorial\Render\PngRenderer;
+use Phactorial\Render\SvgRenderer;
 
 /** CFF (OpenType/PostScript) math fonts: Fira Math as the real font, and small synthetic tables for the refusals and guards. */
 final class CffFontTest extends TestCase

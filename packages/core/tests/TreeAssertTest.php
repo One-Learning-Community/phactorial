@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\NoteLevel;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Row;
+use Phactorial\Node\Scripts;
+use Phactorial\NoteLevel;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 
@@ -39,7 +39,7 @@ final class TreeAssertTest extends TestCase
     {
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('expected Identifier, got Number');
-        TreeAssert::assertSameTree(new Row([new Identifier('x'), new Identifier('y')]), new Row([new Identifier('x'), new \Quoin\Math\Node\Number('1')]));
+        TreeAssert::assertSameTree(new Row([new Identifier('x'), new Identifier('y')]), new Row([new Identifier('x'), new \Phactorial\Node\Number('1')]));
     }
 
     public function test_fallbacks_and_single_child_rows_are_normalized(): void

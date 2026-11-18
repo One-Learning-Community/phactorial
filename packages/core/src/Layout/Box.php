@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Layout;
+namespace Phactorial\Layout;
 
-use Quoin\Math\MathNote;
-use Quoin\Math\NoteLevel;
+use Phactorial\MathNote;
+use Phactorial\NoteLevel;
 
 /**
  * A laid-out formula (or part of one): advance width, ascent (height above the baseline) and

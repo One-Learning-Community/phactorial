@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Node;
+namespace Phactorial\Node;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\Context;
-use Quoin\Math\MathNote;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Context;
+use Phactorial\MathNote;
 
 /** Content a reader could not render faithfully: what stands in for it (or nothing) and the note saying why. */
 final class Fallback extends Node

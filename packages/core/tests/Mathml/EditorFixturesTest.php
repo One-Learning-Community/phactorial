@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Mathml;
+namespace Phactorial\Tests\Mathml;
 
-use Quoin\Math\Math;
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\Mathml\SafeXml;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\SvgRenderer;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Math;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\Mathml\SafeXml;
+use Phactorial\NoteLevel;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\SvgRenderer;
+use Phactorial\Render\TextWriter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

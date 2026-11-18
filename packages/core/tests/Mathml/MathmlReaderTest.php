@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Mathml;
+namespace Phactorial\Tests\Mathml;
 
-use Quoin\Math\Math;
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Node\DisplayStyle;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Fraction;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Space;
-use Quoin\Math\Node\Text;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Math;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\NoteLevel;
+use Phactorial\Node\DisplayStyle;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Fraction;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Node\Space;
+use Phactorial\Node\Text;
+use Phactorial\Node\UnderOver;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\TextWriter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

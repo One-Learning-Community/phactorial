@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests;
+namespace Phactorial\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\MathPng;
-use Quoin\Math\MathRender;
-use Quoin\Math\Render\PngRenderer;
+use Phactorial\Math;
+use Phactorial\MathPng;
+use Phactorial\MathRender;
+use Phactorial\Render\PngRenderer;
 
 final class MathPngTest extends TestCase
 {

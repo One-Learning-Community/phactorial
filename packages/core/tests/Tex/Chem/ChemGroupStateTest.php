@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex\Chem;
+namespace Phactorial\Tests\Tex\Chem;
 
 use PHPUnit\Framework\TestCase;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Tests\TreeAssert;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\Node\Row;
+use Phactorial\Tests\TreeAssert;
+use Phactorial\Tex\TexReader;
 
 /** What a `\ce` group leaves behind: the font it read under, and the note for a brace left open. */
 final class ChemGroupStateTest extends TestCase

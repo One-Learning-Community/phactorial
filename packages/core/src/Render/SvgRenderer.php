@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Render;
+namespace Phactorial\Render;
 
-use Quoin\Math\Font\Font;
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Layout\DisplayItem;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Rule;
+use Phactorial\Font\Font;
+use Phactorial\Layout\Box;
+use Phactorial\Layout\DisplayItem;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Rule;
 
 /**
  * Standalone SVG. Units are points (1 SVG user unit = 1 pt); the SVG's width/height are the box

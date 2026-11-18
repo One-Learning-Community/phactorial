@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Mathml;
+namespace Phactorial\Tests\Mathml;
 
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Mathml\MathmlReader;
-use Quoin\Math\Node\DisplayStyle;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Forms;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Space;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Render\MathmlWriter;
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\TextWriter;
-use Quoin\Math\Tests\TreeAssert;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Mathml\MathmlReader;
+use Phactorial\Node\DisplayStyle;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Forms;
+use Phactorial\Node\Grid;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Space;
+use Phactorial\Node\Row;
+use Phactorial\Node\UnderOver;
+use Phactorial\NoteLevel;
+use Phactorial\Render\MathmlWriter;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\TextWriter;
+use Phactorial\Tests\TreeAssert;
 use PHPUnit\Framework\TestCase;
 
 final class MathmlFallbackTest extends TestCase
@@ -274,7 +274,7 @@ final class MathmlFallbackTest extends TestCase
     }
 
     /** @return list<string> the reason of every note, in order */
-    private static function reasons(\Quoin\Math\Mathml\MathmlResult $r): array
+    private static function reasons(\Phactorial\Mathml\MathmlResult $r): array
     {
         return array_map(static fn (MathNote $n): string => $n->level->name . " " . $n->element . ": " . $n->reason, $r->notes());
     }
@@ -339,7 +339,7 @@ final class MathmlFallbackTest extends TestCase
     }
 
     /** The first node of $class in the tree, looking through Fallbacks and Rows. */
-    private static function find(\Quoin\Math\Node\Node $n, string $class): ?\Quoin\Math\Node\Node
+    private static function find(\Phactorial\Node\Node $n, string $class): ?\Phactorial\Node\Node
     {
         if ($n instanceof $class) {
             return $n;

@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Tex;
+namespace Phactorial\Tests\Tex;
 
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\DisplayStyle;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Fraction;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Phantom;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\Scripts;
-use Quoin\Math\Node\Space;
-use Quoin\Math\Node\Text;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Tests\TreeAssert;
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\DisplayStyle;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Fraction;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Phantom;
+use Phactorial\Node\Row;
+use Phactorial\Node\Scripts;
+use Phactorial\Node\Space;
+use Phactorial\Node\Text;
+use Phactorial\Node\UnderOver;
+use Phactorial\NoteLevel;
+use Phactorial\Tests\TreeAssert;
+use Phactorial\Tex\TexReader;
 use PHPUnit\Framework\TestCase;
 
 final class TexReaderTest extends TestCase
@@ -395,9 +395,9 @@ final class TexReaderTest extends TestCase
         self::same(Math::frac(Math::row('{ a }'), 'b'), '\frac{\{ a \}}{b}');
         self::same(Math::sup('x', Math::row('{ 1 }')), 'x^{\{ 1 \}}');
         self::same(new Row([new Operator('$'), new Identifier('x')]), '\text{$\$x$}');
-        $tex = \Quoin\Math\Render\TexWriter::write(Math::frac(Math::row('{ a }'), 'b'));
+        $tex = \Phactorial\Render\TexWriter::write(Math::frac(Math::row('{ a }'), 'b'));
         TreeAssert::assertSameTree(Math::frac(Math::row('{ a }'), 'b'), Math::tex($tex));
-        $tex = \Quoin\Math\Render\TexWriter::write(Math::sup('x', Math::row('{ 1 }')));
+        $tex = \Phactorial\Render\TexWriter::write(Math::sup('x', Math::row('{ 1 }')));
         TreeAssert::assertSameTree(Math::sup('x', Math::row('{ 1 }')), Math::tex($tex));
     }
 
@@ -545,7 +545,7 @@ final class TexReaderTest extends TestCase
     public function test_fix_round_one_unclosed_left_stops_at_the_optional_bracket(): void
     {
         $tree = Math::tex('\sqrt[\left( a]{b}');
-        self::assertInstanceOf(\Quoin\Math\Node\Root::class, $tree);
+        self::assertInstanceOf(\Phactorial\Node\Root::class, $tree);
         TreeAssert::assertSameTree(Math::row('b'), $tree->radicand);
     }
 
@@ -627,7 +627,7 @@ final class TexReaderTest extends TestCase
         sort($notes);
         self::assertSame($expected, $notes);
         $text = Fallback::unwrap($r->node);
-        self::assertSame($drawn, \Quoin\Math\Render\TextWriter::write($text));
+        self::assertSame($drawn, \Phactorial\Render\TextWriter::write($text));
     }
 
     /** @return iterable<string, array{string, string}> */
@@ -711,33 +711,33 @@ final class TexReaderTest extends TestCase
         TreeAssert::assertSameTree(Math::tex("f'''"), Math::tex('f^{\prime \prime \prime}'));
         TreeAssert::assertSameTree(Math::tex("f''"), Math::tex("f^{\\prime'}"));
         TreeAssert::assertSameTree(Math::tex("f'"), Math::tex('f^\prime'));
-        self::assertSame("f''", \Quoin\Math\Render\TexWriter::write(Math::tex('f^{\prime\prime}')));
+        self::assertSame("f''", \Phactorial\Render\TexWriter::write(Math::tex('f^{\prime\prime}')));
     }
 
     public function test_dotless_letters_in_text(): void
     {
         self::assertSame([['\u', 'Approximated']], array_map(static fn ($n): array => [$n->element, $n->level->name], TexReader::read('\text{\u{\i}}')->notes()));
-        self::assertSame('ıȷ', \Quoin\Math\Render\TextWriter::write(Fallback::unwrap(Math::tex('\text{\i\j}'))));
+        self::assertSame('ıȷ', \Phactorial\Render\TextWriter::write(Fallback::unwrap(Math::tex('\text{\i\j}'))));
     }
 
     public function test_prime_is_not_folded_when_it_is_an_argument(): void
     {
         foreach (["x'\\prime", 'x^\\prime\\prime', '\\frac\\prime\\prime', '\\lim\\nolimits\'\' x', "f\u{2033}"] as $src) {
             $a = Math::tex($src);
-            TreeAssert::assertSameTree($a, Math::tex(\Quoin\Math\Render\TexWriter::write($a)));
+            TreeAssert::assertSameTree($a, Math::tex(\Phactorial\Render\TexWriter::write($a)));
         }
         self::assertSame([], TexReader::read('\\frac\\prime\\prime')->notes());
         $sup = Math::tex('x^\\prime\\prime');
         self::assertInstanceOf(Row::class, $sup); // a superscript prime, then a prime on the baseline
         self::assertCount(2, $sup->children);
-        self::assertSame('x^\\prime \\prime', \Quoin\Math\Render\TexWriter::write(Math::tex("x'\\prime")));
+        self::assertSame('x^\\prime \\prime', \Phactorial\Render\TexWriter::write(Math::tex("x'\\prime")));
     }
 
     public function test_square_bracket_ends_the_arguments_inside_an_optional_argument(): void
     {
         $notes = TexReader::read('\\sqrt[\\frac{a}]{x}')->notes();
         self::assertSame([['\\frac', 'missing argument']], array_map(static fn ($n): array => [$n->element, $n->reason], $notes));
-        self::assertSame('\\sqrt[\\frac{a}{}]{x}', \Quoin\Math\Render\TexWriter::write(Math::tex('\\sqrt[\\frac{a}]{x}')));
+        self::assertSame('\\sqrt[\\frac{a}{}]{x}', \Phactorial\Render\TexWriter::write(Math::tex('\\sqrt[\\frac{a}]{x}')));
         self::assertSame([], TexReader::read('\\sqrt[3]{x} \\sqrt[{\\frac{a}{]}}]{x} \\frac{a}{b}')->notes());
     }
 }

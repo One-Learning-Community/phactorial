@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Quoin\Math\Tests\Render;
+namespace Phactorial\Tests\Render;
 
-use Quoin\Math\Math;
-use Quoin\Math\MathNote;
-use Quoin\Math\Node\DisplayStyle;
-use Quoin\Math\Node\Fallback;
-use Quoin\Math\Node\Fenced;
-use Quoin\Math\Node\Grid;
-use Quoin\Math\Node\Identifier;
-use Quoin\Math\Node\Node;
-use Quoin\Math\Node\Number;
-use Quoin\Math\Node\Operator;
-use Quoin\Math\Node\Row;
-use Quoin\Math\Node\UnderOver;
-use Quoin\Math\NoteLevel;
-use Quoin\Math\Render\TexWriter;
-use Quoin\Math\Tests\Fixtures;
-use Quoin\Math\Tex\TexReader;
-use Quoin\Math\Tex\TexSymbols;
+use Phactorial\Math;
+use Phactorial\MathNote;
+use Phactorial\Node\DisplayStyle;
+use Phactorial\Node\Fallback;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Grid;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Node;
+use Phactorial\Node\Number;
+use Phactorial\Node\Operator;
+use Phactorial\Node\Row;
+use Phactorial\Node\UnderOver;
+use Phactorial\NoteLevel;
+use Phactorial\Render\TexWriter;
+use Phactorial\Tests\Fixtures;
+use Phactorial\Tex\TexReader;
+use Phactorial\Tex\TexSymbols;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -134,7 +134,7 @@ final class TexWriterTest extends TestCase
         self::assertSame('{x_1}^2', self::tex(Math::sup(Math::sub('x', '1'), '2')));
         self::assertSame('{a + b}^2', self::tex(Math::sup(Math::row('a + b'), '2')));
         self::assertSame('x^{\frac{a}{b}}', self::tex(Math::sup('x', Math::frac('a', 'b'))));
-        self::assertSame('\sum\nolimits_{i = 1}^n', self::tex(new \Quoin\Math\Node\Scripts(new Operator('∑'), Math::row('i = 1'), Math::row('n'))));
+        self::assertSame('\sum\nolimits_{i = 1}^n', self::tex(new \Phactorial\Node\Scripts(new Operator('∑'), Math::row('i = 1'), Math::row('n'))));
         self::assertSame('\int_0^1', self::tex(Math::integral('0', '1')));
     }
 
@@ -246,9 +246,9 @@ final class TexWriterTest extends TestCase
     {
         foreach (["\\lim\\nolimits'' x", "f\u{2033}", "\u{2033} + 1"] as $src) {
             $a = Math::tex($src);
-            \Quoin\Math\Tests\TreeAssert::assertSameTree($a, Math::tex(self::tex($a)));
+            \Phactorial\Tests\TreeAssert::assertSameTree($a, Math::tex(self::tex($a)));
         }
-        \Quoin\Math\Tests\TreeAssert::assertSameTree(new Identifier('″', false), Math::tex(self::tex(new Operator('″'))));
+        \Phactorial\Tests\TreeAssert::assertSameTree(new Identifier('″', false), Math::tex(self::tex(new Operator('″'))));
         self::assertSame('\prime\prime', self::tex(Math::tex('\prime\prime')));
     }
 
@@ -256,7 +256,7 @@ final class TexWriterTest extends TestCase
     {
         $wide = new Grid([[Math::row('a'), Math::row('b')]], ['center', 'center'], display: true);
         self::assertSame('\begin{darray}{cc}a & b\end{darray}', self::tex($wide));
-        \Quoin\Math\Tests\TreeAssert::assertSameTree($wide, Math::tex(self::tex($wide)));
+        \Phactorial\Tests\TreeAssert::assertSameTree($wide, Math::tex(self::tex($wide)));
     }
 
     public function test_symbol_commands_and_primes_round_trip(): void
@@ -264,7 +264,7 @@ final class TexWriterTest extends TestCase
         self::assertSame('\Re z', self::tex(Math::tex('\Re z')));
         foreach (['\Re z + \Im w', "f''' + g'''", "f'''^2", "f''_a^2", '\not\subset \not\equiv'] as $src) {
             $a = Math::tex($src);
-            \Quoin\Math\Tests\TreeAssert::assertSameTree($a, Math::tex(self::tex($a)));
+            \Phactorial\Tests\TreeAssert::assertSameTree($a, Math::tex(self::tex($a)));
         }
     }
 
@@ -434,24 +434,24 @@ final class TexWriterTest extends TestCase
 
     public function test_xlongequal_round_trips_and_is_stretchy_in_mathml(): void
     {
-        $a = \Quoin\Math\Math::tex('A \xlongequal{x} B');
+        $a = \Phactorial\Math::tex('A \xlongequal{x} B');
         self::assertSame('A \xlongequal{x} B', self::tex($a));
-        \Quoin\Math\Tests\TreeAssert::assertSameTree($a, \Quoin\Math\Math::tex(self::tex($a)));
-        self::assertStringContainsString('<mo stretchy="true">=</mo>', \Quoin\Math\Render\MathmlWriter::write($a));
+        \Phactorial\Tests\TreeAssert::assertSameTree($a, \Phactorial\Math::tex(self::tex($a)));
+        self::assertStringContainsString('<mo stretchy="true">=</mo>', \Phactorial\Render\MathmlWriter::write($a));
     }
 
     public function test_plain_labeled_equals_does_not_become_xlongequal(): void
     {
-        foreach ([\Quoin\Math\Math::over('=', 'd'), \Quoin\Math\Math::mathml('<math><mover><mo>=</mo><mi>d</mi></mover></math>')] as $a) {
+        foreach ([\Phactorial\Math::over('=', 'd'), \Phactorial\Math::mathml('<math><mover><mo>=</mo><mi>d</mi></mover></math>')] as $a) {
             $tex = self::tex($a);
             self::assertStringNotContainsString('xlongequal', $tex);
-            \Quoin\Math\Tests\TreeAssert::assertSameTree($a, \Quoin\Math\Math::tex($tex));
+            \Phactorial\Tests\TreeAssert::assertSameTree($a, \Phactorial\Math::tex($tex));
         }
     }
 
     public function test_labeled_arrows_round_trip_to_the_same_tree(): void
     {
-        $M = \Quoin\Math\Math::class;
+        $M = \Phactorial\Math::class;
         $inputs = [
             $M::over('→', 'f'),
             $M::mathml('<math><mover><mo>→</mo><mi>f</mi></mover></math>'),
@@ -459,9 +459,9 @@ final class TexWriterTest extends TestCase
             $M::tex('\xlongequal{d}'),
         ];
         foreach ($inputs as $a) {
-            \Quoin\Math\Tests\TreeAssert::assertSameTree($a, $M::tex(self::tex($a)));
+            \Phactorial\Tests\TreeAssert::assertSameTree($a, $M::tex(self::tex($a)));
         }
-        self::assertStringNotContainsString('stretchy', \Quoin\Math\Render\MathmlWriter::write($M::tex('\xrightarrow{f}')));
-        self::assertStringContainsString('stretchy="true"', \Quoin\Math\Render\MathmlWriter::write($M::tex('\xlongequal{d}')));
+        self::assertStringNotContainsString('stretchy', \Phactorial\Render\MathmlWriter::write($M::tex('\xrightarrow{f}')));
+        self::assertStringContainsString('stretchy="true"', \Phactorial\Render\MathmlWriter::write($M::tex('\xlongequal{d}')));
     }
 }
