@@ -41,7 +41,7 @@ A formula starts in the style its source asked for: `$$…$$` and `\[…\]` in T
 
 `size` is in CSS pixels. `svg()` and `png()` throw `InvalidArgumentException` for a size that is not above zero or a negative pad. `MathPng` holds `bytes`, the CSS `width` and `height` (the image has `scale` pixels to each), `verticalAlign`, which is `null` for a display formula, and `alt`, the formula as text. `dataUri()` returns the image as a `data:` URL, and `img($src, $alt = null)` writes an `<img>` at that size and baseline with the formula's text as `alt`.
 
-The defaults suit text on the web: inline, 16 pixels, `currentColor`. They differ from the classes below, where `Math::layout()` defaults to display style at 12 points, `SvgRenderer` to black and `MathmlWriter` to display.
+`MathRender` serves web pages, so its defaults are inline, 16 pixels and `currentColor`. The classes below serve their own formats and follow them: `Math::layout()` defaults to display style at 12 points, `SvgRenderer` and `PngRenderer` to black, `MathmlWriter` to display, and `OmmlWriter::oMathPara()` to center. [Stability](./stability.md#defaults) makes this a rule.
 
 The rest of this page covers those classes. MathML, TeX, OMML and plain text are written from the formula tree. SVG and PNG are drawn from a layout.
 
@@ -96,7 +96,7 @@ use Phactorial\Render\MathmlWriter;
 echo MathmlWriter::write($formula, display: false);   // <math xmlns="…" display="inline">…</math>
 ```
 
-The output is MathML Core, which current browsers render natively.
+The output is MathML Core, which current browsers render natively. The writers are static: call `MathmlWriter::write()`, since its constructor is private.
 
 ## TeX
 
@@ -115,7 +115,7 @@ use Phactorial\Render\OmmlWriter;
 use Phactorial\Render\RunFormat;
 
 OmmlWriter::oMath($formula);                                               // inline
-OmmlWriter::oMathPara($formula, 'center');                                 // a paragraph of its own: left, center or right
+OmmlWriter::oMathPara($formula);                                           // a paragraph of its own, centered; pass 'left' or 'right' to align it
 OmmlWriter::oMath($formula, new RunFormat(colorHex: 'C00000', sizeHalfPoints: 24));
 ```
 

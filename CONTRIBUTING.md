@@ -43,6 +43,16 @@ If Xdebug is loaded, prefix with `php -d xdebug.mode=off` for speed. CI runs the
 The core package's fuzz tests (thousands of random TeX and chemistry inputs) are left out of the default run. Run
 them after changing the TeX or chemistry readers: `cd packages/core && vendor/bin/phpunit --group fuzz`.
 
+## Compatibility
+
+[Stability](https://one-learning-community.github.io/phactorial/stability.html) is the policy. In short:
+
+- A minor release adds: node types, builder methods, optional parameters, config values, supported commands, and better output.
+- A major release breaks: removed or renamed public symbols, renamed parameters or changed defaults, changed return types, and dropped TeX or MathML support.
+- Anything marked `@internal` carries no promise. New engine detail gets `@internal Engine detail, not public API.`
+- `Node` and `DisplayItem` are sealed. Code that switches on node types needs a default branch.
+- A change in `tests/Api/api.txt` needs a CHANGELOG line, and a change to golden output needs one too.
+
 Tests come first: write the failing test, watch it fail, then implement.
 
 ## Style

@@ -96,6 +96,19 @@ Style `.math-error` as you like. With `on_error: render`, the formula is drawn f
 
 A formula the reader only approximated is drawn either way. The extension never emits a link from math, and the source fallback is escaped like any other text.
 
+## What stays fixed
+
+These parts are the extension's contract. They change only in a major release, apart from additions:
+
+- the option keys and values above; a minor release may add keys and values;
+- the HTML shapes under [Output](#output) and [Errors](#errors), including the class names;
+- a fence whose first info word is `math` is typeset, and every other fence goes to the next renderer;
+- a paragraph that is only `$$…$$` becomes a display block, and math inside link text or image alt text returns to its source text;
+- the priorities: the inline parser registers at 50, the `FencedCode` renderer at 50, and the `MathInline` and `MathBlock` renderers at the default 0. A renderer registered at a higher number wins, which is how [Laravel's mail recipe](./laravel.md#mail) overrides them;
+- the node properties `MathInline::$tex`, `$display` and `$source`, and `MathBlock::$tex` and `$source`. They are read-only.
+
+The wiring classes behind these (the parser, the renderers, the listener and the output helper) are internal. Register `MathExtension` and nothing else. See [Stability](./stability.md#the-commonmark-extension).
+
 ## Compatibility with GitHub
 
 The syntax rules are pinned to GitHub's own renderer. `bin/capture-github.php` sends a list of sample strings to the `/markdown` API and saves the HTML under `tests/fixtures/github`. `GithubParityTest` compares the formulas GitHub marks, and the text around them, with this extension's output. These cases differ, and the test group `known-divergence` holds them:

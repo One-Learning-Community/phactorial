@@ -23,7 +23,9 @@ There are two kinds of item.
 - **`Rule`**: a filled rectangle, such as a fraction bar or the top of a radical. `x` and `y` are its top-left corner, `w` and `h` its size.
 - **`Glyph`**: one glyph of the math font. `gid` is the glyph id, `(x, y)` its origin on the baseline, `size` the font size. `sx` and `sy` stretch the outline about the origin; they are 1.0 except on a stretched delimiter or arrow, where one straight piece is scaled to cover a long run. Ignore them and a tall bracket comes out short.
 
-`$box->items` gives the same items as a flat list with absolute positions. It is built on every read, so read it once, or prefer `each()`.
+`$box->items` gives the same items as a flat list with absolute positions. It is read-only and built on every read, so read it once, or prefer `each()`.
+
+The set of item kinds is closed. Through all of 1.x, `each()` and `$items` yield only `Glyph` and `Rule`, so a backend that draws those two never meets an item it cannot draw. A future kind would arrive behind an optional parameter of `Math::layout()` that a caller must pass to receive it. `DisplayItem` is sealed: do not implement it. `translated($dx, $dy)` on either kind returns a copy moved by that offset.
 
 ## Drawing a glyph
 
@@ -68,11 +70,34 @@ $box->each(function (DisplayItem $item, float $dx, float $dy) use ($font, $canva
 
 A PDF backend can set ordinary letters as real text, so they can be selected and searched, as [Quoin](https://one-learning-community.github.io/quoin/guide/equations.html)'s PDF export does. `Glyph::$text` holds the character a glyph stands for. Set a glyph as text only when `text` is a single code point and the font maps that code point to `gid` (`$font->gid($codePoint) === $glyph->gid`), and `sx` and `sy` are 1.0. Draw every other glyph as an outline: stretched pieces have no character, and script-size forms share a character with the full-size glyph.
 
-`SvgRenderer::glyphPaths($glyphs, $box)` draws just the glyphs you pass, as an SVG in the box's own coordinates (baseline at y = 0), for a backend that sets text itself and only needs the rest as shapes.
+`SvgRenderer::glyphPaths($glyphs, $width, $ascent, $descent)` draws just the glyphs you pass, as an SVG with a view box of `0 -ascent width height` (baseline at y = 0), for a backend that sets text itself and only needs the rest as shapes. Pass the box's `$width`, `$ascent` and `$descent`.
+
+## Walking the tree
+
+A backend can also read the formula tree. `Node::children()` returns a node's children in reading order, including both limits of an `UnderOver` and the prescripts of a `Scripts`. Recurse through it and the walk reaches every node, even one added in a later minor release:
+
+```php
+use Phactorial\Node\Fraction;
+use Phactorial\Node\Node;
+
+function countFractions(Node $node): int
+{
+    $count = $node instanceof Fraction ? 1 : 0;
+    foreach ($node->children() as $child) {
+        $count += countFractions($child);
+    }
+
+    return $count;
+}
+
+countFractions(Math::tex('\frac{1}{\frac{2}{3}}'));   // 2
+```
+
+Give every `match` or `instanceof` chain over nodes a default branch. [Stability](./stability.md#the-node-tree) has the rules.
 
 ## Fonts
 
-STIX Two Math is bundled and is the default. Load another math font with `Font::fromFile($path)` and pass it to both `Math::layout(..., font: $font)` and the writer.
+STIX Two Math is bundled and is the default. Load another math font with `Font::fromFile($path)` and pass it to both `Math::layout(..., font: $font)` and the writer. A `Font` is read-only: its `unitsPerEm` and `numGlyphs` cannot be assigned.
 
 The font needs an OpenType `MATH` table. Its outlines may be TrueType or CFF, so Latin Modern Math and the other `.otf` math fonts load the same way as a `.ttf`. The reader refuses CFF2 (variable) fonts, CID-keyed CFF fonts, a CFF font whose `FontMatrix` disagrees with its units per em, font collections, and fonts without a `MATH` table. A file that is not a font at all says so. A font that can't be used throws `Phactorial\Exception\UnsupportedFont`, which names the file and the reason.
 

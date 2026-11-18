@@ -35,7 +35,7 @@ Add the extension to `config/markdown.php`, and its options to `commonmark_optio
 ],
 ```
 
-`<x-markdown>` and the `MarkdownRenderer` class then typeset math, and the package caches what it renders. From phactorial/commonmark 0.18.1, its code highlighting leaves ` ```math ` fences alone and highlights every other fence.
+`<x-markdown>` and the `MarkdownRenderer` class then typeset math, and the package caches what it renders. From phactorial/commonmark 0.19.0, its code highlighting leaves ` ```math ` fences alone and highlights every other fence.
 
 ## A Blade component
 

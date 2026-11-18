@@ -31,7 +31,7 @@ A string is split into symbols: letters become italic variables, digit runs beco
 | `Math::prescripts($base, $preSub, $preSup, $sub = null, $sup = null)` | Scripts before the base, with optional scripts after it. |
 | `Math::fenced($open, $close, ...$content)` | Content between delimiters, such as `(` and `)`. The delimiters stretch to fit what is inside. |
 | `Math::middle($delimiter)` | A delimiter inside `Math::fenced()` that stretches with it, such as the bar in a set. |
-| `Math::big($delimiter, $size)` | A delimiter at a fixed size, 1 to 4 (`Math::BIG_SIZES`). |
+| `Math::big($delimiter, $step)` | A delimiter at one of four fixed sizes, `$step` 1 to 4. `Math::BIG_SIZES` lists today's heights in em; a minor release may change them. |
 | `Math::sum($under, $over)`, `Math::product(…)`, `Math::integral(…)` | A large operator with optional limits. In a block equation the limits sit below and above the symbol; in a line of text they move beside it. `integral()` always keeps its limits beside the symbol. |
 | `Math::bigOp($operator, $under, $over)` | The same for any operator character. |
 | `Math::under($base, $under)`, `Math::over($base, $over)`, `Math::underOver($base, $under, $over)` | Something below, above, or both above and below a base. |
@@ -41,8 +41,8 @@ A string is split into symbols: letters become italic variables, digit runs beco
 | `Math::hat($base)`, `Math::tilde($base)`, `Math::vec($base)`, `Math::dot($base)` | The common accents. |
 | `Math::matrix($rows, $fence, $align)` | Rows of cells in aligned columns inside a fence. |
 | `Math::cases($rows)` | A left brace around left-aligned rows, for piecewise definitions. |
-| `Math::aligned($rows)` | Equations lined up on their alignment points, as in TeX's `aligned`. |
-| `Math::xarrow($arrow, $over, $under)` | An extensible arrow with optional labels above and below. |
+| `Math::aligned($rows, $pairGap = 2.0)` | Equations lined up on their alignment points, as in TeX's `aligned`. `$pairGap` is the space in em between one pair of columns and the next. |
+| `Math::xarrow($arrow, $under, $over)` | An extensible arrow with optional labels below and above. The label below comes first. |
 | `Math::text($text)` | Literal text, such as a word in a formula. It is not tokenized. |
 | `Math::styled($text, $variant)` | Text in a MathML `mathvariant`, such as `bold` or `double-struck`. |
 | `Math::space($em)` | Horizontal space of that many ems. A negative value pulls the next item back. |
@@ -55,7 +55,7 @@ Math::row('f', Math::fenced('(', ')', 'x'), '=', Math::root('x', '3'));
 Math::row(Math::sum('n = 1', '∞'), Math::frac('1', Math::sup('n', '2')));
 Math::underbrace(Math::row('a + b + c'), 'three terms');
 Math::row(Math::binom('n', 'k'), '=', Math::frac('n!', Math::row('k!', '(n − k)!')));
-Math::xarrow('→', Math::text('heat'), Math::text('catalyst'));
+Math::xarrow('→', Math::text('catalyst'), Math::text('heat'));   // heat above, catalyst below
 ```
 
 `matrix()` takes a list of rows, each a list of cells (strings or nodes). The fence is one of `paren` (the default), `bracket`, `brace`, `bar`, `doublebar` or `none`, and it stretches to the height of the grid. `$align` is `center` (the default), `left` or `right` for every column, or a list with one value per column; a short list repeats its last value. In `aligned()`, cells alternate right- and left-aligned, so the second cell of each row starts at the alignment point.
@@ -159,6 +159,8 @@ Entity declarations in a DOCTYPE are ignored.
 
 `MathmlReader::read()` returns a result with the same three fields as the TeX reader's; `display` is true for `display="block"`.
 
+A formula is a tree of `Phactorial\Node` objects, and `Math::tex()` and `Math::mathml()` return its root. To visit every node, call `children()`, which lists a node's children in reading order. See [Stability](./stability.md#the-node-tree).
+
 `<mmultiscripts>` is read as prescripts and scripts, one pair on each side; more pairs are noted. What is not drawn as written: `<menclose>` is drawn as its content, `<maction>` as its first choice, and table lines, spacing and spans are ignored. Images and other media inside a formula are dropped, and so is content that an HTML tag pushed out of a `<math>` element in markup that isn't well-formed. `mathcolor`, `mathsize` and `mathbackground` are ignored.
 
 | Limit | Value | Past it |
@@ -170,7 +172,7 @@ Entity declarations in a DOCTYPE are ignored.
 
 ## Notes
 
-Both readers record what they changed, once per element and reason in a formula. `Math::notes($node)` returns them in reading order, as the reader results do.
+Both readers record what they changed, once per element and reason in a formula. `Math::notes($node)` returns them in reading order, as the reader results do. Each note is read-only; the readers make them, and callers read them.
 
 ```php
 use Phactorial\NoteLevel;
@@ -185,7 +187,7 @@ foreach (Math::notes($formula) as $note) {
 | `level` | `NoteLevel::Approximated`: drawn, but not as the source meant. `NoteLevel::Dropped`: not drawn. |
 | `element` | The MathML element name, or the TeX command with its backslash, environment name or limit |
 | `reason` | Plain words, such as `the box is not drawn` |
-| `where` | A path to the element in MathML; `offset N`, a byte offset, in TeX |
+| `where` | In MathML, `math` followed by ` > name[i]` for each level down, where `i` is the element's zero-based position among its parent's element children, as in `math > mrow[0] > mfoo[1]`. In TeX, `offset N`, a byte offset. |
 
 ### Missing glyphs
 

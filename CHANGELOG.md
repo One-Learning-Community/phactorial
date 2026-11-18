@@ -9,6 +9,38 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 - A ` ```math ` fence is typeset when a code highlighter such as Phiki or spatie/laravel-markdown's is installed, instead of being highlighted as code. Other fences still go to the highlighter.
 
+### Changed
+
+Breaking. Each item says how to migrate.
+
+- **`Math::xarrow()` takes the label below before the label above: `xarrow($arrow, $under, $over)`. A positional call written for 0.18 now swaps its labels. Swap the two arguments, or pass them by name.** The TeX and chemistry readers place their labels as before.
+- `OmmlWriter::oMathPara()` defaults to `'center'`, where it defaulted to `'left'`. Pass `'left'` to keep the old alignment. It matches `MathRender::omml()`.
+- Parameters were renamed to match the documentation. A call by position is unaffected; a call by name needs the new name, and the old name throws an `Error`.
+  - `Math::frac($num, $den)` is `frac($numerator, $denominator)`.
+  - `Math::sup($base, $sup)` is `sup($base, $superscript)`, and `sub($base, $sub)` is `sub($base, $subscript)`.
+  - `Math::subSup($base, $sub, $sup)` is `subSup($base, $subscript, $superscript)`.
+  - `Math::bigOp($op, …)` is `bigOp($operator, …)`.
+  - `Math::big($delimiter, $size)` is `big($delimiter, $step)`.
+  - `Math::notes($root)` is `notes($node)`.
+  - `Font::gid($cp)` is `gid($codePoint)`.
+  - `Box::each($fn)` is `each($visit)`.
+  - `SafeXml::decode($s)` is `decode($text)`.
+  - `OmmlWriter::oMathPara($root, $jc, …)` is `oMathPara($root, $align, …)`.
+- The classes `Math`, `MathmlReader`, `TexReader`, `SafeXml`, `MathmlWriter`, `OmmlWriter`, `TexWriter` and `TextWriter` have private constructors. Call their static methods: `new MathmlWriter()` becomes `MathmlWriter::write()`.
+- `SvgRenderer::glyphPaths()` takes the extent instead of a box: `glyphPaths($glyphs, $width, $ascent, $descent)`. Replace `glyphPaths($glyphs, $box)` with `glyphPaths($glyphs, $box->width, $box->ascent, $box->descent)`.
+- `Font::$unitsPerEm` and `Font::$numGlyphs` are read-only. `Box::$items` is read-only and cannot be assigned; read it or call `each()`.
+- `MathBlock::$tex` and `MathBlock::$source` in `phactorial/commonmark` are read-only. Create a new block instead of changing one.
+- `TexWriter::write()` throws `InvalidArgumentException`, naming the class, for a node it does not know. The other writers already did.
+- `OmmlWriter::checkAlignment()` is internal. Pass an alignment to `oMath()` or `oMathPara()` and let them check it.
+- These are marked `@internal` and may change in any release: the constructors of `MathNote`, `MathPng`, `MathmlResult`, `TexResult`, `MissingExtension`, `UnsupportedFont`, `Box`, `Glyph`, `Rule` and every node class; `Box::$italic` and `Box::$simple`; `Identifier::$italic`; `TexSource::$tex` and `TexSource::$close`; the `Grid` constants; `Space::MAX_EM`; `Operator::isLargeop()` and `Operator::hasMovableLimits()`. Build formulas with `Math`, `MathRender` and the readers.
+- In `phactorial/commonmark`, the parser, the renderers, the listener and the output helper (`MathInlineParser`, `MathNodeRenderer`, `MathHtml`, `MathBlockListener`, `MathOutput`) are internal. Register `MathExtension` and use `MathInline` and `MathBlock` for their properties.
+
+### Added
+
+- `Node::children()` is public. It returns a node's children in reading order, so a walker can recurse through a tree without knowing every node type.
+- `Glyph::translated()` and `Rule::translated()` are public, through `DisplayItem::translated()`.
+- [Stability](https://one-learning-community.github.io/phactorial/stability.html) states the compatibility policy for 1.0: what a minor release may add, what breaks, the sealed `Node` and `DisplayItem`, the closed set of display items, and the output, defaults and coverage rules.
+
 ## [0.18.0] - 2026-11-18
 
 ### Added
