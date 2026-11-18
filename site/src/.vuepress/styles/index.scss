@@ -1,0 +1,23 @@
+// Ink on light, Paper on dark.
+:root {
+  --vp-c-accent: #18181b;
+  --vp-c-accent-bg: #18181b;
+  --vp-c-accent-hover: #3f3f46;
+  --vp-c-accent-text: #fafafa;
+  --vp-c-accent-soft: rgba(24, 24, 27, 0.08);
+}
+
+[data-theme='dark'] {
+  --vp-c-accent: #fafafa;
+  --vp-c-accent-bg: #fafafa;
+  --vp-c-accent-hover: #d4d4d8;
+  --vp-c-accent-text: #18181b;
+  --vp-c-accent-soft: rgba(250, 250, 250, 0.12);
+}
+
+// Ink links are close to the body text color, so underline them in page content.
+[vp-content] a:not(.header-anchor) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}

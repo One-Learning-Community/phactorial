@@ -1,22 +1,33 @@
-# Math
+# Phactorial
 
-`quoin/math` typesets mathematics in plain PHP. It reads TeX or MathML and writes SVG, PNG, MathML, TeX, Word equations (OMML) or plain text. It needs PHP 8.4 with `ctype`, `dom` and `mbstring`. No Node, no browser, no fonts on the server.
-
-The rest of the monorepo uses it for equations in PDF, Word and HTML documents, but it does not depend on them.
+Phactorial typesets mathematics in plain PHP. It reads TeX or MathML and writes SVG, PNG, MathML, TeX, Word equations (OMML) or plain text. It needs PHP 8.4 with `ctype`, `dom` and `mbstring`. No Node, no browser, no fonts on the server.
 
 ```
-composer require quoin/math
+composer require phactorial/phactorial
 ```
 
 ```php
-use Quoin\Math\MathRender;
+use Phactorial\MathRender;
 
 echo MathRender::fromTex('x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}')->display()->svg(pad: 1);
 ```
 
-![The quadratic formula as SVG](/guide/equation-quadratic.png)
+![The quadratic formula as SVG](/equation-quadratic.png)
 
 Every glyph is a path, so the SVG looks the same everywhere and needs no web font.
+
+## Reads and writes
+
+| Reads | Writes |
+|---|---|
+| TeX, including `\ce` and `\pu` chemistry | SVG |
+| MathML | PNG (needs ext-imagick) |
+| The `Math` builder in PHP | MathML |
+| MathType and Wiris text | TeX |
+| | Word equations (OMML) |
+| | Plain text |
+
+Every reader produces the same tree, so Phactorial also converts: TeX to MathML, MathML to TeX, either to Word.
 
 ## What it does
 
@@ -37,13 +48,13 @@ A formula passes through three stages.
 | OMML | the tree | Word documents, as live equations a reader can edit |
 | Plain text | the tree | Alt text, search indexes, plain-text email |
 
-Every reader produces the same tree, so the package also converts: TeX to MathML, MathML to TeX, either to Word.
-
 ## Compared with KaTeX and MathJax
 
 KaTeX and MathJax are the standard tools for math on the web, and they are excellent. Both are JavaScript, so a PHP site runs Node beside PHP or renders in the visitor's browser.
 
-`quoin/math` is the PHP-only alternative. It reads the TeX KaTeX reads (gaps listed under [Input](./input.md#tex)), runs in your PHP process and returns a string. It also writes Word equations, which neither JavaScript library does.
+Phactorial is the PHP-only alternative. It reads the TeX KaTeX reads (gaps listed under [Input](./input.md#tex)), runs in your PHP process and returns a string. It also writes Word equations, which neither JavaScript library does.
+
+phpoffice/math is a neighbor, not a rival: it converts between MathML and Word's format. Phactorial also reads TeX and draws the formula.
 
 Not yet supported: line breaks inside long formulas, color and boxes within a formula, and equation numbers.
 
@@ -59,4 +70,5 @@ The readers never throw. Input that is too large or too deep is cut off at fixed
 - [Input](./input.md): the builder, TeX and MathML, and what each reader reports.
 - [Output](./output.md): the writers and their options.
 - [Custom backends](./backends.md): drawing a layout yourself, and other math fonts.
-- For equations in documents, see [Equations](/guide/equations.md).
+- [CommonMark](./commonmark.md): math in Markdown, typeset on the server.
+- Quoin uses Phactorial for [equations in PDF, Word and HTML documents](https://one-learning-community.github.io/quoin/guide/equations.html).

@@ -9,9 +9,9 @@ The SVG and PNG writers are short loops over a public display list. Any API that
 Walk it with `each()`, which hands you every item with the offset of the box it sits in:
 
 ```php
-use Quoin\Math\Layout\DisplayItem;
-use Quoin\Math\Layout\Glyph;
-use Quoin\Math\Layout\Rule;
+use Phactorial\Layout\DisplayItem;
+use Phactorial\Layout\Glyph;
+use Phactorial\Layout\Rule;
 
 $box->each(function (DisplayItem $item, float $dx, float $dy): void {
     // the item's position on the page is ($dx + $item->x, $dy + $item->y)
@@ -66,7 +66,7 @@ $box->each(function (DisplayItem $item, float $dx, float $dy) use ($font, $canva
 
 ## Glyphs as text
 
-A PDF backend can set ordinary letters as real text, so they can be selected and searched, as the PDF export does. `Glyph::$text` holds the character a glyph stands for. Set a glyph as text only when `text` is a single code point and the font maps that code point to `gid` (`$font->gid($codePoint) === $glyph->gid`), and `sx` and `sy` are 1.0. Draw every other glyph as an outline: stretched pieces have no character, and script-size forms share a character with the full-size glyph.
+A PDF backend can set ordinary letters as real text, so they can be selected and searched, as [Quoin](https://one-learning-community.github.io/quoin/guide/equations.html)'s PDF export does. `Glyph::$text` holds the character a glyph stands for. Set a glyph as text only when `text` is a single code point and the font maps that code point to `gid` (`$font->gid($codePoint) === $glyph->gid`), and `sx` and `sy` are 1.0. Draw every other glyph as an outline: stretched pieces have no character, and script-size forms share a character with the full-size glyph.
 
 `SvgRenderer::glyphPaths($glyphs, $box)` draws just the glyphs you pass, as an SVG in the box's own coordinates (baseline at y = 0), for a backend that sets text itself and only needs the rest as shapes.
 
@@ -74,7 +74,7 @@ A PDF backend can set ordinary letters as real text, so they can be selected and
 
 STIX Two Math is bundled and is the default. Load another math font with `Font::fromFile($path)` and pass it to both `Math::layout(..., font: $font)` and the writer.
 
-The font needs an OpenType `MATH` table. Its outlines may be TrueType or CFF, so Latin Modern Math and the other `.otf` math fonts load the same way as a `.ttf`. The reader refuses CFF2 (variable) fonts, CID-keyed CFF fonts, a CFF font whose `FontMatrix` disagrees with its units per em, font collections, and fonts without a `MATH` table. A file that is not a font at all says so. A font that can't be used throws `Quoin\Math\Exception\UnsupportedFont`, which names the file and the reason.
+The font needs an OpenType `MATH` table. Its outlines may be TrueType or CFF, so Latin Modern Math and the other `.otf` math fonts load the same way as a `.ttf`. The reader refuses CFF2 (variable) fonts, CID-keyed CFF fonts, a CFF font whose `FontMatrix` disagrees with its units per em, font collections, and fonts without a `MATH` table. A file that is not a font at all says so. A font that can't be used throws `Phactorial\Exception\UnsupportedFont`, which names the file and the reason.
 
 `TrueTypeFont` is the old name of `Font`. It remains as a deprecated alias until 1.0.
 

@@ -5,8 +5,8 @@
 `MathRender` reads a formula and writes it in one call.
 
 ```php
-use Quoin\Math\Math;
-use Quoin\Math\MathRender;
+use Phactorial\Math;
+use Phactorial\MathRender;
 
 MathRender::fromTex('\pi r^2')->svg();
 MathRender::fromTex($tex)->display()->svg(size: 18);
@@ -64,7 +64,7 @@ The result is a `Box` with `width`, `ascent` (height above the baseline) and `de
 ## SVG
 
 ```php
-use Quoin\Math\Render\SvgRenderer;
+use Phactorial\Render\SvgRenderer;
 
 $svg = new SvgRenderer(Math::stixTwoMath(), color: '#1a1a1a', opacity: 1.0);
 echo $svg->render($box, pad: 2.0);
@@ -75,14 +75,14 @@ The SVG is `width + 2 × pad` wide and `ascent + descent + 2 × pad` high. `SvgR
 ## PNG
 
 ```php
-use Quoin\Math\Render\PngRenderer;
+use Phactorial\Render\PngRenderer;
 
 if (PngRenderer::available()) {
     $png = (new PngRenderer(Math::stixTwoMath()))->render($box, pad: 1.0, scale: 2.0);
 }
 ```
 
-`PngRenderer` draws with the Imagick extension. `scale` is pixels per point; the image is `(width + 2 × pad) × scale` pixels wide, with a transparent background. It is drawn at four times that size and scaled down, which keeps strokes as fine as a browser's. `PngRenderer::baselineOffset($box, $pad, $scale)` gives the baseline in pixels. `PngRenderer::pixelSize($box, $pad, $scale)` gives the image's width and height in pixels. Without Imagick, `render()` throws `Quoin\Math\Exception\MissingExtension`. A large image is drawn at a smaller multiple to stay under `PngRenderer::MAX_PIXELS` (8 million); one over it even at its own size throws `InvalidArgumentException`.
+`PngRenderer` draws with the Imagick extension. `scale` is pixels per point; the image is `(width + 2 × pad) × scale` pixels wide, with a transparent background. It is drawn at four times that size and scaled down, which keeps strokes as fine as a browser's. `PngRenderer::baselineOffset($box, $pad, $scale)` gives the baseline in pixels. `PngRenderer::pixelSize($box, $pad, $scale)` gives the image's width and height in pixels. Without Imagick, `render()` throws `Phactorial\Exception\MissingExtension`. A large image is drawn at a smaller multiple to stay under `PngRenderer::MAX_PIXELS` (8 million); one over it even at its own size throws `InvalidArgumentException`.
 
 The color is an ImageMagick color: `#rrggbb`, `rgb(…)` or a name. `currentColor` means nothing outside a browser, so it works only for SVG.
 
@@ -91,7 +91,7 @@ To rasterize the SVG yourself, use `rsvg-convert`. ImageMagick's SVG reader draw
 ## MathML
 
 ```php
-use Quoin\Math\Render\MathmlWriter;
+use Phactorial\Render\MathmlWriter;
 
 echo MathmlWriter::write($formula, display: false);   // <math xmlns="…" display="inline">…</math>
 ```
@@ -101,7 +101,7 @@ The output is MathML Core, which current browsers render natively.
 ## TeX
 
 ```php
-use Quoin\Math\Render\TexWriter;
+use Phactorial\Render\TexWriter;
 
 echo TexWriter::write($formula);   // x = \frac{- b \pm \sqrt{b^2 - 4 a c}}{2 a}
 ```
@@ -111,8 +111,8 @@ Standard TeX with no package-specific commands, so KaTeX and MathJax accept it, 
 ## Word (OMML)
 
 ```php
-use Quoin\Math\Render\OmmlWriter;
-use Quoin\Math\Render\RunFormat;
+use Phactorial\Render\OmmlWriter;
+use Phactorial\Render\RunFormat;
 
 OmmlWriter::oMath($formula);                                               // inline
 OmmlWriter::oMathPara($formula, 'center');                                 // a paragraph of its own: left, center or right
@@ -124,7 +124,7 @@ Letters are written plain and Word italicizes them; `Math::text()` becomes ordin
 ## Plain text
 
 ```php
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Render\TextWriter;
 
 echo TextWriter::write($formula);   // x = (−b ± √(b² − 4ac))/(2a)
 ```

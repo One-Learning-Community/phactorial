@@ -7,7 +7,7 @@ Each recipe starts from TeX. `MathRender::fromMathml()` or `MathRender::of()` wi
 Use SVG on the web. It stays sharp at any zoom and needs no math font.
 
 ```php
-use Quoin\Math\MathRender;
+use Phactorial\MathRender;
 
 echo '<p>The area of a circle is ' . MathRender::fromTex('\pi r^2')->svg() . '.</p>';
 
@@ -22,20 +22,20 @@ Inline, the formula is in text style, which keeps fractions and limits small, an
 
 ## The LaTeX look
 
-The look of a LaTeX document is Latin Modern Math. It is not bundled; download `latinmodern-math.otf` from CTAN or the GUST site (GUST Font License). Its outlines are CFF, which the math package reads like any other.
+The look of a LaTeX document is Latin Modern Math. It is not bundled; download `latinmodern-math.otf` from CTAN or the GUST site (GUST Font License). Its outlines are CFF, which the reader handles like any other.
 
 ```php
-use Quoin\Math\Font\Font;
-use Quoin\Math\MathRender;
+use Phactorial\Font\Font;
+use Phactorial\MathRender;
 
 $font = Font::fromFile('/fonts/latinmodern-math.otf');
 
 echo MathRender::fromTex('\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}')->display()->font($font)->svg(size: 18, pad: 2);
 ```
 
-Load the font once and reuse the object. SVG, PNG and MathML output carry no font, so the file costs nothing there. In a PDF the font is embedded whole, which adds about 390 KB; see [Fonts](/guide/fonts.md#the-math-font).
+Load the font once and reuse the object. SVG, PNG and MathML output carry no font, so the file costs nothing there. A PDF that embeds the font carries it whole, about 390 KB; [Quoin](https://one-learning-community.github.io/quoin/guide/fonts.html#the-math-font) does this for equations in its PDF documents.
 
-Other math fonts with CFF outlines load the same way: New Computer Modern Math, the TeX Gyre math fonts, Fira Math, Libertinus Math and XITS Math. In a document, point the font set at the file with `withMathFont()`, or set `math_font` in Laravel.
+Other math fonts with CFF outlines load the same way: New Computer Modern Math, the TeX Gyre math fonts, Fira Math, Libertinus Math and XITS Math. In a Quoin document, point the font set at the file with `withMathFont()`, or set `math_font` in Laravel.
 
 ## Accessible formulas
 
@@ -103,7 +103,7 @@ User input can be malformed, huge or hostile. The readers are built for it.
 `notes()` returns the reports:
 
 ```php
-use Quoin\Math\NoteLevel;
+use Phactorial\NoteLevel;
 
 $formula = MathRender::fromTex($userInput);
 

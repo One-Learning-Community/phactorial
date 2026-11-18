@@ -4,10 +4,10 @@ A formula is a tree of nodes. Build it in PHP or read it from TeX or MathML; eve
 
 ## The builder
 
-`Quoin\Math\Math` has a static method for each shape. Wherever a method takes a node, a string works too.
+`Phactorial\Math` has a static method for each shape. Wherever a method takes a node, a string works too.
 
 ```php
-use Quoin\Math\Math;
+use Phactorial\Math;
 
 $quadratic = Math::row('x =', Math::frac(
     Math::row('−b ±', Math::sqrt(Math::sup('b', '2'), '− 4ac')),
@@ -33,7 +33,7 @@ A string is split into symbols: letters become italic variables, digit runs beco
 | `text($text)`, `styled($text, $variant)` | Upright words; text in a `mathvariant` such as `double-struck` |
 | `space($em)`, `phantom(...$content)` | Spacing |
 
-The [Equations guide](/guide/equations.md#building-a-formula) has every method with examples. Methods that get impossible arguments, such as a matrix with no cells or an unknown variant, throw `InvalidArgumentException`; the readers below never throw.
+The [Equations guide](https://one-learning-community.github.io/quoin/guide/equations.html#building-a-formula) has every method with examples. Methods that get impossible arguments, such as a matrix with no cells or an unknown variant, throw `InvalidArgumentException`; the readers below never throw.
 
 ## TeX
 
@@ -61,7 +61,7 @@ $ion = Math::tex('\ce{SO4^2-}');
 $quantity = Math::tex('\pu{25 kJ/mol}');
 ```
 
-The result is ordinary nodes: upright element symbols, subscript counts, superscript charges and stretchy arrows. There are no chemistry node types, so PDF, SVG, PNG, MathML and Word equations all draw it, and Word gets real element symbols and arrows instead of letter runs. The reader covers the common core of mhchem:
+The result is ordinary nodes: upright element symbols, subscript counts, superscript charges and stretchy arrows. There are no chemistry node types, so SVG, PNG, MathML and Word equations all draw it, and Word gets real element symbols and arrows instead of letter runs. The reader covers the common core of mhchem:
 
 | Input | Drawn as |
 |---|---|
@@ -90,7 +90,7 @@ Equilibrium arrows such as `\xrightleftharpoons` stretch to their labels everywh
 The reader also returns the display style and the notes:
 
 ```php
-use Quoin\Math\Tex\TexReader;
+use Phactorial\Tex\TexReader;
 
 $result = TexReader::read('$$\sum_{n=1}^{\infty} \frac{1}{n^2}$$');
 $result->node;      // the formula
@@ -120,7 +120,7 @@ $formula = Math::mathml('<math display="block"><mfrac><mn>1</mn><mn>2</mn></mfra
 - Word's `mml:` prefix works, and so does no prefix.
 - A fragment without a `<math>` element is read as if it had one.
 - Annotations, such as a TeX copy of the formula, are ignored.
-- The text form that MathType and Wiris store (`«math…«/math»`) is accepted. `Quoin\Math\Mathml\SafeXml::find($text)` locates those runs in a larger text, and `SafeXml::decode()` turns one into MathML.
+- The text form that MathType and Wiris store (`«math…«/math»`) is accepted. `Phactorial\Mathml\SafeXml::find($text)` locates those runs in a larger text, and `SafeXml::decode()` turns one into MathML.
 
 Entity declarations in a DOCTYPE are ignored.
 
@@ -140,7 +140,7 @@ Entity declarations in a DOCTYPE are ignored.
 Both readers record what they changed, once per element and reason in a formula. `Math::notes($node)` returns them in reading order, as the reader results do.
 
 ```php
-use Quoin\Math\NoteLevel;
+use Phactorial\NoteLevel;
 
 foreach (Math::notes($formula) as $note) {
     echo $note->level === NoteLevel::Dropped ? 'dropped' : 'approximated', ': ', $note->element, ' (', $note->reason, ")\n";
