@@ -247,6 +247,6 @@ final class MathmlWriterTest extends TestCase
         $red = new Color(new Row([new Identifier('a'), new Identifier('b')]), '#ff0000', true);
         $xml = MathmlWriter::write(new Row([$red, new Operator('-'), new Identifier('c')]));
 
-        self::assertStringContainsString('<mrow><mi>a</mi><mi>b</mi><mo>-</mo><mi>c</mi></mrow>', $xml);
+        self::assertStringContainsString('<mrow><mstyle mathcolor="#ff0000"><mi>a</mi></mstyle><mstyle mathcolor="#ff0000"><mi>b</mi></mstyle><mo>-</mo><mi>c</mi></mrow>', $xml);
     }
 }

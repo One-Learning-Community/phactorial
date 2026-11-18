@@ -115,8 +115,15 @@ final class MathmlWriter
             $n instanceof DisplayStyle => '<mstyle displaystyle="' . ($n->display ? 'true' : 'false') . '">' . self::node($n->content) . '</mstyle>',
             $n instanceof Fallback => $n->content === null ? '' : self::plain0($n->content),
             $n instanceof TexSource => self::plain0($n->content),
+            $n instanceof Color => self::mstyle($n->color, self::node($n->content)),
             default => throw new \InvalidArgumentException('Unknown node ' . $n::class),
         };
+    }
+
+    private static function mstyle(string $color, string $xml): string
+    {
+        // Only #rrggbb is ever written; the Color constructor asserts it, and assertions are off in production.
+        return preg_match('/^#[0-9a-f]{6}$/D', $color) === 1 ? '<mstyle mathcolor="' . $color . '">' . $xml . '</mstyle>' : $xml;
     }
 
     /** A child in a fixed-arity element: a dropped one is written as an empty mrow so the others keep their places. */
@@ -196,38 +203,51 @@ final class MathmlWriter
 
     private static function row(Row $r): string
     {
-        $nodes = $r->nodes();
-        $count = count($nodes);
+        $items = $r->items();
+        $count = count($items);
         if ($count === 1) {
-            return self::node($nodes[0]);
+            [$only, $inline] = $items[0];
+
+            return $inline !== null && Fallback::color($only) === null ? self::mstyle($inline, self::node($only)) : self::node($only);
         }
         $forms = $r->forms();
         $out = '';
-        foreach ($nodes as $i => $child) {
+        foreach ($items as $i => [$child, $inline]) {
             $resolved = $forms[$i];
             // What a browser infers from the position in the mrow: first prefix, last postfix, else infix.
             $inferred = $i === 0 ? OperatorDictionary::FORM_PREFIX : ($i === $count - 1 ? OperatorDictionary::FORM_POSTFIX : OperatorDictionary::FORM_INFIX);
             $op = Fallback::unwrap($child);
             if ($op instanceof Operator) {
-                $out .= self::styled($child, self::operator($op, $resolved ?? $inferred, $inferred));
-            } elseif ($i < $count - 1 && self::isFunction($child)) {
-                // ApplyFunction goes between the name (with its scripts or limits) and what follows it.
-                $out .= self::plain0($child) . '<mo>&#x2061;</mo>';
+                $out .= self::styled($child, self::operator($op, $resolved ?? $inferred, $inferred), $inline);
             } else {
-                $out .= self::node($child);
+                // A node that carries its own color writes it; the inline color around it is the outer one and loses.
+                $xml = $i < $count - 1 && self::isFunction($child)
+                    // ApplyFunction goes between the name (with its scripts or limits) and what follows it.
+                    ? self::plain0($child) . '<mo>&#x2061;</mo>'
+                    : self::node($child);
+                $out .= $inline !== null && Fallback::color($child) === null ? self::mstyle($inline, $xml) : $xml;
             }
         }
 
         return '<mrow>' . $out . '</mrow>';
     }
 
-    /** An operator's markup inside the mstyle displaystyle wrappers its node was peeled out of. */
-    private static function styled(Node $node, string $xml): string
+    /**
+     * An operator's markup inside the mstyle wrappers its node was peeled out of: its color (its own, else $inline) and its
+     * display switches.
+     */
+    private static function styled(Node $node, string $xml, ?string $inline = null): string
     {
         $displays = Fallback::displays($node);
+        $color = Fallback::color($node);
         $inner = Fallback::unwrap($node);
         if ($inner instanceof Row && count($inner->children) === 1) {
             $displays = [...$displays, ...Fallback::displays($inner->children[0])];
+            $color = Fallback::color($inner->children[0]) ?? $color;
+        }
+        $color ??= $inline;
+        if ($color !== null) {
+            $xml = self::mstyle($color, $xml);
         }
         foreach (array_reverse($displays) as $display) {
             $xml = '<mstyle displaystyle="' . ($display ? 'true' : 'false') . '">' . $xml . '</mstyle>';
@@ -267,7 +287,7 @@ final class MathmlWriter
         if (UnderOver::isLimitName($u->base)) {
             // Marked as an operator so a browser sets its limit beside it in inline style, as the SVG draws it.
             $name = UnderOver::nameNode($u->base);
-            $base = '<mo movablelimits="true">' . Xml::text($name instanceof Identifier ? $name->name : ($name instanceof Operator ? $name->char : '')) . '</mo>';
+            $base = self::styled($u->base, '<mo movablelimits="true">' . Xml::text($name instanceof Identifier ? $name->name : ($name instanceof Operator ? $name->char : '')) . '</mo>');
         } elseif ($baseOp !== null) {
             $stretches = $baseOp->stretchy ?? OperatorDictionary::lookup($baseOp->char, OperatorDictionary::FORM_POSTFIX)['stretchy'];
             $form = $baseOp->isLargeop(OperatorDictionary::FORM_PREFIX) ? OperatorDictionary::FORM_PREFIX : OperatorDictionary::FORM_INFIX;

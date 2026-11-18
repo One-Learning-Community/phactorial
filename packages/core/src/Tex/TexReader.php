@@ -415,7 +415,27 @@ final class TexReader
                 $this->c->p++;
                 [$spelling, $hex, $spec] = $this->colorArg();
                 $space = $this->c->peekIs('sp') ? ' ' : '';
-                $rest = fn (): Node => self::row($this->parseUntil(...$stops));
+                // An accepted switch runs to the end of its group: inside \left..\right that is \right, so a \middle on the way stays in it.
+                // A rejected one is no color and keeps stopping at \middle, laying out as if absent.
+                $rest = function () use ($stops, $hex): Node {
+                    $parts = [];
+                    $middle = false;
+                    while (true) {
+                        array_push($parts, ...$this->parseUntil(...$stops));
+                        $next = $this->c->peek();
+                        if ($hex === null || ! in_array('middle', $stops, true) || $next === null || $next[0] !== 'cs' || $next[1] !== 'middle') {
+                            break;
+                        }
+                        $this->c->p++;
+                        $mid = $this->delimiter();
+                        if ($mid !== null && $mid !== '') {
+                            $parts[] = new Middle($mid);
+                            $middle = true;
+                        }
+                    }
+
+                    return $middle ? new Row($parts) : self::row($parts);
+                };
                 $node = $hex === null
                     ? $this->note(NoteLevel::Approximated, '\\color', Colors::unknown($spec), $t[2], $rest, 'color|' . $spec)
                     : new Color($rest(), $hex, true);
@@ -2008,7 +2028,7 @@ final class TexReader
             // A character or markup TeX cannot read in a color name: reject it, never write back a changed color.
             // Written as an empty spec, which reads back rejected too; the note shows the spelling with each such
             // character as `?`.
-            return [$prefix . '{}', null, preg_replace('/[^A-Za-z0-9#.,!:\- ]/u', '?', $raw) ?? ''];
+            return [$prefix . '{}', null, Colors::masked($raw)];
         }
 
         return [$prefix . '{' . $padded . '}', Colors::tex($spec, $model), $spec];

@@ -64,6 +64,12 @@ final class Colors
         return "unknown color `{$spec}`; drawn in the default color";
     }
 
+    /** A rejected spelling made safe to show in a note: every character outside letters, digits, `#.,!:-` and space becomes `?`. */
+    public static function masked(string $spec): string
+    {
+        return preg_replace('/[^A-Za-z0-9#.,!:\- ]/u', '?', $spec) ?? '';
+    }
+
     /** #rgb or #rrggbb, in any case, as lowercase #rrggbb. */
     private static function hex(string $s): ?string
     {

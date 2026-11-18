@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phactorial\Mathml;
 
+use Phactorial\Colors;
 use Phactorial\MathNote;
 use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
@@ -71,6 +72,11 @@ final class MathmlReader
     /** @var array<string, true> element names already noted in this formula */
     private array $noted = [];
 
+    /** @var \WeakMap<Node, string> where each Color was read, for notes about it */
+    private \WeakMap $paths;
+
+    private const string UNKNOWN_COLOR = 'unknown color';
+
     private int $depth = 0;
 
     private int $elements = 0;
@@ -82,6 +88,7 @@ final class MathmlReader
 
     private function __construct()
     {
+        $this->paths = new \WeakMap();
     }
 
     public static function read(string|\Dom\Element $input): MathmlResult
@@ -269,7 +276,7 @@ final class MathmlReader
         }
         $this->depth++;
         try {
-            return $this->dispatch($e, $where);
+            return $this->colored($e, $this->dispatch($e, $where), $where);
         } finally {
             $this->depth--;
         }
@@ -284,6 +291,27 @@ final class MathmlReader
         $this->noted[$key] = true;
 
         return new Fallback($content, new MathNote($level, $element, $reason, $where));
+    }
+
+    /** $node under the element's mathcolor: a Color, or the node in a Fallback noting a value that is no color. */
+    private function colored(\Dom\Element $e, ?Node $node, string $where): ?Node
+    {
+        $value = trim($e->getAttribute('mathcolor') ?? '');
+        if ($node === null || $value === '') {
+            return $node;
+        }
+        $hex = Colors::css($value);
+
+        return $hex !== null
+            ? $this->located(new Color($node, $hex), $where)
+            : $this->note('color|' . $value, $node, NoteLevel::Approximated, self::name($e), Colors::unknown(Colors::masked($value)), $where);
+    }
+
+    private function located(Color $color, string $where): Color
+    {
+        $this->paths[$color] = $where;
+
+        return $color;
     }
 
     private function dispatch(\Dom\Element $e, string $where): ?Node
@@ -542,7 +570,7 @@ final class MathmlReader
     /** The children as one node (a Row, or the child alone), with fences paired. */
     private function children(\Dom\Element $e, string $where): Node
     {
-        return self::row(self::pair(array_values(array_filter($this->slots($e, $where), static fn (?Node $n): bool => $n !== null))));
+        return self::row($this->pair(array_values(array_filter($this->slots($e, $where), static fn (?Node $n): bool => $n !== null))));
     }
 
     /** @param list<Node> $nodes */
@@ -822,14 +850,14 @@ final class MathmlReader
      *
      * @return list<Node>
      */
-    private static function pair(array $nodes): array
+    private function pair(array $nodes): array
     {
         $out = [];
         /** @var list<array{int, Operator}> $stack */
         $stack = [];
         foreach ($nodes as $n) {
             // A colored operator pairs like a plain one; the Fenced has no per-delimiter color; the reader notes the dropped color.
-            $op = self::peelColor($n);
+            $op = self::delimiter($n)[0];
             if (! $op instanceof Operator || $op->stretchy === false) {
                 $out[] = $n;
                 continue;
@@ -856,8 +884,8 @@ final class MathmlReader
                         $inner[] = [$innerIdx - $idx - 1, $innerOpener];
                     }
                     $stack = array_slice($stack, 0, $found);
-                    $between = self::foldLoneOpeners(array_splice($out, $idx + 1), $inner);
-                    $out[$idx] = new Fenced($opener->char, $ch, self::row(self::bars($between)));
+                    $between = $this->foldLoneOpeners(array_splice($out, $idx + 1), $inner);
+                    $out[$idx] = $this->fence($out[$idx], $n, $opener->char, $ch, self::row($this->bars($between)));
                 }
             } else {
                 $out[] = $n;
@@ -865,7 +893,7 @@ final class MathmlReader
         }
 
         // An opener with no closer, directly before a table, fences it alone: `{` then a table is cases.
-        return self::bars(self::foldLoneOpeners(array_values($out), $stack));
+        return $this->bars($this->foldLoneOpeners(array_values($out), $stack));
     }
 
     /**
@@ -876,7 +904,7 @@ final class MathmlReader
      *
      * @return list<Node>
      */
-    private static function foldLoneOpeners(array $nodes, array $openers): array
+    private function foldLoneOpeners(array $nodes, array $openers): array
     {
         $fold = [];
         foreach ($openers as [$idx, $opener]) {
@@ -892,7 +920,7 @@ final class MathmlReader
         $count = count($nodes);
         for ($i = 0; $i < $count; $i++) {
             if (isset($fold[$i])) {
-                $out[] = new Fenced($fold[$i]->char, '', $nodes[++$i]);
+                $out[] = $this->fence($nodes[$i], null, $fold[$i]->char, '', $nodes[++$i]);
             } else {
                 $out[] = $nodes[$i];
             }
@@ -902,16 +930,51 @@ final class MathmlReader
     }
 
     /**
-     * The node under any Color wrappers. Only Color is peeled, not a Fallback: a delimiter that carries a note is not paired,
-     * or the fence would drop the note.
+     * A Fenced; it has no color per delimiter, so a color on a delimiter that paired is noted (once per formula) and not
+     * drawn. A delimiter's own rejected-color note goes around the Fenced, so a bad color lays out as no color and keeps its note.
      */
-    private static function peelColor(Node $n): Node
+    private function fence(Node $open, ?Node $close, string $openChar, string $closeChar, Node $content): Node
     {
-        while ($n instanceof Color) {
-            $n = $n->content;
+        $result = new Fenced($openChar, $closeChar, $content);
+        $dropped = null;
+        foreach ([$open, $close] as $delimiter) {
+            if ($delimiter === null) {
+                continue;
+            }
+            [, $color, $wrappers] = self::delimiter($delimiter);
+            $dropped ??= $color;
+            foreach ($wrappers as $wrapper) {
+                $result = new Fallback($result, $wrapper->note);
+            }
+        }
+        if ($dropped !== null) {
+            $result = $this->note('#color-pair', $result, NoteLevel::Approximated, 'mo', 'color on a paired delimiter is not drawn', $this->paths[$dropped] ?? 'mo') ?? $result;
         }
 
-        return $n;
+        return $result;
+    }
+
+    /**
+     * The node under the Color wrappers and the rejected-color notes around it (only those: any other note stops a
+     * delimiter from pairing, or the fence would drop it); the first Color peeled, if any; and the note wrappers, outermost first.
+     *
+     * @return array{Node, ?Color, list<Fallback>}
+     */
+    private static function delimiter(Node $n): array
+    {
+        $first = null;
+        $wrappers = [];
+        while (true) {
+            if ($n instanceof Color) {
+                $first ??= $n;
+                $n = $n->content;
+            } elseif ($n instanceof Fallback && $n->content !== null && str_starts_with($n->note->reason, self::UNKNOWN_COLOR)) {
+                $wrappers[] = $n;
+                $n = $n->content;
+            } else {
+                return [$n, $first, $wrappers];
+            }
+        }
     }
 
     /**
@@ -921,10 +984,10 @@ final class MathmlReader
      *
      * @return list<Node>
      */
-    private static function bars(array $nodes): array
+    private function bars(array $nodes): array
     {
         $isBar = static function (Node $n, string $ch): bool {
-            $n = self::peelColor($n);
+            $n = self::delimiter($n)[0];
 
             return $n instanceof Operator && $n->stretchy !== false && $n->char === $ch;
         };
@@ -932,7 +995,7 @@ final class MathmlReader
         $count = count($nodes);
         for ($i = 0; $i < $count; $i++) {
             $n = $nodes[$i];
-            $op = self::peelColor($n);
+            $op = self::delimiter($n)[0];
             $close = null;
             if ($op instanceof Operator && $op->stretchy !== false && ($op->char === '|' || $op->char === '‖')) {
                 for ($j = $i + 1; $j < $count; $j++) {
@@ -946,7 +1009,7 @@ final class MathmlReader
                 $out[] = $n;
                 continue;
             }
-            $out[] = new Fenced($op->char, $op->char, self::row(self::bars(array_slice($nodes, $i + 1, $close - $i - 1))));
+            $out[] = $this->fence($n, $nodes[$close], $op->char, $op->char, self::row($this->bars(array_slice($nodes, $i + 1, $close - $i - 1))));
             $i = $close;
         }
 

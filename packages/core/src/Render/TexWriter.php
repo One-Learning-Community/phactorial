@@ -133,6 +133,7 @@ final class TexWriter
         }
         $pieces = [];
         $afterNumber = false;
+        $glued = [];
         $previous = null;
         foreach ($row->children as $kid) {
             $bare = self::strip($kid);
@@ -153,9 +154,15 @@ final class TexWriter
             $isNumber = $bare instanceof Number;
             $pieces[] = $isNumber && $afterNumber ? '{' . $piece . '}' : $piece;
             $afterNumber = $isNumber;
+            // A switch written with nothing after it and no space of its own is followed with none (`\color{red}\middle|`).
+            $glued[count($pieces) - 1] = $kid instanceof TexSource && $kid->close === '' && str_starts_with($kid->tex, '\\color') && $piece === $kid->tex && ! str_ends_with($piece, ' ');
+        }
+        $out = '';
+        foreach ($pieces as $i => $piece) {
+            $out .= ($i > 0 && ! ($glued[$i - 1] ?? false) ? ' ' : '') . $piece;
         }
 
-        return implode(' ', $pieces);
+        return $out;
     }
 
     /** The row the reader builds for `\bmod`, `\mod{n}`, `\pmod{n}` or `\pod{n}`, written as that command; null for any other row. */
@@ -200,9 +207,12 @@ final class TexWriter
         } else {
             $content = $s->content;
         }
-        $body = str_starts_with($s->tex, '\\fbox') && $inner instanceof Text ? self::textEscape($inner->text) : self::w($content, false);
+        $body = str_starts_with($s->tex, '\\fbox') && $inner instanceof Text ? self::textEscape($inner->text) : self::w($content, $inFence && $s->close === '');
 
-        return $s->tex . $body . $s->close;
+        // A switch with nothing after it (the rest of its fence follows as siblings) gives up its padding to the row's own space.
+        $head = $body === '' && $s->close === '' ? rtrim($s->tex, ' ') : $s->tex;
+
+        return $head . $body . $s->close;
     }
 
     /** The node with Fallback wrappers peeled. */

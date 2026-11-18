@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Phactorial\Tests\Tex;
 
+use Phactorial\Layout\Box;
+use Phactorial\Layout\Glyph;
 use Phactorial\Math;
 use Phactorial\Node\Color;
 use Phactorial\Node\Fallback;
@@ -183,5 +185,64 @@ final class TexColorTest extends TestCase
     private static function shape(Node $n): string
     {
         return $n::class . '(' . implode(',', array_map(self::shape(...), $n->children())) . ')' . ($n instanceof TexSource ? $n->tex . '|' . $n->close : '');
+    }
+
+    public function test_a_color_switch_runs_past_middle_to_right(): void
+    {
+        $tex = '\left( a \color{red} \middle| b \right)';
+        $node = Math::tex($tex);
+        self::assertSame([], Math::notes($node));
+        self::assertSame($tex, TexWriter::write($node));
+
+        $plain = Math::layout(Math::tex('\left( a \middle| b \right)'));
+        $glyphs = static function (Box $box): array {
+            $out = [];
+            $box->each(static function ($item, float $dx, float $dy) use (&$out): void {
+                if ($item instanceof Glyph) {
+                    $out[] = [$item->gid, $item->color, round($dx + $item->x, 3), round($dy + $item->y, 3)];
+                }
+            });
+
+            return $out;
+        };
+        $colored = $glyphs(Math::layout($node));
+        $uncolored = $glyphs($plain);
+        self::assertSame(array_column($uncolored, 0), array_column($colored, 0));
+        self::assertSame(array_column($uncolored, 2), array_column($colored, 2));
+        // ( a | b ): only the bar and b are red.
+        self::assertSame([null, null, '#ff0000', '#ff0000', null], array_column($colored, 1));
+    }
+
+    public function test_a_rejected_switch_before_middle_lays_out_as_uncolored(): void
+    {
+        $glyphs = static function (Node $node): array {
+            $out = [];
+            Math::layout($node)->each(static function ($item, float $dx, float $dy) use (&$out): void {
+                if ($item instanceof Glyph) {
+                    $out[] = [$item->gid, $item->color, round($dx + $item->x, 3), round($dy + $item->y, 3)];
+                }
+            });
+
+            return $out;
+        };
+        $tex = '\left( a \color{bogus} \middle| \frac{b}{c} \right)';
+        $node = Math::tex($tex);
+        self::assertSame($glyphs(Math::tex('\left( a \middle| \frac{b}{c} \right)')), $glyphs($node));
+        self::assertSame($tex, TexWriter::write($node));
+    }
+
+    #[DataProvider('middleSpellings')]
+    public function test_a_switch_before_middle_round_trips_byte_for_byte(string $tex): void
+    {
+        self::assertSame($tex, TexWriter::write(Math::tex($tex)));
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function middleSpellings(): iterable
+    {
+        foreach (['bogus', 'red'] as $color) {
+            yield $color . ' spaced' => ['\\left( a \\color{' . $color . '} \\middle| b \\right)'];
+            yield $color . ' tight' => ['\\left( a \\color{' . $color . '}\\middle| b \\right)'];
+        }
     }
 }

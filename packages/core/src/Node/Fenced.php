@@ -127,7 +127,8 @@ final class Fenced extends Node
             $n instanceof Fallback && $n->content !== null => new Fallback(self::stretchMiddle($n->content, $req), $n->note),
             $n instanceof DisplayStyle => new DisplayStyle(self::stretchMiddle($n->content, $req), $n->display),
             $n instanceof TexSource => new TexSource(self::stretchMiddle($n->content, $req), $n->tex, $n->close),
-            $n instanceof Color => new Color(self::stretchMiddle($n->content, $req), $n->color, $n->inline),
+            // An inline color's row is spliced into the parent (see Row::items()), so its Middles stretch like the parent's.
+            $n instanceof Color => new Color($n->inline && Fallback::unwrap($n->content) instanceof Row ? self::stretchMiddles($n->content, $req) : self::stretchMiddle($n->content, $req), $n->color, $n->inline),
             default => $n,
         };
     }
