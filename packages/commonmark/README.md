@@ -45,7 +45,7 @@ The extension works alongside `GithubFlavoredMarkdownExtension`.
 | ``$`e^{i\pi}`$`` | Inline math that may contain any `$` and may span lines. |
 | `$$\sum k$$` inside a line of text | Inline math, on one line. |
 | `$$` alone on a line, then TeX, then `$$` | A display block in a `<div class="math math-display">`, when the paragraph starts and ends with `$$`. It works inside block quotes and list items, and the TeX may span lines. |
-| `$$x = 1$$` alone on a line | A display block. |
+| A paragraph of only `$$…$$` | A display block. |
 | ```` ```math ```` fence | A display block. Other fences are left alone. |
 | `` `$x$` `` and other code | Code, never math. A code span inside a formula ends the formula. |
 | `\$` | A literal dollar sign. |

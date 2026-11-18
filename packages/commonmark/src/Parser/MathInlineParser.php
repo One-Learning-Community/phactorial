@@ -23,9 +23,10 @@ use Phactorial\CommonMark\Node\MathInline;
  * - A backslash-escaped dollar never closes a formula, and a code span inside the formula, which GitHub reads first,
  *   ends the attempt. A closer may be followed by a non-ASCII letter, but an opener may not be preceded by one.
  *
- * An opener with no closer after it must not rescan the paragraph, or a paragraph of unclosed openers parses in
- * quadratic time. The last possible closer is found once per paragraph (once per line for inline $$) and compared
- * with each opener's position. A single-dollar formula cannot contain a dollar sign, so its scan ends at the next one.
+ * An opener must not rescan the paragraph, or a paragraph of unclosed openers parses in quadratic time. The usable
+ * "$$" closers, the newlines and the code-span openers are each listed once per paragraph, and every opener finds
+ * its closer, and any newline or code span in between, by binary search. A single-dollar formula cannot contain a
+ * dollar sign, so its scan ends at the next one.
  */
 final class MathInlineParser implements InlineParserInterface
 {
@@ -38,11 +39,11 @@ final class MathInlineParser implements InlineParserInterface
     private ?\WeakReference $cursorRef = null;
     private int $lastBacktickCloser = -1;
     private bool $displayMode = false;
-    private int $displayBound = -1;
-    private int $lineStart = 0;
-    private int $lineEnd = -1;
-    private int $lineBound = -1;
-    /** @var array<int, true>|null Offsets of the backtick runs that open a code span; built when first needed. */
+    /** @var list<int>|null Offsets of the usable "$$" closers; built when first needed. */
+    private ?array $closers = null;
+    /** @var list<int>|null */
+    private ?array $newlines = null;
+    /** @var list<int>|null Offsets of the backtick runs that open a code span; built when first needed. */
     private ?array $codeOpeners = null;
 
     public function getMatchDefinition(): InlineParserMatch
@@ -99,18 +100,25 @@ final class MathInlineParser implements InlineParserInterface
     /** @return array{int, string, bool}|null */
     private function matchDouble(string $text, int $pos): ?array
     {
-        if ($this->displayMode) {
-            $fits = $pos + 3 <= $this->displayBound;
-            $pattern = '/\G\$\$(.+?)(?<!\\\\)\$\$/s';
-        } else {
-            $fits = $pos + 3 <= $this->boundOnLine($text, $pos) && ! ctype_space($text[$pos + 2] ?? ' ');
-            $pattern = '/\G\$\$([^\n]+?)(?<!\\\\)\$\$(?!' . self::WORD . ')/';
+        if (! $this->displayMode && ctype_space($text[$pos + 2] ?? ' ')) {
+            return null;
         }
-        if (! $fits || preg_match($pattern, $text, $m, 0, $pos) !== 1 || $this->hasCodeSpan($text, $pos + 2, strlen($m[1]))) {
+        $closer = self::firstAtOrAfter($this->closers($text), $pos + 3);
+        if ($closer === null) {
+            return null;
+        }
+        if (! $this->displayMode) {
+            $newline = self::firstAtOrAfter($this->newlines($text), $pos);
+            if ($newline !== null && $newline < $closer) {
+                return null;
+            }
+        }
+        $tex = substr($text, $pos + 2, $closer - $pos - 2);
+        if ($this->hasCodeSpan($text, $pos + 2, strlen($tex))) {
             return null;
         }
 
-        return [strlen($m[0]), $m[1], $this->displayMode];
+        return [$closer + 2 - $pos, $tex, $this->displayMode];
     }
 
     private function prepare(Cursor $cursor, string $text): void
@@ -122,57 +130,81 @@ final class MathInlineParser implements InlineParserInterface
         $position = strrpos($text, '`$');
         $this->lastBacktickCloser = $position === false ? -1 : $position;
         $this->codeOpeners = null;
-        $this->lineEnd = -1;
+        $this->closers = null;
+        $this->newlines = null;
         $this->displayMode = str_starts_with($text, '$$') && str_ends_with(rtrim($text), '$$');
-        $this->displayBound = $this->displayMode ? $this->lastCloser($text, 0, strlen(rtrim($text)), false) : -1;
     }
 
-    /** The start of the last usable "$$" closer on the line holding $pos, or -1; found once per line. */
-    private function boundOnLine(string $text, int $pos): int
+    /**
+     * Offsets of every "$$" that can close a formula: not after a backslash and, outside display mode, not before an
+     * ASCII letter, digit or underscore. Built once per paragraph, so each opener finds its closer by binary search.
+     *
+     * @return list<int>
+     */
+    private function closers(string $text): array
     {
-        if ($this->lineEnd < 0 || $pos < $this->lineStart || $pos > $this->lineEnd) {
-            $before = strrpos(substr($text, 0, $pos), "\n");
-            $this->lineStart = $before === false ? 0 : $before + 1;
-            $end = strpos($text, "\n", $pos);
-            $this->lineEnd = $end === false ? strlen($text) : $end;
-            $this->lineBound = $this->lastCloser($text, $this->lineStart, $this->lineEnd, true);
+        if ($this->closers !== null) {
+            return $this->closers;
+        }
+        $closers = [];
+        $length = strlen($text);
+        for ($q = strpos($text, '$$'); $q !== false; $q = strpos($text, '$$', $q + 1)) {
+            if ($q === 0 || $text[$q - 1] === '\\') {
+                continue;
+            }
+            if (! $this->displayMode && $q + 2 < $length && preg_match('/' . self::WORD . '/', $text[$q + 2]) === 1) {
+                continue;
+            }
+            $closers[] = $q;
         }
 
-        return $this->lineBound;
+        return $this->closers = $closers;
     }
 
-    private function lastCloser(string $text, int $start, int $end, bool $followerRule): int
+    /** @return list<int> */
+    private function newlines(string $text): array
     {
-        for ($q = $end - 2; $q > $start; $q--) {
-            if ($text[$q] !== '$' || $text[$q + 1] !== '$' || $text[$q - 1] === '\\') {
-                continue;
-            }
-            if ($followerRule && $q + 2 < $end && preg_match('/' . self::WORD . '/', $text[$q + 2]) === 1) {
-                continue;
-            }
-
-            return $q;
+        if ($this->newlines !== null) {
+            return $this->newlines;
+        }
+        $newlines = [];
+        for ($n = strpos($text, "\n"); $n !== false; $n = strpos($text, "\n", $n + 1)) {
+            $newlines[] = $n;
         }
 
-        return -1;
+        return $this->newlines = $newlines;
+    }
+
+    /**
+     * The smallest value in the sorted list that is at least $from, or null.
+     *
+     * @param list<int> $sorted
+     */
+    private static function firstAtOrAfter(array $sorted, int $from): ?int
+    {
+        $low = 0;
+        $high = count($sorted);
+        while ($low < $high) {
+            $mid = ($low + $high) >> 1;
+            if ($sorted[$mid] < $from) {
+                $low = $mid + 1;
+            } else {
+                $high = $mid;
+            }
+        }
+
+        return $sorted[$low] ?? null;
     }
 
     /** Whether a code span opens inside the $length bytes of formula starting at $from. */
     private function hasCodeSpan(string $text, int $from, int $length): bool
     {
-        if (! str_contains(substr($text, $from, $length), '`')) {
-            return false;
-        }
-        foreach ($this->codeOpeners($text) as $offset => $_) {
-            if ($offset >= $from && $offset < $from + $length) {
-                return true;
-            }
-        }
+        $opener = self::firstAtOrAfter($this->codeOpeners($text), $from);
 
-        return false;
+        return $opener !== null && $opener < $from + $length;
     }
 
-    /** @return array<int, true> */
+    /** @return list<int> Offsets of the backtick runs that open a code span, ascending. */
     private function codeOpeners(string $text): array
     {
         if ($this->codeOpeners !== null) {
@@ -194,7 +226,7 @@ final class MathInlineParser implements InlineParserInterface
             }
             $closer = $byLength[$length][$pointers[$length]] ?? null;
             if ($closer !== null) {
-                $openers[$runs[$i][1]] = true;
+                $openers[] = $runs[$i][1];
                 $i = $closer;
             }
         }

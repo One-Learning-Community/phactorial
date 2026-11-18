@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phactorial\CommonMark;
 
 use League\CommonMark\Event\DocumentParsedEvent;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
 use League\CommonMark\Node\Block\Paragraph;
 use League\CommonMark\Node\Inline\Text;
@@ -12,7 +13,7 @@ use Phactorial\CommonMark\Node\MathBlock;
 use Phactorial\CommonMark\Node\MathInline;
 
 /**
- * Settles two things only the finished tree can show. GitHub leaves formulas inside link text as plain text, so those
+ * Settles two things only the finished tree can show. GitHub leaves formulas inside link text (and so image alt text) as plain text, so those
  * go back to their source. A paragraph that holds nothing but one display formula becomes a MathBlock, so it renders
  * as a block instead of a span inside a paragraph.
  */
@@ -45,7 +46,7 @@ final class MathBlockListener
     private function insideLink(MathInline $math): bool
     {
         for ($parent = $math->parent(); $parent !== null; $parent = $parent->parent()) {
-            if ($parent instanceof Link) {
+            if ($parent instanceof Link || $parent instanceof Image) {
                 return true;
             }
         }

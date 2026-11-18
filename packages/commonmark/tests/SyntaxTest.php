@@ -125,17 +125,32 @@ final class SyntaxTest extends TestCase
         yield 'inline double, closers followed by letters' => [str_repeat('$$a ', 20000) . '$$b'];
         yield 'display double, escaped last closer' => ['$$' . str_repeat('a $$b ', 20000) . '\\$$'];
         yield 'single dollar and letters' => [str_repeat('$a$b ', 20000)];
+        yield 'double dollar, code span in every candidate' => ['x ' . str_repeat('$$a `b` ', 8000) . '$$ '];
+        yield 'single dollar, code span in every candidate' => [str_repeat('$a `b` c$ ', 25000)];
+        yield 'display, code span in every candidate' => ['$$' . str_repeat(' `a` $$', 25000)];
         yield 'code spans inside openers' => [str_repeat('$a `b` ', 20000)];
     }
 
     #[DataProvider('lateCloser')]
     public function test_openers_with_a_distant_or_unusable_closer_parse_in_linear_time(string $markdown): void
     {
+        // League builds a node per code span, which needs more than the default 128M on the larger inputs.
+        $limit = ini_set('memory_limit', '512M');
         $start = microtime(true);
         $this->convert($markdown);
         $elapsed = microtime(true) - $start;
 
+        ini_set('memory_limit', (string) $limit);
+
         self::assertLessThan(0.5, $elapsed, "took {$elapsed}s");
+    }
+
+    public function test_image_alt_text_keeps_the_formula(): void
+    {
+        $html = $this->convert('![a $x$](u.png)');
+
+        self::assertStringContainsString('alt="a $x$"', $html);
+        self::assertSame(0, self::occurrences($html, '<math'));
     }
 
     public function test_backtick_dollar_closer_on_a_later_line_of_the_paragraph_matches(): void
