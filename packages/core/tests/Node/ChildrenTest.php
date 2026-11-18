@@ -15,6 +15,7 @@ use Phactorial\Node\Grid;
 use Phactorial\Node\Node;
 use Phactorial\Node\Phantom;
 use Phactorial\Node\Root;
+use Phactorial\Node\Row;
 use Phactorial\Node\Scripts;
 use Phactorial\Node\TexSource;
 use Phactorial\Node\UnderOver;
@@ -27,6 +28,9 @@ final class ChildrenTest extends TestCase
     /** @return iterable<string, array{Node, class-string<Node>, list<string>}> */
     public static function nodes(): iterable
     {
+        yield 'row' => [Math::row('a', 'b'), Row::class, ['a', 'b']];
+        yield 'scripts' => [Math::sup('x', '2'), Scripts::class, ['x', '2']];
+        yield 'over' => [Math::over('x', 'a'), UnderOver::class, ['x', 'a']];
         yield 'fraction' => [Math::frac('a', 'b'), Fraction::class, ['a', 'b']];
         // Prescripts (subscript, then superscript), the base, then the scripts (subscript, then superscript).
         yield 'prescripts' => [Math::prescripts('X', 'p', 'q', 's', 't'), Scripts::class, ['p', 'q', 'X', 's', 't']];

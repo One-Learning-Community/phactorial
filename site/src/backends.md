@@ -77,6 +77,7 @@ A PDF backend can set ordinary letters as real text, so they can be selected and
 A backend can also read the formula tree. `Node::children()` returns a node's children in reading order, including both limits of an `UnderOver` and the prescripts of a `Scripts`. Recurse through it and the walk reaches every node, even one added in a later minor release:
 
 ```php
+use Phactorial\Math;
 use Phactorial\Node\Fraction;
 use Phactorial\Node\Node;
 

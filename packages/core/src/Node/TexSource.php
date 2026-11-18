@@ -24,8 +24,7 @@ final class TexSource extends Node
         public readonly string $tex,
         /** @internal Engine detail, not public API. */
         public readonly ?string $close = null,
-    )
-    {
+    ) {
     }
 
     /**

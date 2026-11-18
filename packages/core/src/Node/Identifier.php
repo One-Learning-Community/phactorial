@@ -31,8 +31,7 @@ final class Identifier extends Node
         /** @internal Engine detail, not public API. */
         public readonly ?bool $italic = null,
         public readonly bool $function = false,
-    )
-    {
+    ) {
         $this->name = Utf8::clean($name);
         $this->upright = $italic === null ? mb_strlen($this->name) > 1 : ! $italic;
     }

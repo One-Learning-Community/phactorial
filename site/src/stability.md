@@ -8,6 +8,7 @@ The public API is every class, method, property and constant that is not marked 
 
 - Node types, builder methods, optional parameters, config values and config keys.
 - Supported TeX commands and MathML elements. A command that was unknown becomes drawn, and its note disappears. The changelog lists each newly supported command.
+- Raising an input limit.
 - Better output. Spacing, kerning, glyph choice, stretch sizes, rule thickness and every coordinate may shift.
 
 ## What breaks
@@ -18,6 +19,8 @@ A change to any of these is a breaking change, and it waits for a major release.
 - Renaming a parameter or changing its default. PHP's named arguments make `Math::layout(font: $f)` a call to a parameter name, so the names freeze with the method.
 - Changing a return type, even to a wider one. `Math::frac()` returns `Fraction`, and it will keep returning exactly that.
 - Changing what a documented value means.
+- Adding a case to `NoteLevel`.
+- Lowering an input limit (`TexReader::MAX_*`, `MathmlReader::MAX_*`).
 - Dropping support for a TeX command or MathML element, changing what a supported command means, or making a supported construct produce a `Dropped` note.
 
 Anything marked `@internal` is outside this page. That covers the constructors of result, note, exception, display-item and node classes, and engine detail such as `Grid`'s constants. Build formulas through `Math`, `MathRender` and the readers.

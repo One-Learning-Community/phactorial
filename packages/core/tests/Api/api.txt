@@ -174,7 +174,7 @@ Phactorial\Node\Root::$index | readonly protected(set) ?Phactorial\Node\Node
 Phactorial\Node\Root::$radicand | readonly protected(set) Phactorial\Node\Node
 Phactorial\Node\Root::children() | (): array ; @return list<Node>
 Phactorial\Node\Row | final class extends Phactorial\Node\Node
-Phactorial\Node\Row::$children | readonly protected(set) array
+Phactorial\Node\Row::$children | readonly protected(set) array ; @var list<Node>
 Phactorial\Node\Row::children() | (): array ; @return list<Node>
 Phactorial\Node\Scripts | final class extends Phactorial\Node\Node
 Phactorial\Node\Scripts::$base | readonly protected(set) Phactorial\Node\Node

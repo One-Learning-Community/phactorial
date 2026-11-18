@@ -7,7 +7,7 @@ namespace Phactorial\Layout;
 /**
  * One drawing primitive. Coordinates are points, origin at the formula's left edge on its baseline, y grows DOWN.
  *
- * Sealed: the library's own types only. Extending or implementing it is unsupported, and a minor release may add a type.
+ * Sealed: the library's own types only. Extending or implementing it is unsupported, and through 1.x, layout yields only Glyph and Rule unless the caller opts in to more through `Math::layout()`.
  */
 interface DisplayItem
 {

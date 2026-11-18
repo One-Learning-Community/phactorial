@@ -16,8 +16,10 @@ final class Row extends Node
      *
      * @internal Engine detail, not public API.
      */
-    public function __construct(public readonly array $children)
-    {
+    public function __construct(
+        /** @var list<Node> */
+        public readonly array $children,
+    ) {
     }
 
     /**

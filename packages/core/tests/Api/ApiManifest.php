@@ -56,7 +56,7 @@ final class ApiManifest
             $value = $constant->getValue();
             $lines[] = $constant->isEnumCase()
                 ? $name . '::' . $constant->getName() . ' | case' . ($value instanceof \BackedEnum ? ' = ' . self::export($value->value) : '')
-                : $name . '::' . $constant->getName() . ' | ' . ($constant->isFinal() ? 'final ' : '') . 'const ' . ($constant->hasType() ? $constant->getType() . ' ' : '') . '= ' . self::export($value);
+                : $name . '::' . $constant->getName() . ' | ' . ($constant->isFinal() ? 'final ' : '') . 'const ' . (($constantType = $constant->getType()) === null ? '' : self::type($constantType, $constant->getDeclaringClass()) . ' ') . '= ' . self::export($value);
         }
 
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
@@ -132,7 +132,7 @@ final class ApiManifest
         if ($hooks !== []) {
             $parts[] = 'hooks{' . implode(',', $hooks) . '}';
         }
-        $parts[] = (string) ($property->getType() ?? 'mixed');
+        $parts[] = ($property->getType() === null ? 'mixed' : self::type($property->getType(), $property->getDeclaringClass()));
         if ($property->hasDefaultValue() && !($property->getType() === null && $property->getDefaultValue() === null)) {
             $parts[] = '= ' . self::export($property->getDefaultValue());
         }
@@ -144,7 +144,7 @@ final class ApiManifest
     {
         $params = [];
         foreach ($method->getParameters() as $parameter) {
-            $text = ($parameter->getType() === null ? '' : $parameter->getType() . ' ')
+            $text = ($parameter->getType() === null ? '' : self::type($parameter->getType(), $method->getDeclaringClass()) . ' ')
                 . ($parameter->isPassedByReference() ? '&' : '')
                 . ($parameter->isVariadic() ? '...' : '')
                 . '$' . $parameter->getName();
@@ -157,10 +157,41 @@ final class ApiManifest
         }
         $text = ($method->isAbstract() ? 'abstract ' : '') . ($method->isFinal() ? 'final ' : '') . ($method->isStatic() ? 'static ' : '') . '(' . implode(', ', $params) . ')';
         if ($method->hasReturnType()) {
-            $text .= ': ' . $method->getReturnType();
+            $text .= ': ' . self::type($method->getReturnType(), $method->getDeclaringClass());
         }
 
         return $text . self::phpdoc($method->getDocComment(), ['param', 'return']);
+    }
+
+    /**
+     * Renders a type the same way on every PHP version: PHP 8.5 resolves self to the class name, 8.4 keeps self.
+     * A parent type cannot be told from the written parent class name on 8.5, so none of the sources use it.
+     *
+     * @param \ReflectionClass<object> $declaring
+     */
+    private static function type(\ReflectionType $type, \ReflectionClass $declaring): string
+    {
+        if ($type instanceof \ReflectionNamedType) {
+            $name = $type->getName();
+            if ($name === $declaring->getName()) {
+                $name = 'self';
+            }
+
+            return ($type->allowsNull() && !in_array($name, ['mixed', 'null'], true) ? '?' : '') . $name;
+        }
+        if ($type instanceof \ReflectionUnionType) {
+            return implode('|', array_map(
+                static fn(\ReflectionType $part): string => $part instanceof \ReflectionIntersectionType
+                    ? '(' . self::type($part, $declaring) . ')'
+                    : self::type($part, $declaring),
+                $type->getTypes(),
+            ));
+        }
+        if ($type instanceof \ReflectionIntersectionType) {
+            return implode('&', array_map(static fn(\ReflectionType $part): string => self::type($part, $declaring), $type->getTypes()));
+        }
+
+        return (string) $type;
     }
 
     private static function export(mixed $value): string
