@@ -66,6 +66,11 @@ final class Fenced extends Node
             }
             $boxes = [];
             $inner = $row->build($rc, $reuse, $boxes);
+            // The row was reached through any wrappers around it; a color among them (`\left( \color{red} a \middle| b \right)`) still applies.
+            $color = Fallback::color($this->content);
+            if ($color !== null) {
+                $inner = Color::box($inner, $color);
+            }
         }
         $asc = $inner->ascent;
         $desc = $inner->descent;

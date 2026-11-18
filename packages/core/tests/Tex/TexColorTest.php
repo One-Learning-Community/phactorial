@@ -9,6 +9,7 @@ use Phactorial\Layout\Glyph;
 use Phactorial\Math;
 use Phactorial\Node\Color;
 use Phactorial\Node\Fallback;
+use Phactorial\Node\Fraction;
 use Phactorial\Node\Identifier;
 use Phactorial\Node\Node;
 use Phactorial\Node\Row;
@@ -231,6 +232,12 @@ final class TexColorTest extends TestCase
         self::assertSame($tex, TexWriter::write($node));
     }
 
+    public function test_a_switch_that_fills_a_fence_with_a_middle_keeps_its_color(): void
+    {
+        // The fence's whole content is the switch: ( a | b ), all but the parentheses red.
+        self::assertSame([null, '#ff0000', '#ff0000', '#ff0000', null], self::colorsOf('\\left( \\color{red} a \\middle| b \\right)'));
+    }
+
     #[DataProvider('middleSpellings')]
     public function test_a_switch_before_middle_round_trips_byte_for_byte(string $tex): void
     {
@@ -244,5 +251,138 @@ final class TexColorTest extends TestCase
             yield $color . ' spaced' => ['\\left( a \\color{' . $color . '} \\middle| b \\right)'];
             yield $color . ' tight' => ['\\left( a \\color{' . $color . '}\\middle| b \\right)'];
         }
+    }
+
+    /** @return iterable<string, array{string, string}> source, first write */
+    public static function switchArguments(): iterable
+    {
+        yield 'script' => ['x^\\color{red} y', 'x^{\\color{red}} y'];
+        yield 'sqrt' => ['\\sqrt\\color{red} x', '\\sqrt{\\color{red}} x'];
+        yield 'frac' => ['\\frac\\color{red} b', '\\frac{\\color{red}}{b}'];
+        yield 'braced script' => ['x^{\\color{red} y}', 'x^{\\color{red} y}'];
+        yield 'braced frac' => ['\\frac{\\color{red} a}{b}', '\\frac{\\color{red} a}{b}'];
+    }
+
+    #[DataProvider('switchArguments')]
+    public function test_a_color_switch_as_a_script_or_argument_round_trips_stably(string $tex, string $first): void
+    {
+        $one = TexWriter::write(Math::tex($tex));
+        self::assertSame($first, $one);
+        self::assertSame($one, TexWriter::write(Math::tex($one)));
+    }
+
+    public function test_over_after_a_color_switch_takes_the_whole_group(): void
+    {
+        $node = Math::tex('a \\color{red} \\over b');
+        self::assertInstanceOf(Fraction::class, $node);
+        self::assertInstanceOf(Row::class, $node->numerator);
+        self::assertCount(2, $node->numerator->children);
+        self::assertEquals(new Identifier('b'), $node->denominator);
+        self::assertSame('\\frac{a \\color{red}}{b}', TexWriter::write($node));
+        self::assertEquals(Math::layout(Math::tex('\\frac{a \\color{red}}{b}')), Math::layout($node));
+
+        $both = Math::tex('a \\color{red} b \\over c');
+        self::assertInstanceOf(Fraction::class, $both);
+        self::assertSame('\\frac{a \\color{red} b}{c}', TexWriter::write($both));
+        $colored = [];
+        Math::layout($both)->each(static function ($item) use (&$colored): void {
+            if ($item instanceof Glyph) {
+                $colored[] = $item->color;
+            }
+        });
+        self::assertContains('#ff0000', $colored);
+    }
+
+    /**
+     * Glyph colors in drawing order: '#rrggbb' or null.
+     *
+     * @return list<?string>
+     */
+    private static function colorsOf(string $tex): array
+    {
+        $out = [];
+        Math::layout(Math::tex($tex))->each(static function ($item) use (&$out): void {
+            if ($item instanceof Glyph) {
+                $out[] = $item->color;
+            }
+        });
+
+        return $out;
+    }
+
+    /** @return iterable<string, array{string, string}> source, first write */
+    public static function wrappedSwitches(): iterable
+    {
+        // Font and class commands leave no braces of their own in the output, so the switch keeps its group.
+        yield 'mathrm' => ['\\mathrm{\\color{red} x} y', '{\\color{red} \\mathrm{x}} y'];
+        yield 'mathit' => ['\\mathit{\\color{red} x} y', '{\\color{red} \\mathit{x}} y'];
+        yield 'boldsymbol' => ['\\boldsymbol{\\color{red} x} y', '{\\color{red} \\boldsymbol{x}} y'];
+        yield 'mathbb' => ['\\mathbb{\\color{red} x} y', '{\\color{red} \\mathbb{x}} y'];
+        yield 'mathop' => ['\\mathop{\\color{red} x} y', '{\\color{red} x} y'];
+        yield 'mathrel' => ['\\mathrel{\\color{red} x} y', '{\\color{red} x} y'];
+        yield 'mathchoice' => ['\\mathchoice{\\color{red} a}{b}{c}{d} y', '{{\\color{red} a} b c d} y'];
+        yield 'sideset' => ['\\sideset{}{}{\\color{red} x} y', '{\\color{red} x} y'];
+        yield 'sideset with a script' => ['\\sideset{_a}{}{\\color{red} x} y', '{}_a{{\\color{red} x}} y'];
+        yield 'prescript' => ['\\prescript{}{}{\\color{red} x} y', '{\\color{red} x} y'];
+        yield 'unbraced mathrm' => ['\\mathrm\\color{red} x y', '{\\color{red}} x y'];
+        yield 'unbraced sideset' => ['\\sideset{}{}\\color{red} x y', '{\\color{red}} x y'];
+        yield 'unbraced mathop' => ['\\mathop\\color{red} x y', '{\\color{red}} x y'];
+        // Commands that write their own braces back keep the switch bare inside them.
+        yield 'hat' => ['\\hat{\\color{red} x} y', '\\hat{\\color{red} x} y'];
+        yield 'vec' => ['\\vec{\\color{red} x} y', '\\vec{\\color{red} x} y'];
+        yield 'overline' => ['\\overline{\\color{red} x} y', '\\overline{\\color{red} x} y'];
+        yield 'boxed' => ['\\boxed{\\color{red} x} y', '\\boxed{\\color{red} x} y'];
+        yield 'cancel' => ['\\cancel{\\color{red} x} y', '\\cancel{\\color{red} x} y'];
+        yield 'phantom' => ['\\phantom{\\color{red} x} y', '\\phantom{\\color{red} x} y'];
+        yield 'overset' => ['\\overset{\\color{red} a}{x} y', '\\overset{\\color{red} a}{x} y'];
+        yield 'underset' => ['\\underset{\\color{red} a}{x} y', '\\underset{\\color{red} a}{x} y'];
+        yield 'stackrel' => ['\\stackrel{\\color{red} a}{x} y', '\\overset{\\color{red} a}{x} y'];
+        yield 'underbrace' => ['\\underbrace{\\color{red} x} y', '\\underbrace{\\color{red} x} y'];
+        yield 'binom' => ['\\binom{\\color{red} a}{b} y', '\\binom{\\color{red} a}{b} y'];
+        yield 'tfrac' => ['\\tfrac{\\color{red} a}{b} y', '{\\textstyle \\frac{\\color{red} a}{b}} y'];
+        yield 'dfrac' => ['\\dfrac{\\color{red} a}{b} y', '{\\displaystyle \\frac{\\color{red} a}{b}} y'];
+        yield 'xrightarrow' => ['\\xrightarrow{\\color{red} a} y', '\\xrightarrow{\\color{red} a} y'];
+        yield 'sqrt index' => ['\\sqrt[\\color{red} 3]{x} y', '\\sqrt[\\color{red} 3]{x} y'];
+        yield 'textcolor' => ['\\textcolor{blue}{\\color{red} x} y', '\\textcolor{blue}{\\color{red} x} y'];
+        yield 'font inside hat' => ['\\hat{\\mathrm{\\color{red} x}} y', '\\hat{{\\color{red} \\mathrm{x}}} y'];
+        yield 'hat inside font' => ['\\mathrm{\\hat{\\color{red} x}} y', '\\hat{\\color{red} \\mathrm{x}} y'];
+    }
+
+    #[DataProvider('wrappedSwitches')]
+    public function test_a_switch_inside_an_argument_colors_only_the_argument(string $tex, string $first): void
+    {
+        $one = TexWriter::write(Math::tex($tex));
+        self::assertSame($first, $one);
+        self::assertSame($one, TexWriter::write(Math::tex($one)));
+        self::assertSame(self::colorsOf($tex), self::colorsOf($one));
+    }
+
+    public function test_over_after_a_colored_middle_takes_only_what_follows_it(): void
+    {
+        $glyphs = static function (string $tex): array {
+            $out = [];
+            Math::layout(Math::tex($tex))->each(static function ($item, float $dx, float $dy) use (&$out): void {
+                if ($item instanceof Glyph) {
+                    $out[] = [$item->gid, round($dx + $item->x, 3), round($dy + $item->y, 3)];
+                }
+            });
+
+            return $out;
+        };
+        $tex = '\\left( \\color{red} a \\middle| b \\over c \\right)';
+        $one = TexWriter::write(Math::tex($tex));
+        self::assertSame('\\left( \\color{red} a \\middle| \\frac{b}{c} \\right)', $one);
+        self::assertSame($one, TexWriter::write(Math::tex($one)));
+        // Same glyphs at the same places as uncolored: the bar still stretches, and the fraction holds only b and c.
+        self::assertSame($glyphs('\\left( a \\middle| b \\over c \\right)'), $glyphs($tex));
+        self::assertSame($glyphs($tex), $glyphs($one));
+        // ( a | b c ): all but the parentheses are red.
+        $colors = self::colorsOf($tex);
+        self::assertSame([null, ...array_fill(0, count($colors) - 2, '#ff0000'), null], $colors);
+        self::assertSame($colors, self::colorsOf($one));
+
+        $after = '\\left( a \\color{red} \\middle| b \\over c \\right)';
+        self::assertSame('\\left( a \\color{red} \\middle| \\frac{b}{c} \\right)', TexWriter::write(Math::tex($after)));
+        self::assertSame($glyphs('\\left( a \\middle| b \\over c \\right)'), $glyphs($after));
     }
 }

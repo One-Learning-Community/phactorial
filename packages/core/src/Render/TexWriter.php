@@ -61,13 +61,8 @@ final class TexWriter
     {
         $saved = self::$topLevel;
         self::$topLevel = [];
-        $top = self::strip($root);
-        while ($top instanceof DisplayStyle) {
-            // `\displaystyle x \tag{1}` reads as a switch around the whole formula: its tag is still at the top.
-            $top = self::strip($top->content);
-        }
         $tagged = false;
-        foreach ($top instanceof Row ? $top->children : [$top] as $child) {
+        foreach (self::topChildren($root) as $child) {
             if ($child instanceof TexSource && str_starts_with($child->tex, '\\tag')) {
                 // KaTeX rejects a second equation number.
                 if ($tagged) {
@@ -82,6 +77,31 @@ final class TexWriter
         } finally {
             self::$topLevel = $saved;
         }
+    }
+
+    /**
+     * The nodes at the top of the formula: through a display switch, and through an unbraced color switch, whose body runs to
+     * the end of the formula (`\color{red} x \tag{1}` still has its tag at the top).
+     *
+     * @return list<Node>
+     */
+    private static function topChildren(Node $n): array
+    {
+        $n = self::strip($n);
+        while ($n instanceof DisplayStyle) {
+            // `\displaystyle x \tag{1}` reads as a switch around the whole formula: its tag is still at the top.
+            $n = self::strip($n->content);
+        }
+        $out = [];
+        foreach ($n instanceof Row ? $n->children : [$n] as $child) {
+            $out[] = $child;
+            if ($child instanceof TexSource && $child->close === '' && str_starts_with($child->tex, '\\color')) {
+                $body = self::strip($child->content);
+                array_push($out, ...self::topChildren($body instanceof Color ? $body->content : $body));
+            }
+        }
+
+        return $out;
     }
 
     /** trim(), except that a control space `\ ` at the very end keeps its space. */
