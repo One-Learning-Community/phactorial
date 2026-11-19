@@ -20,6 +20,44 @@
   display: none;
 }
 
+// The CommonMark page's examples: Markdown on the left, the extension's output on the right.
+.md-examples {
+  margin: 1rem 0 1.5rem;
+}
+
+.md-example {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  pre {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    background: var(--code-c-bg, var(--vp-c-bg-alt));
+    color: var(--vp-c-text);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .md-result p {
+    margin: 0;
+  }
+
+  .math-display {
+    display: block;
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+}
+
 // The lockup is wide and short, so size the home hero by width rather than the theme's height cap.
 .vp-hero-image {
   width: min(560px, 88%);
