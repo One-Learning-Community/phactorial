@@ -159,6 +159,17 @@ final class TexReader
     }
 
     /**
+     * Read with a nesting limit of $maxDepth, or less when the call stack leaves no room (see effectiveDepth()): a probe
+     * that cannot overflow Xdebug's guard, whatever depth its caller is at.
+     *
+     * @internal Engine detail, not public API.
+     */
+    public static function readUpTo(string $tex, int $maxDepth): TexResult
+    {
+        return self::readWithin($tex, min($maxDepth, self::effectiveDepth(self::nestingGuard(), self::stackDepth())));
+    }
+
+    /**
      * Read with a nesting limit of $maxDepth (at most MAX_DEPTH) instead of MAX_DEPTH.
      *
      * @internal Engine detail, not public API.
@@ -867,6 +878,7 @@ final class TexReader
     {
         [$node, $kind, $meta] = $a;
         $limits = null;
+        $limitsAt = 0;
         $subs = [];
         $sups = [];
         $primes = 0;
@@ -895,6 +907,7 @@ final class TexReader
             } elseif ($t[0] === 'cs' && in_array($t[1], ['limits', 'nolimits', 'displaylimits'], true)) {
                 $this->c->p++;
                 $limits = $t[1];
+                $limitsAt = $t[2];
             } else {
                 break;
             }
@@ -919,8 +932,13 @@ final class TexReader
         if ($sub !== null || $sup !== null) {
             $stacked = match ($kind) {
                 'op', 'funclim' => $limits !== 'nolimits',
-                default => $limits === 'limits',
+                default => $limits === 'limits' || $limits === 'displaylimits',
             };
+            if ($stacked && ($limits === 'limits' || $limits === 'displaylimits')) {
+                $node = $this->limitsFlag($node, $limits === 'displaylimits', $limitsAt);
+            } elseif ($stacked && ($kind === 'op' || $kind === 'funclim')) {
+                $node = $this->limitsFlag($node, true);
+            }
             if (! $stacked && $node instanceof Scripts && $node->sub === null && $node->sup === null) {
                 // `\prescript{14}{6}{C}^{4+}`: the scripts join the prescripts already on the base.
                 $node = new Scripts($node->base, $sub, $sup, $node->preSub, $node->preSup);
@@ -933,6 +951,33 @@ final class TexReader
         }
 
         return $node;
+    }
+
+    /**
+     * `\limits` fixes an operator's or name's limits above and below, `\displaylimits` lets them move beside it inline, as in TeX for any base.
+     * The color around the symbol survives.
+     */
+    private function limitsFlag(Node $node, bool $movable, ?int $at = null): Node
+    {
+        [$lone, $rewrap] = self::loneWrapped($node);
+        if ($lone instanceof Identifier && $lone->upright && ! $lone->function) {
+            // TeX rejects a control after an ordinary atom (`\mathrm{max}\limits`); the word is read as the operator name it stands for.
+            if ($at === null) {
+                return $node;
+            }
+            // A word whose default already is the asked state (stacked, or movable) needs no change.
+            $name = $movable === OperatorDictionary::isLimitName($lone->name) && ! TexSymbols::isFunctionCommand($lone->name) ? $node : $rewrap(new Identifier($lone->name, $lone->italic, true, $movable));
+
+            return $this->note(NoteLevel::Approximated, $movable ? '\displaylimits' : '\limits', 'the control follows an ordinary atom, not an operator', $at, $name);
+        }
+        if ($lone instanceof Identifier && $lone->function && $lone->upright) {
+            return $rewrap(new Identifier($lone->name, $lone->italic, true, $movable));
+        }
+        if (! $lone instanceof Operator || $lone->hasMovableLimits(OperatorDictionary::FORM_PREFIX) === $movable) {
+            return $node;
+        }
+
+        return $rewrap($this->withOp($lone, movablelimits: $movable));
     }
 
     // ---------------------------------------------------------------- atoms
@@ -1083,13 +1128,13 @@ final class TexReader
         return new Identifier(implode('', array_map(static fn (string $ch): string => mb_chr(Styles::variant(mb_ord($ch), $variant)), mb_str_split($chars))), false);
     }
 
-    private function withOp(Operator $o, ?bool $stretchy = null, ?float $lspace = null, ?float $rspace = null): Operator
+    private function withOp(Operator $o, ?bool $stretchy = null, ?float $lspace = null, ?float $rspace = null, ?bool $movablelimits = null): Operator
     {
         return new Operator(
             $o->char,
             stretchy: $stretchy ?? $o->stretchy,
             largeop: $o->largeop,
-            movablelimits: $o->movablelimits,
+            movablelimits: $movablelimits ?? $o->movablelimits,
             form: $o->form,
             lspace: $lspace ?? $o->lspace,
             rspace: $rspace ?? $o->rspace,
@@ -1370,7 +1415,7 @@ final class TexReader
 
                 $dropped = [];
                 $text = trim($this->operatorName($dropped));
-                $node = new Identifier($text, false, true);
+                $node = new Identifier($text, false, true, $star ? true : null);
                 if ($dropped !== []) {
                     $node = $this->note(NoteLevel::Approximated, '\\operatorname', 'only letters and symbols are kept in the name (not ' . implode(', ', array_unique($dropped)) . ')', $at, $node);
                 }
@@ -1442,6 +1487,9 @@ final class TexReader
                 $kind = 'ord';
                 if ($op instanceof Operator && $op->isLargeop(OperatorDictionary::FORM_PREFIX)) {
                     $kind = $op->hasMovableLimits(OperatorDictionary::FORM_PREFIX) ? 'op' : 'int';
+                } elseif ($op instanceof Identifier && $op->function && $op->upright && ($op->movableLimits ?? OperatorDictionary::isLimitName($op->name))) {
+                    // A colored limit name takes its limits like the bare one: above and below in display style.
+                    $kind = 'funclim';
                 }
 
                 return [new TexSource($node, '\\textcolor' . $spelling . '{', '}'), $kind, null];
@@ -1821,14 +1869,20 @@ final class TexReader
             return [$this->note(NoteLevel::Approximated, '\\' . $name, 'the class applies to a single symbol only', $at, $arg), $class === 'op' ? 'op' : 'ord', null];
         }
         [$l, $r] = TexClass::SPACING[$class];
+        if ($class === 'op' && $lone instanceof Identifier && $lone->upright && mb_strlen($lone->name) > 1 && (($lone->function && $lone !== $arg) || array_filter(mb_str_split($lone->name), static fn (string $ch): bool => TexSymbols::unstyle($ch) !== null) !== [])) {
+            // A colored or styled function name keeps its name, so the color, the style and its \limits read back as the limit name.
+            return [$rewrap($lone->function ? $lone : new Identifier($lone->name, $lone->italic, true)), 'funclim', null];
+        }
         // A large operator already is an op atom: \mathop{\int} spaces as \int does, with the dictionary's spacing.
         if ($class === 'op' && $lone instanceof Operator && $lone->lspace === null && $lone->rspace === null && $lone->isLargeop(OperatorDictionary::FORM_PREFIX)) {
-            return [$rewrap($lone), 'op', null];
+            // TeX's default for an op atom is \displaylimits: stacked in display style, beside inline.
+            return [$rewrap($lone->hasMovableLimits(OperatorDictionary::FORM_PREFIX) ? $lone : $this->withOp($lone, movablelimits: true)), 'op', null];
         }
         $spaced = $lone instanceof Operator ? $this->withOp($lone, lspace: (float) $l, rspace: (float) $r) : new Operator($char, lspace: (float) $l, rspace: (float) $r);
 
         // The color (and the source that spells it) around the symbol survives the class.
-        return [$rewrap($spaced), $class === 'op' && $spaced->isLargeop(OperatorDictionary::FORM_PREFIX) ? 'op' : 'ord', null];
+        // TeX's \mathop takes its limits as \displaylimits: above and below in display style, beside inline.
+        return [$rewrap($spaced), $class === 'op' && mb_strlen($char) === 1 ? 'op' : 'ord', null];
     }
 
     /**

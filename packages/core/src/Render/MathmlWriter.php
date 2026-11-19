@@ -96,7 +96,8 @@ final class MathmlWriter
     private static function plain0(Node $n): string
     {
         return match (true) {
-            $n instanceof Identifier => '<mi' . ($n->upright ? ' mathvariant="normal"' : '') . '>' . Xml::text($n->upright ? $n->name : self::plain($n->name)) . '</mi>',
+            // A standard function name that is not a function (`\mathrm{max}`) says so: the reader would take the name for one.
+            $n instanceof Identifier => '<mi' . ($n->upright ? ' mathvariant="normal"' : (mb_strlen($n->name) > 1 ? ' mathvariant="italic"' : '')) . (! $n->function && mb_strlen($n->name) > 1 && in_array($n->upright ? $n->name : self::plain($n->name), OperatorDictionary::FUNCTION_NAMES, true) ? ' data-function="false"' : '') . '>' . Xml::text($n->upright ? $n->name : self::plain($n->name)) . '</mi>',
             $n instanceof Number => '<mn>' . Xml::text($n->text) . '</mn>',
             // Alone, the layout treats an operator as prefix while a browser infers infix.
             $n instanceof Operator => self::operator($n, OperatorDictionary::FORM_PREFIX, OperatorDictionary::FORM_INFIX),
@@ -349,7 +350,14 @@ final class MathmlWriter
             return $op !== null ? self::styled($n, self::operator($op, OperatorDictionary::FORM_INFIX, OperatorDictionary::FORM_INFIX, false, true)) : self::slot($n);
         };
         $baseOp = UnderOver::operatorOf($u->base);
-        if (UnderOver::isLimitName($u->base)) {
+        $word = UnderOver::nameNode($u->base);
+        if ($word instanceof Identifier && ! $word->function) {
+            // An ordinary word (`\mathrm{max}`) stays one: as an mo the reader would take it for a function name.
+            $base = self::bare($u->base);
+        } elseif ($word instanceof Identifier && $word->movableLimits === false) {
+            // A standard limit name told to stack in every style.
+            $base = self::styled($u->base, '<mo movablelimits="false">' . Xml::text($word->name) . '</mo>');
+        } elseif (UnderOver::isLimitName($u->base)) {
             // Marked as an operator so a browser sets its limit beside it in inline style, as the SVG draws it.
             $name = UnderOver::nameNode($u->base);
             $base = self::styled($u->base, '<mo movablelimits="true">' . Xml::text($name instanceof Identifier ? $name->name : ($name instanceof Operator ? $name->char : '')) . '</mo>');

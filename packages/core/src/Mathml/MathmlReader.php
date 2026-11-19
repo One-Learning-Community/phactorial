@@ -807,7 +807,7 @@ final class MathmlReader
         $variant = strtolower(trim($e->getAttribute('mathvariant') ?? ''));
         // A multi-letter name is a function when it is a standard one (any variant), or the invisible function application follows it
         // (or the script or limit element it is the base of).
-        $function = mb_strlen($text) > 1 && (in_array($text, OperatorDictionary::FUNCTION_NAMES, true) || self::applied($e));
+        $function = mb_strlen($text) > 1 && $e->getAttribute('data-function') !== 'false' && (in_array($text, OperatorDictionary::FUNCTION_NAMES, true) || self::applied($e));
         if ($variant === 'normal') {
             return new Identifier($text, false, $function);
         }
@@ -837,6 +837,13 @@ final class MathmlReader
         $text = $this->budget(self::collapse($raw));
         if (preg_match('/^[\s\x{00A0}\x{2061}-\x{2064}]*$/u', $text) === 1) {
             return null;
+        }
+
+        // Our own spelling of `\operatorname*{name}` and `\lim\limits`: a word that says where its limits go. Only that marker is
+        // read, so the other mo attributes (form, lspace, minsize) do not apply: the writer never sets them on such a word.
+        $moves = self::bool($e, 'movablelimits');
+        if ($moves !== null && preg_match('/^\p{L}{2,}$/u', $text) === 1 && $moves !== OperatorDictionary::isLimitName($text)) {
+            return new Identifier(self::variantText($e, $text), false, true, $moves);
         }
 
         $form = strtolower(trim($e->getAttribute('form') ?? ''));

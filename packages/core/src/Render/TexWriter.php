@@ -27,6 +27,7 @@ use Phactorial\Node\UnderOver;
 use Phactorial\OperatorDictionary;
 use Phactorial\Styles;
 use Phactorial\Tex\TexClass;
+use Phactorial\Tex\TexReader;
 use Phactorial\Tex\TexSymbols;
 
 /**
@@ -252,6 +253,9 @@ final class TexWriter
         if ($n instanceof Operator) {
             return new Operator($n->char);
         }
+        if ($n instanceof Identifier) {
+            return $n;
+        }
         if ($n instanceof Color) {
             $inner = self::withPlainSymbol($n->content);
 
@@ -392,6 +396,9 @@ final class TexWriter
         }
         if ($i->function && TexSymbols::isFunctionCommand($i->name)) {
             return '\\' . $i->name;
+        }
+        if ($i->function && $i->movableLimits === true && array_filter($chars, static fn (string $ch): bool => TexSymbols::unstyle($ch) !== null) === []) {
+            return '\\operatorname*{' . self::operatorNameBody($i->name) . '}';
         }
         // Runs of one math variant (or none) side by side.
         $runs = [];
@@ -605,6 +612,78 @@ final class TexWriter
         return preg_match('/^[^\\\\\s{}]$/u', $s) === 1 ? $s : '{' . $s . '}';
     }
 
+    /**
+     * How the limits of an operator or limit name behave: 'beside' (scripts), 'movable' (stacked in display style, beside inline)
+     * or 'stacked' (in every style). Null for anything else.
+     */
+    private static function limitsState(Node $n): ?string
+    {
+        $n = UnderOver::nameNode($n);
+        if ($n instanceof Scripts) {
+            return 'beside';
+        }
+        if (! $n instanceof UnderOver) {
+            return null;
+        }
+
+        return UnderOver::isLimitName($n->base) || UnderOver::operatorOf($n->base)?->hasMovableLimits(OperatorDictionary::FORM_PREFIX) === true ? 'movable' : 'stacked';
+    }
+
+    /**
+     * The one rule for the limits of an operator or limit name: write the base, ask the reader how that spelling takes its scripts with
+     * no control after it, and add \nolimits, \limits or \displaylimits when that differs from $state. A control follows a bare
+     * operator, so a color (or other wrapper) goes inside \mathop{...}. Null when the base is neither an operator that takes limits
+     * nor a limit name.
+     *
+     * @return ?array{string, bool} the base with its control, and whether a control was added
+     */
+    private static function limitsBase(Node $base, string $state): ?array
+    {
+        $core = UnderOver::nameNode($base);
+        $spelled = self::w($base, false);
+        if ($core instanceof Operator && $core->movablelimits === true && mb_strlen($core->char) === 1 && ! $core->isLargeop(OperatorDictionary::FORM_PREFIX) && ! OperatorDictionary::lookup($core->char, OperatorDictionary::FORM_PREFIX)['movablelimits'] && ! str_contains($spelled, '\mathop{')) {
+            // A control follows an operator: a plain symbol that moves its limits (a lone `<mo movablelimits>`) is made one.
+            $spelled = '\mathop{' . $spelled . '}';
+        }
+        $relevant = match (true) {
+            $core instanceof Operator => $core->isLargeop(OperatorDictionary::FORM_PREFIX) || $core->hasMovableLimits(OperatorDictionary::FORM_PREFIX) || str_contains($spelled, '\mathop{'),
+            $core instanceof Identifier => $core->function && $core->upright && ($core->movableLimits !== null || OperatorDictionary::isLimitName($core->name) || TexSymbols::isFunctionCommand($core->name)),
+            default => false,
+        };
+        if (! $relevant) {
+            return null;
+        }
+        if ($core instanceof Identifier && self::peel($base) === $core && preg_match('~^\\\\(?:operatorname\*?|mathop)\{|^\\\\[A-Za-z]+$~', $spelled) !== 1) {
+            // A control follows an operator, not a math-alphabet group (`\mathbf{max}`): the name is made one.
+            $spelled = '\mathop{' . $spelled . '}';
+        }
+        $probe = TexReader::readUpTo($spelled . '_a', TexReader::MAX_DEPTH);
+        foreach ($probe->notes() as $note) {
+            if ($note->reason === 'nested too deeply') {
+                return null; // read flat: unknown, so the plain spelling stays
+            }
+        }
+        $default = self::limitsState($probe->node);
+        if ($default === null) {
+            return null;
+        }
+        if ($default === $state) {
+            return [$spelled, false];
+        }
+        $wrapped = self::peel($base) !== $core;
+        if ($wrapped && $state === 'beside') {
+            // A group is an ordinary atom, so its scripts sit beside it: `{\textcolor{red}{\sum}}_i`, with no control after a wrapper.
+            return ['{' . $spelled . '}', true];
+        }
+        $control = ['beside' => '\nolimits', 'stacked' => '\limits', 'movable' => '\displaylimits'][$state];
+        if (! $wrapped) {
+            return [$spelled . $control, true];
+        }
+        $inner = self::withPlainSymbol($base);
+
+        return $inner === null ? null : ['\mathop{' . self::w($inner, false) . '}' . $control, true];
+    }
+
     private static function scriptParts(?Node $sub, ?Node $sup): string
     {
         return ($sub === null ? '' : '_' . self::arg($sub)) . ($sup === null ? '' : '^' . self::arg($sup));
@@ -683,19 +762,14 @@ final class TexWriter
             // A control word ends at a space, not at the letter of the base after it.
             return $pre . (preg_match('/\\\\[a-zA-Z]+$/', $pre) === 1 ? ' ' : '') . $post;
         }
-        $op = UnderOver::operatorOf($s->base);
-        $nolimits = UnderOver::isLimitName($s->base) || ($op !== null && $op->isLargeop(OperatorDictionary::FORM_PREFIX) && $op->hasMovableLimits(OperatorDictionary::FORM_PREFIX));
-        // `{\displaystyle \lim}\nolimits_i` is no TeX: the group stands for the operator, so its scripts simply follow it.
-        // Nor does `\textcolor{red}{\sum}\nolimits`: the control follows a bare operator, never a group or a color wrapper.
-        $written = self::peel($s->base);
-        if ($written instanceof DisplayStyle || $written instanceof Color || $written instanceof TexSource) {
-            $nolimits = false;
-        }
+        $limits = self::limitsBase($s->base, 'beside');
+        $controlled = $limits !== null && $limits[1];
+        $base = $limits !== null && $limits[1] ? $limits[0] : self::base($s->base);
 
         // Primes are written as apostrophes: KaTeX and LaTeX have no raw ″ ‴ ⁗.
         $sup = $s->sup;
         $primes = '';
-        if ($sup !== null && ! $nolimits) {
+        if ($sup !== null && ! $controlled) {
             $parts = $sup instanceof Row ? $sup->children : [$sup];
             $first = $parts[0] ?? null;
             if ($first instanceof Identifier && isset(self::MULTI_PRIMES[$first->name])) {
@@ -707,10 +781,10 @@ final class TexWriter
 
         if ($primes !== '' && $sup !== null) {
             // KaTeX takes a superscript after primes only straight after them: f'^2_a, not f'_a^2.
-            return self::base($s->base) . $primes . '^' . self::arg($sup) . self::scriptParts($s->sub, null);
+            return $base . $primes . '^' . self::arg($sup) . self::scriptParts($s->sub, null);
         }
 
-        return self::base($s->base) . $primes . ($nolimits ? '\nolimits' : '') . self::scriptParts($s->sub, $sup);
+        return $base . $primes . self::scriptParts($s->sub, $sup);
     }
 
     /** Prime characters TeX has no symbol for, and how many apostrophes make them. */
@@ -727,19 +801,8 @@ final class TexWriter
         $op = UnderOver::operatorOf($base);
         $plainFlags = ! $u->accent && ! $u->accentUnder;
 
-        if ($plainFlags && (UnderOver::isLimitName($base) || ($op !== null && ($op->isLargeop(OperatorDictionary::FORM_PREFIX) || $op->hasMovableLimits(OperatorDictionary::FORM_PREFIX))))) {
-            $limits = $op !== null && ! UnderOver::isLimitName($base) && ! $op->hasMovableLimits(OperatorDictionary::FORM_PREFIX) ? '\limits' : '';
-            $written = self::peel($base);
-            if ($limits !== '' && ($written instanceof Color || $written instanceof TexSource || $written instanceof DisplayStyle)) {
-                // `\limits` follows a bare operator, never a color wrapper: `\mathop{\textcolor{red}{\int}}\limits`.
-                $inner = self::withPlainSymbol($base);
-                if ($inner !== null) {
-                    return ['\mathop{' . self::w($inner, false) . '}\limits' . self::scriptParts($under, $over), false];
-                }
-                $limits = '';
-            }
-
-            return [self::w($base, false) . $limits . self::scriptParts($under, $over), false];
+        if ($plainFlags && ($state = self::limitsState($u)) !== null && ($limits = self::limitsBase($base, $state)) !== null) {
+            return [$limits[0] . self::scriptParts($under, $over), false];
         }
 
         $overOp = UnderOver::operatorOf($over);
@@ -784,12 +847,6 @@ final class TexWriter
             }
 
             return ['\\' . TexSymbols::XARROWS[$op->char] . $label . '{' . ($over === null ? '' : self::w($over, false)) . '}', true];
-        }
-        // A limit-taking name with no command of its own: \operatorname*{liminf}_x. Other names take \underset below, which reads back the same.
-        $name = self::peel($base);
-        if ($plainFlags && $under !== null && $name instanceof Identifier && $name->upright && in_array($name->name, OperatorDictionary::LIMIT_NAMES, true) && ! TexSymbols::isFunctionCommand($name->name)
-            && array_filter(mb_str_split($name->name), static fn (string $ch): bool => TexSymbols::unstyle($ch) !== null) === []) {
-            return ['\operatorname*{' . self::operatorNameBody($name->name) . '}' . self::scriptParts($under, $over), false];
         }
         // Anything else.
         $s = self::w($base, false);

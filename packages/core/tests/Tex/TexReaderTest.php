@@ -216,7 +216,7 @@ final class TexReaderTest extends TestCase
         self::same(new Scripts(new Identifier('lim', false, true), Math::row('x'), null), '\lim\nolimits_x');
         self::same(new Identifier('rank', false, true), '\operatorname{rank}');
         self::same(Math::sub(new Identifier('rank', false, true), 'n'), '\operatorname{rank}_n');
-        self::same(new UnderOver(new Identifier('argmax', false, true), Math::row('x'), null), '\operatorname*{argmax}_x');
+        self::same(new UnderOver(new Identifier('argmax', false, true, true), Math::row('x'), null), '\operatorname*{argmax}_x');
         self::same(new Identifier('sgn', false, true), '\operatorname{sgn}');
         self::same(new Row([new Identifier('sin', false, true), new Identifier('x')]), '\sin x');
     }
