@@ -241,7 +241,6 @@ Phactorial\Tex\TexReader::MAX_DEPTH | const int = 256
 Phactorial\Tex\TexReader::MAX_EXPANSIONS | const int = 10000
 Phactorial\Tex\TexReader::MAX_EXPANSION_BYTES | const int = 16384
 Phactorial\Tex\TexReader::MAX_INPUT | const int = 16384
-Phactorial\Tex\TexReader::NESTED_TOO_DEEPLY | const string = 'nested too deeply'
 Phactorial\Tex\TexReader::read() | static (string $tex): Phactorial\Tex\TexResult
 Phactorial\Tex\TexResult | final readonly class
 Phactorial\Tex\TexResult::$display | readonly protected(set) bool

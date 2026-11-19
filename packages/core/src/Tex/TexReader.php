@@ -49,7 +49,11 @@ final class TexReader
     public const int MAX_INPUT = 16_384;
     /** Nesting (groups, arguments, environments) beyond this is drawn flat. */
     public const int MAX_DEPTH = 256;
-    /** The reason of the note a formula nested past MAX_DEPTH gets; the writer reads it to tell a cut-off probe. @internal */
+    /**
+     * The reason of the note a formula nested past MAX_DEPTH gets; the writer reads it to tell a cut-off probe.
+     *
+     * @internal Engine detail, not public API.
+     */
     public const string NESTED_TOO_DEEPLY = 'nested too deeply';
     /** Macro expansions per formula. */
     public const int MAX_EXPANSIONS = 10_000;

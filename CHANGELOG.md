@@ -5,6 +5,40 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- The MathML writer writes an empty `<mo fence="true" stretchy="true" lspace="0" rspace="0"></mo>` on the missing side of a half-open fence, so a browser adds no space there.
+- The MathML writer puts `mathcolor`, `stretchy`, `lspace` and `rspace` on a colored middle's own `mo`, where it used to wrap a plain `mo` in `mstyle`.
+- The MathML writer marks a standard function name that is not a function with `data-function="false"`, writes a multi-letter italic name with `mathvariant="italic"`, and writes `movablelimits` where a name or operator differs from its default.
+- The MathML reader reads a stretchy bar as `\middle` only with this library's spacing marker (`0.1667em` on both sides) or MathJax's shape, an empty `mrow` on each side. Other stretchy bars stay plain.
+- The MathML reader does not treat a delimiter with `minsize` equal to `maxsize` as a fence. It stays an operator of that size and is written as `\Bigl(` and the like.
+- The MathML reader reads an empty `mo` with `fence="true"` as the missing side of a fence.
+- Archived MathML with a stretchy opener and no closer, written by earlier versions, reads slightly differently at the fence's inner edge.
+- A plain upright word such as `\mathrm{max}`, or `Math::styled('max', 'normal')`, under a limit now stacks in every style, as TeX and browsers set it.
+- A `\middle` outside `\left…\right` has a new note: "is drawn as a plain delimiter".
+- Goldens, each changed on purpose:
+  - The round-trip fuzz pins moved, each time by shrinking the failing set. `WELL_FORMED` went 2097, 2084, 1177, 753. `SOUP` went 658, 653, 431, and the last step added two inputs: `) \left( \\ = \| ,` and `\\ \left( \\ \textcolor{red}{=} \middle| \cdot`. A `\\` first in an unclosed fence now reads as a real fence, so they show the older line-break-in-fence mismatch, `\left( \\ = b \right)`. `FENCED_TEX` went 6890, 6160, 5909.
+  - The MathML snapshots `mathml/cases`, `tex/mathml/piecewise`, `tex/mathml/linear-system`, `tex/mathml/delim-dot` and `editors/mathml/wiris-viewer-table-2` gain the empty fence `mo` with `lspace="0" rspace="0"` on the open side of a half-open fence.
+  - The `tex/mathml/operatorname-star` snapshot has `<mo movablelimits="true">`.
+  - `\operatorname*{argmax}_x` is written back as itself, where it was `\underset{x}{\operatorname{argmax}}`. `TexWriterTest`, `SmallFixesTest` and `TexFinalReviewTest` expect the new spelling.
+  - `\mathop{\textcolor{red}{\int}}_0^1` is written with `\displaylimits`, where it was `\limits`. `TexColorFinalTest` expects it.
+  - `MathmlColorTest` expects a colored `\middle` as `<mo mathcolor="#ff0000" stretchy="true" lspace="0.1667em" rspace="0.1667em">|</mo>`, with no `mstyle` around it.
+  - `TexReaderTest` expects the `\middle` outside a fence note to read "is drawn as a plain delimiter", and builds `\operatorname*{argmax}` with its movable-limits flag set.
+  - `UnderOverTest` builds its limit names as function names, since a plain upright word is no limit name.
+
+### Fixed
+
+- `\limits`, `\nolimits`, `\displaylimits`, `\mathop`, `\operatorname*` and a colored limit name keep their limits through TeX and MathML round trips in both styles: `\sum\limits_a^b`, `\lim\limits_{x \to 0}`, `\operatorname*{argmax}_x`, `\operatorname*{E}_x`, `\mathop{\int}_0^1`, `\textcolor{red}{\lim}_x`.
+- `\mathop{\mathrm{ab}}_a` moves its limits like `\mathop{\mathbf{ab}}_a` does.
+- A MathML operator with one-sided or explicit spacing keeps its width when written as TeX. The TeX writer uses a class (`\mathrel`, `\mathbin`) where one fits and `\mkern` otherwise. This covers letter operators such as `<mo>x</mo>` and large operators spaced 1mu on a side.
+- `\middle` reads back from MathML: `\left( a \middle| b \middle| c \right)`, bra-ket notation, and colored middles written as `\color` switches (`\color{#ff0000}\middle| b \color{#0000ff} c`).
+- `x \% \middle| y` keeps its width. The text writer no longer puts a double space before a middle.
+- `\big` and `\Big` delimiters keep their size through MathML and are not turned into `\left…\right`.
+- Half-open fences read back from MathML: `\left[ \frac{a}{b} = c \right.` and `\left. \frac{a}{b} \right|_0`.
+- `\color` and `\textcolor`, with or without a `[model]`, inside `\operatorname` and `\tag` no longer leak their spec into the name or label.
+- A `\tag` label keeps symbols such as `\alpha` and escapes such as `\%`, drops formatting commands, and is always valid TeX, also when the label is unbraced.
+- A limit control after a class atom or a plain word, as in `\mathrel{\sum}\limits_a` or `\mathrm{max}\limits_x`, gets a note, since TeX rejects it. The TeX writer writes it as valid TeX.
+
 ## [0.20.0] - 2026-11-18
 
 ### Added
