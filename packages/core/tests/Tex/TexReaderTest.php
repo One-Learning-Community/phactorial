@@ -467,7 +467,7 @@ final class TexReaderTest extends TestCase
         $n = self::notes('a \middle| b');
         self::assertCount(1, $n);
         self::assertSame(NoteLevel::Approximated, $n[0]->level);
-        self::assertSame('\middle outside \left…\right', $n[0]->reason);
+        self::assertSame('\middle outside \left…\right is drawn as a plain delimiter', $n[0]->reason);
         $kids = self::childrenOf(Math::tex('a \middle| b'));
         self::assertInstanceOf(Fallback::class, $kids[1]);
         TreeAssert::assertSameTree(new Operator('|'), $kids[1]->content ?? new Row([]));

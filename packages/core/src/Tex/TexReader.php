@@ -1367,7 +1367,7 @@ final class TexReader
                     return null;
                 }
 
-                return [$this->note(NoteLevel::Approximated, '\\' . $name, $name === 'middle' ? '\\middle outside \\left…\\right' : '\\right without \\left', $at, $d === null || $d === '' ? null : new Operator($d)), 'ord', null];
+                return [$this->note(NoteLevel::Approximated, '\\' . $name, $name === 'middle' ? '\\middle outside \\left…\\right is drawn as a plain delimiter' : '\\right without \\left', $at, $d === null || $d === '' ? null : new Operator($d)), 'ord', null];
             case 'not':
                 return $this->negated($at);
             case 'mod':
@@ -1474,7 +1474,7 @@ final class TexReader
                     $this->c->p++;
                     $star = '*';
                 }
-                $label = preg_replace('/[{}\\\\#%$^_&~]/', '', $this->c->rawGroup()) ?? '';
+                $label = $this->tagLabel();
 
                 return [new TexSource($this->note(NoteLevel::Dropped, '\\tag', 'equation numbers are not drawn', $at), '\\tag' . $star . '{' . trim($label) . '}', ''), 'ord', null];
             case 'label':
@@ -2063,6 +2063,64 @@ final class TexReader
     }
 
     /**
+     * The label in \tag{...}: its characters. A symbol command (`\alpha`, `\dagger`) and an escaped `\% \# \& \_ \$` stay as
+     * written; formatting and unknown commands are dropped, and a color command takes its spec with it.
+     */
+    private function tagLabel(): string
+    {
+        $this->c->skipSp();
+        if (! $this->c->peekIs('{')) {
+            $t = $this->c->peek();
+            if ($t === null || $t[0] !== 'ch') {
+                return '';
+            }
+            $this->c->p++;
+
+            return preg_match('/[#%$^_&~]/', $t[1]) === 1 ? '' : $t[1];
+        }
+        $this->c->p++;
+        $s = '';
+        $depth = 1;
+        while (($t = $this->c->peek()) !== null) {
+            $this->c->p++;
+            if ($t[0] === '{') {
+                $depth++;
+            } elseif ($t[0] === '}' && --$depth === 0) {
+                break;
+            } elseif ($t[0] === 'cs') {
+                if ($t[1] === 'color' || $t[1] === 'textcolor') {
+                    $this->skipColorSpec();
+                } elseif (in_array($t[1], ['%', '#', '&', '_', '$'], true)) {
+                    $s .= '\\' . $t[1];
+                } elseif (ctype_alpha($t[1]) && TexSymbols::char($t[1]) !== null) {
+                    $s .= '\\' . $t[1];
+                }
+            } elseif ($t[0] === 'ch' || $t[0] === 'sp') {
+                $c = preg_match('/[#%$^_&~]/', $t[1]) === 1 ? '' : $t[1];
+                // A letter after a control word would fuse with it, whatever was dropped in between.
+                $s .= $c !== '' && ctype_alpha($c) && preg_match('/\\\\[A-Za-z]+$/', $s) === 1 ? ' ' . $c : $c;
+            }
+        }
+
+        return $s;
+    }
+
+    /** Skips the spec of \color or \textcolor: an optional `[model]`, then the group. */
+    private function skipColorSpec(): void
+    {
+        $this->c->skipSp();
+        if ($this->c->peekIs('ch', '[')) {
+            while (($t = $this->c->peek()) !== null && $t[0] !== '}') {
+                $this->c->p++;
+                if ($t[0] === 'ch' && $t[1] === ']') {
+                    break;
+                }
+            }
+        }
+        $this->c->rawGroup();
+    }
+
+    /**
      * The name in \operatorname{...}: its characters, with commands for symbols read as the symbol.
      *
      * @param list<string> $dropped the commands left out of the name (spacing and the like), as written
@@ -2103,6 +2161,12 @@ final class TexReader
     private function nameChar(array $t, array &$dropped): string
     {
         if ($t[0] === 'cs') {
+            if ($t[1] === 'color' || $t[1] === 'textcolor') {
+                $this->skipColorSpec(); // the color spec is not part of the name
+                $dropped[] = '\\' . $t[1];
+
+                return '';
+            }
             $char = TexSymbols::char($t[1]) ?? (in_array($t[1], ['_', '%', '$', '#', '&', '{', '}'], true) ? $t[1] : '');
             if ($char === '') {
                 $dropped[] = '\\' . $t[1];
