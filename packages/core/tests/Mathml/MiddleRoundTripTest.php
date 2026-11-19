@@ -6,6 +6,11 @@ namespace Phactorial\Tests\Mathml;
 
 use Phactorial\Math;
 use Phactorial\Mathml\MathmlReader;
+use Phactorial\Node\Color;
+use Phactorial\Node\Fenced;
+use Phactorial\Node\Identifier;
+use Phactorial\Node\Middle;
+use Phactorial\Node\Row;
 use Phactorial\Render\MathmlWriter;
 use Phactorial\Render\TextWriter;
 use Phactorial\Render\TexWriter;
@@ -172,5 +177,12 @@ final class MiddleRoundTripTest extends TestCase
         self::assertSame('a | b', TexWriter::write($back));
         $back = MathmlReader::read('<math><mrow><mo>(</mo><mi>a</mi><mo>|</mo><mi>b</mi><mo>)</mo></mrow></math>')->node;
         self::assertStringNotContainsString('\middle', TexWriter::write($back));
+    }
+
+    public function test_a_whole_fence_color_is_not_split_for_a_middle_with_no_tex_spelling(): void
+    {
+        $node = new Fenced('(', ')', new Color(new Row([new Identifier('a'), new Middle('⟫'), new Identifier('b')]), '#ff0000'));
+        $tex = TexWriter::write($node);
+        self::assertSame(1, substr_count($tex, '\\textcolor') + substr_count($tex, '\\color'), $tex);
     }
 }

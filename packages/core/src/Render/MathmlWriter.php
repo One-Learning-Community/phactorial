@@ -380,7 +380,9 @@ final class MathmlWriter
         } elseif (UnderOver::isLimitName($u->base)) {
             // Marked as an operator so a browser sets its limit beside it in inline style, as the SVG draws it.
             $name = UnderOver::nameNode($u->base);
-            $base = self::styled($u->base, '<mo movablelimits="true">' . Xml::text($name instanceof Identifier ? $name->name : ($name instanceof Operator ? $name->char : '')) . '</mo>');
+            // A one-letter name (`\operatorname*{E}`) is no dictionary operator, so an mo would get the default space around it.
+            $spaced = $name instanceof Identifier && mb_strlen($name->name) === 1 ? ' lspace="0" rspace="0"' : '';
+            $base = self::styled($u->base, '<mo movablelimits="true"' . $spaced . '>' . Xml::text($name instanceof Identifier ? $name->name : ($name instanceof Operator ? $name->char : '')) . '</mo>');
         } elseif ($baseOp !== null) {
             $stretches = $baseOp->stretchy ?? OperatorDictionary::lookup($baseOp->char, OperatorDictionary::FORM_POSTFIX)['stretchy'];
             $form = $baseOp->isLargeop(OperatorDictionary::FORM_PREFIX) ? OperatorDictionary::FORM_PREFIX : OperatorDictionary::FORM_INFIX;

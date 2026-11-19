@@ -49,6 +49,8 @@ final class TexReader
     public const int MAX_INPUT = 16_384;
     /** Nesting (groups, arguments, environments) beyond this is drawn flat. */
     public const int MAX_DEPTH = 256;
+    /** The reason of the note a formula nested past MAX_DEPTH gets; the writer reads it to tell a cut-off probe. @internal */
+    public const string NESTED_TOO_DEEPLY = 'nested too deeply';
     /** Macro expansions per formula. */
     public const int MAX_EXPANSIONS = 10_000;
     /**
@@ -659,7 +661,7 @@ final class TexReader
             };
         }
 
-        return $this->note(NoteLevel::Approximated, $element, 'nested too deeply', $at, new Text(trim($src)));
+        return $this->note(NoteLevel::Approximated, $element, self::NESTED_TOO_DEEPLY, $at, new Text(trim($src)));
     }
 
     /**
@@ -1882,7 +1884,7 @@ final class TexReader
             return [$this->note(NoteLevel::Approximated, '\\' . $name, 'the class applies to a single symbol only', $at, $arg), $class === 'op' ? 'op' : 'ord', null];
         }
         [$l, $r] = TexClass::SPACING[$class];
-        if ($class === 'op' && $lone instanceof Identifier && $lone->upright && mb_strlen($lone->name) > 1 && (($lone->function && $lone !== $arg) || array_filter(mb_str_split($lone->name), static fn (string $ch): bool => TexSymbols::unstyle($ch) !== null) !== [])) {
+        if ($class === 'op' && $lone instanceof Identifier && $lone->upright && mb_strlen($lone->name) > 1 && (! $lone->function || $lone !== $arg || array_filter(mb_str_split($lone->name), static fn (string $ch): bool => TexSymbols::unstyle($ch) !== null) !== [])) {
             // A colored or styled function name keeps its name, so the color, the style and its \limits read back as the limit name.
             return [$rewrap($lone->function ? $lone : new Identifier($lone->name, $lone->italic, true)), 'funclim', null];
         }

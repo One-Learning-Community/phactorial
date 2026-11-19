@@ -121,7 +121,7 @@ final class UnderOver extends Node
             return $n->movablelimits !== false && OperatorDictionary::isLimitName($n->char);
         }
 
-        return $n instanceof Identifier && $n->upright && ($n->movableLimits ?? OperatorDictionary::isLimitName($n->name));
+        return $n instanceof Identifier && $n->function && $n->upright && ($n->movableLimits ?? OperatorDictionary::isLimitName($n->name));
     }
 
     /**

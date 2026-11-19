@@ -706,6 +706,16 @@ final class MathmlReader
     }
 
     /**
+     * The content between a fence's delimiters: its bars paired, its middles marked, and its edges set as edged() does.
+     *
+     * @param list<Node> $nodes
+     */
+    private function content(array $nodes, bool $open, bool $close): Node
+    {
+        return self::edged(self::middles($this->bars($nodes)), $open, $close);
+    }
+
+    /**
      * The content of a fence, as a node. The writer puts it in a nested row, which the reader read with no fence beside it,
      * so a lone row (or operator) is read again with the delimiters as its edges.
      *
@@ -1031,7 +1041,7 @@ final class MathmlReader
                 [$idx, $opener] = $stack[$found];
                 $stack = array_slice($stack, 0, $found);
                 $between = self::unblank($this->foldLoneOpeners(array_splice($out, $idx + 1), []));
-                $out[$idx] = $this->fence($out[$idx], $n, $opener->char, '', self::edged(self::middles($this->bars($between)), true, false));
+                $out[$idx] = $this->fence($out[$idx], $n, $opener->char, '', $this->content($between, $opener->char !== '', false));
                 continue;
             }
             if (self::isBlank($n)) {
@@ -1068,7 +1078,7 @@ final class MathmlReader
                     }
                     $stack = array_slice($stack, 0, $found);
                     $between = self::unblank($this->foldLoneOpeners(array_splice($out, $idx + 1), $inner));
-                    $out[$idx] = $this->fence($out[$idx], $n, $opener->char, $ch, self::edged(self::middles($this->bars($between)), $opener->char !== '', true));
+                    $out[$idx] = $this->fence($out[$idx], $n, $opener->char, $ch, $this->content($between, $opener->char !== '', true));
                 }
             } else {
                 $out[] = $n;
@@ -1106,10 +1116,10 @@ final class MathmlReader
         $first = $bar($nodes[0]);
         $last = $bar($nodes[$count - 1]);
         if ($first !== null && self::isBlank($nodes[$count - 1]) && ! self::isMiddleAt($nodes, 0)) {
-            return $this->fence($nodes[0], $nodes[$count - 1], $first->char, '', self::edged(self::middles($this->bars(self::unblank($inner()))), true, false));
+            return $this->fence($nodes[0], $nodes[$count - 1], $first->char, '', $this->content(self::unblank($inner()), true, false));
         }
         if ($last !== null && self::isBlank($nodes[0]) && ! self::isMiddleAt($nodes, $count - 1)) {
-            return $this->fence($nodes[0], $nodes[$count - 1], '', $last->char, self::edged(self::middles($this->bars(self::unblank($inner()))), false, true));
+            return $this->fence($nodes[0], $nodes[$count - 1], '', $last->char, $this->content(self::unblank($inner()), false, true));
         }
 
         return null;
@@ -1330,7 +1340,7 @@ final class MathmlReader
                 $out[] = $n;
                 continue;
             }
-            $out[] = $this->fence($n, $nodes[$close], $op->char, $op->char, self::edged(self::middles($this->bars(array_slice($nodes, $i + 1, $close - $i - 1))), true, true));
+            $out[] = $this->fence($n, $nodes[$close], $op->char, $op->char, $this->content(array_slice($nodes, $i + 1, $close - $i - 1), true, true));
             $i = $close;
         }
 

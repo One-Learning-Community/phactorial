@@ -40,7 +40,7 @@ final class RoundTripFuzzTest extends TestCase
     // are by design (named colors written as hex, aligned read back as darray).
     private const array WELL_FORMED_PIN = [753, '7fde65a190bb'];
     private const array FENCED_PIN = [63, '13719d3a8cd9'];
-    private const array FENCED_TEX_PIN = [6160, '5af71b7c0fc6'];
+    private const array FENCED_TEX_PIN = [5909, 'e082f087a002'];
     private const array SOUP_PIN = [431, '548c7e75edb9'];
 
     /** Well-formed structured inputs that the reader accepts without notes. */
