@@ -1048,7 +1048,7 @@ final class MathmlReader
         foreach ($nodes as $n) {
             // A colored operator pairs like a plain one; the Fenced has no per-delimiter color; the reader notes the dropped color.
             $op = self::delimiter($n)[0];
-            if (! $op instanceof Operator || $op->stretchy === false) {
+            if (! $op instanceof Operator || ! self::fences($op)) {
                 $out[] = $n;
                 continue;
             }
@@ -1245,6 +1245,15 @@ final class MathmlReader
     }
 
     /**
+     * Whether an operator can pair into a fence: it stretches, and it is not a fixed size. A `\big`-style delimiter (equal
+     * min and max size, in any units) stays an operator of that size, so it writes back as `\Bigl(`.
+     */
+    private static function fences(Operator $op): bool
+    {
+        return $op->stretchy !== false && ! ($op->minSize !== null && $op->maxSize !== null && abs($op->minSize - $op->maxSize) < 1e-6);
+    }
+
+    /**
      * Pairs `|` with the next `|` and `‖` with the next `‖` among these siblings; a lone bar stays plain.
      *
      * @param list<Node> $nodes
@@ -1257,7 +1266,7 @@ final class MathmlReader
         $isBar = static function (int $k, string $ch) use ($nodes): bool {
             $n = self::delimiter($nodes[$k])[0];
 
-            return $n instanceof Operator && $n->stretchy !== false && $n->char === $ch && ! self::isMiddleAt($nodes, $k);
+            return $n instanceof Operator && self::fences($n) && $n->char === $ch && ! self::isMiddleAt($nodes, $k);
         };
         $out = [];
         $count = count($nodes);
@@ -1265,7 +1274,7 @@ final class MathmlReader
             $n = $nodes[$i];
             $op = self::delimiter($n)[0];
             $close = null;
-            if ($op instanceof Operator && $op->stretchy !== false && ($op->char === '|' || $op->char === '‖') && ! self::isMiddleAt($nodes, $i)) {
+            if ($op instanceof Operator && self::fences($op) && ($op->char === '|' || $op->char === '‖') && ! self::isMiddleAt($nodes, $i)) {
                 for ($j = $i + 1; $j < $count; $j++) {
                     if ($isBar($j, $op->char)) {
                         $close = $j;

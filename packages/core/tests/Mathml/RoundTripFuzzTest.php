@@ -38,7 +38,7 @@ final class RoundTripFuzzTest extends TestCase
 
     // Pins are [count, first 12 hex chars of sha1 of the sorted inputs joined by NUL]. Some of the pinned differences
     // are by design (named colors written as hex, aligned read back as darray).
-    private const array WELL_FORMED_PIN = [2084, 'c982f4b58703'];
+    private const array WELL_FORMED_PIN = [1177, '16344a6f8b0c'];
     private const array FENCED_PIN = [63, '13719d3a8cd9'];
     private const array FENCED_TEX_PIN = [6890, 'bad69cf2ccbd'];
     private const array SOUP_PIN = [653, '658a210edda9'];
