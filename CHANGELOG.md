@@ -23,9 +23,12 @@ and the project follows [Semantic Versioning](https://semver.org/).
   - `TexSourceTest` expects `\frac{\boxed{a}}{\color{red} b}`; the doubled braces around the switch are gone.
   - `MathmlWriterTest` gains a row that shows an inline color switch written per item.
   - `OmmlWriterTest::test_run_format` counts the `m:ctrlPr` of each object along with the runs.
+  - The `binomial` MathML snapshot writes the `!` before `(` as `form="postfix"` and the `(` without a form, as in `k(n-k)`.
+  - The `cd-env` TeX MathML snapshot writes the `>` after `@` or another `>` without `form="prefix"`, since a relation after an operator is infix.
 
 ### Fixed
 
+- A relation or binary operator after `!` or after another relation was set as a prefix operator and lost its spacing: `n! \sim b`, `n! + b`, `x \sim \sim b`. A factorial now ends an operand, as in TeX, so `n!!` is two postfix operators.
 - A `#rrggbb` value in `\color` lost the `#` and its first digit on a round trip.
 - A `\tag` after a color switch was dropped.
 - A color switch as a script or an argument gained braces on every round trip.
