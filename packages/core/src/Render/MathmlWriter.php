@@ -9,6 +9,7 @@ use Phactorial\Node\Color;
 use Phactorial\Node\DisplayStyle;
 use Phactorial\Node\Fallback;
 use Phactorial\Node\Fenced;
+use Phactorial\Node\Forms;
 use Phactorial\Node\Fraction;
 use Phactorial\Node\Grid;
 use Phactorial\Node\Identifier;
@@ -208,10 +209,20 @@ final class MathmlWriter
         $count = count($items);
         if ($count === 1) {
             [$only, $inline] = $items[0];
+            $drops = $r->drops($r->forms())[0];
+            $lone = Fallback::unwrap($only);
+            if ($lone instanceof Operator && ($drops[0] || $drops[1])) {
+                // A lone relation inside a fence drops against the delimiters.
+                return self::styled($only, self::operator(Forms::withDrops($lone, ...$drops), OperatorDictionary::FORM_PREFIX, OperatorDictionary::FORM_PREFIX), $inline);
+            }
 
-            return $inline !== null && Fallback::color($only) === null ? self::mstyle($inline, self::node($only)) : self::node($only);
+            $xml = self::arrowApart(self::arrowDrops($r)[0] ?? null, self::node($only), $only);
+
+            return $inline !== null && Fallback::color($only) === null ? self::mstyle($inline, $xml) : $xml;
         }
         $forms = $r->forms();
+        $drops = $r->drops($forms);
+        $apart = self::arrowDrops($r);
         $out = '';
         foreach ($items as $i => [$child, $inline]) {
             $resolved = $forms[$i];
@@ -219,18 +230,61 @@ final class MathmlWriter
             $inferred = $i === 0 ? OperatorDictionary::FORM_PREFIX : ($i === $count - 1 ? OperatorDictionary::FORM_POSTFIX : OperatorDictionary::FORM_INFIX);
             $op = Fallback::unwrap($child);
             if ($op instanceof Operator) {
-                $out .= self::styled($child, self::operator($op, $resolved ?? $inferred, $inferred), $inline);
+                $out .= self::styled($child, self::operator(Forms::withDrops($op, ...$drops[$i]), $resolved ?? $inferred, $inferred), $inline);
             } else {
                 // A node that carries its own color writes it; the inline color around it is the outer one and loses.
                 $xml = $i < $count - 1 && self::isFunction($child)
                     // ApplyFunction goes between the name (with its scripts or limits) and what follows it.
                     ? self::plain0($child) . '<mo>&#x2061;</mo>'
-                    : self::node($child);
+                    : self::arrowApart($apart[$i] ?? null, self::node($child), $child);
                 $out .= $inline !== null && Fallback::color($child) === null ? self::mstyle($inline, $xml) : $xml;
             }
         }
 
         return '<mrow>' . $out . '</mrow>';
+    }
+
+    /**
+     * The drops of each item of a row with every bare long arrow judged as its operator, or null when the row has none.
+     *
+     * @return list<array{bool, bool}>|null
+     */
+    private static function arrowDrops(Row $r): ?array
+    {
+        $nodes = $r->nodes();
+        $any = false;
+        foreach ($nodes as $i => $node) {
+            $arrow = self::longArrow($node);
+            if ($arrow !== null) {
+                $nodes[$i] = $arrow;
+                $any = true;
+            }
+        }
+
+        return $any ? $r->drops(Forms::of($nodes), $nodes) : null;
+    }
+
+    private static function longArrow(Node $node): ?Operator
+    {
+        $u = Fallback::unwrap($node);
+        $arrow = $u instanceof UnderOver ? self::bareArrow($u) : null;
+
+        return $arrow !== null && in_array($arrow->char, UnderOver::LONG_ARROWS, true) ? $arrow : null;
+    }
+
+    /**
+     * A bare arrow that would take a relation's drops if it were written as a symbol is flanked by empty groups, as mhchem
+     * writes it (`{}\mathrel{\longrightarrow}{}`): a layout does not set it as a relation, so a reader must not either.
+     *
+     * @param array{bool, bool}|null $drops this item's drops from arrowDrops()
+     */
+    private static function arrowApart(?array $drops, string $xml, Node $node): string
+    {
+        if ($drops === null || self::longArrow($node) === null) {
+            return $xml;
+        }
+
+        return $drops[0] || $drops[1] ? '<mrow><mrow/>' . $xml . '<mrow/></mrow>' : $xml;
     }
 
     /**
@@ -275,6 +329,18 @@ final class MathmlWriter
         return '<msub>' . $base . self::slot($s->sub ?? throw new \LogicException('Scripts without a script')) . '</msub>';
     }
 
+    /** The operator a label-less stretchy arrow is written as (the long form where there is one), or null for any other node. */
+    private static function bareArrow(UnderOver $u): ?Operator
+    {
+        $baseOp = UnderOver::operatorOf($u->base);
+        if ($baseOp === null || $u->base !== $baseOp || ! UnderOver::blank($u->under) || ! UnderOver::blank($u->over)
+            || ! UnderOver::isStretchy($baseOp) || ! UnderOver::isArrow($baseOp->char)) {
+            return null;
+        }
+
+        return new Operator(UnderOver::LONG_ARROWS[$baseOp->char] ?? $baseOp->char, $baseOp->stretchy, null, null, $baseOp->form, $baseOp->lspace, $baseOp->rspace, $baseOp->minSize, $baseOp->maxSize);
+    }
+
     private static function underOver(UnderOver $u): string
     {
         $part = static function (Node $n): string {
@@ -299,10 +365,10 @@ final class MathmlWriter
         if ($under === null && $over === null) {
             // No part draws anything (the empty one a label-less chemistry arrow carries): the arrow alone, at least as long as the SVG
             // draws it, since a browser leaves a bare arrow at its natural width.
-            if ($baseOp !== null && $u->base === $baseOp && UnderOver::isStretchy($baseOp) && UnderOver::isArrow($baseOp->char) && mb_strlen($baseOp->char) === 1) {
-                $long = UnderOver::LONG_ARROWS[$baseOp->char] ?? null;
-                $arrow = self::operator(new Operator($long ?? $baseOp->char, $baseOp->stretchy, null, null, $baseOp->form, $baseOp->lspace, $baseOp->rspace, $baseOp->minSize, $baseOp->maxSize), OperatorDictionary::FORM_INFIX, OperatorDictionary::FORM_INFIX, false, true);
-                if ($long !== null) {
+            $bare = self::bareArrow($u);
+            if ($bare !== null) {
+                $arrow = self::operator($bare, OperatorDictionary::FORM_INFIX, OperatorDictionary::FORM_INFIX, false, true);
+                if ($baseOp !== null && isset(UnderOver::LONG_ARROWS[$baseOp->char])) {
                     return $arrow;
                 }
 
@@ -354,7 +420,12 @@ final class MathmlWriter
         if ($f->open !== '') {
             $out .= self::operator(new Operator($f->open), OperatorDictionary::FORM_PREFIX, OperatorDictionary::FORM_PREFIX, true);
         }
-        $out .= self::node(Fenced::stretchMiddles($f->content, 0.0));
+        $open = $f->open !== '';
+        $close = $f->close !== '';
+        $content = Fenced::edged(Fenced::stretchMiddles($f->content, 0.0), $open, $close);
+        // A bare arrow alone between the delimiters is no row for edged() to mark, but it has the delimiters beside it too.
+        $xml = self::node($content);
+        $out .= Fallback::unwrap($content) instanceof UnderOver ? self::arrowApart(self::arrowDrops((new Row([$content]))->inFence($open, $close))[0] ?? null, $xml, $content) : $xml;
         if ($f->close !== '') {
             $out .= self::operator(new Operator($f->close), OperatorDictionary::FORM_POSTFIX, OperatorDictionary::FORM_POSTFIX, true);
         }

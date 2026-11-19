@@ -35,6 +35,25 @@ final class Row extends Node
 
     private ?bool $splices = null;
 
+    /** Whether the row is the content of a fence, so a relation first or last in it drops its space against the delimiter. */
+    private bool $fenceOpen = false;
+
+    private bool $fenceClose = false;
+
+    /**
+     * A copy that knows it sits inside a fence (see Forms::drops()); the row itself is unchanged.
+     *
+     * @internal Engine detail, not public API.
+     */
+    public function inFence(bool $open, bool $close): self
+    {
+        $copy = clone $this;
+        $copy->fenceOpen = $open;
+        $copy->fenceClose = $close;
+
+        return $copy;
+    }
+
     /** Whether any child is an inline color to splice; when none is, layout reads $children directly. */
     private function splices(): bool
     {
@@ -130,6 +149,19 @@ final class Row extends Node
     }
 
     /**
+     * @param list<?string> $forms from forms()
+     * @param list<Node>|null $nodes the items to judge in place of nodes(), as forms() of them
+     *
+     * @return list<array{bool, bool}> per item: whether its lspace and rspace are dropped (see Forms::drops())
+     *
+     * @internal Engine detail, not public API.
+     */
+    public function drops(array $forms, ?array $nodes = null): array
+    {
+        return Forms::drops($nodes ?? $this->nodes(), $forms, $this->fenceOpen, $this->fenceClose);
+    }
+
+    /**
      * @return list<?string> operator form of each item (see items()): prefix, infix, postfix, or null for non-operators
      *
      * @internal Engine detail, not public API.
@@ -182,6 +214,7 @@ final class Row extends Node
         $prev = null;
         $last = null;
         $forms = $this->forms();
+        $drops = $this->drops($forms);
         $items = $this->splices() ? $this->items() : null;
         for ($i = 0, $n = $items === null ? count($this->children) : count($items); $i < $n; $i++) {
             if ($items === null) {
@@ -214,7 +247,7 @@ final class Row extends Node
             foreach (Fallback::displays($child) as $display) {
                 $ctx = $ctx->withDisplay($display);
             }
-            $b = $reuse[$i] ?? ($seen instanceof Operator ? $seen->layoutAs($ctx, $form ?? throw new \LogicException('Forms::of gave an operator no form')) : $child->layout($c));
+            $b = $reuse[$i] ?? ($seen instanceof Operator ? Forms::withDrops($seen, ...$drops[$i])->layoutAs($ctx, $form ?? throw new \LogicException('Forms::of gave an operator no form')) : $child->layout($c));
             // layoutAs() bypasses the wrappers, so a color around the operator is applied here.
             if (! isset($reuse[$i]) && $seen instanceof Operator && ($color = Fallback::color($child)) !== null) {
                 $b = Color::box($b, $color);

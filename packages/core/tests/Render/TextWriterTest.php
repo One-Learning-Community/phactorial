@@ -41,6 +41,16 @@ final class TextWriterTest extends TestCase
         yield 'single token script without parens' => [Math::sup('x', Math::text('max')), 'x^max'];
         yield 'function name' => [Math::row('sin', 'x'), 'sin x'];
         yield 'middle bar' => [Math::fenced('{', '}', 'x', Math::middle('|'), Math::frac('a', 'b')), '{x | a/b}'];
+        yield 'adjacent infix operators' => [Math::tex('a := b'), 'a : = b'];
+        yield 'adjacent relations' => [Math::tex('x \\sim \\sim b'), 'x ∼ ∼ b'];
+        yield 'logic run' => [Math::tex('\\vdash \\models \\therefore'), '⊢ ⊨ ∴'];
+        yield 'fence after a factorial' => [Math::tex('n!(n-k)!'), 'n!(n − k)!'];
+        yield 'call' => [Math::tex('P(x)'), 'P(x)'];
+        yield 'relation before a closing fence' => [Math::tex('\\{ x \\mid = \\}'), '{x ∣ =}'];
+        yield 'relation between bars' => [Math::tex('\\| = \\|'), '‖=‖'];
+        yield 'relation after an opening fence' => [Math::tex('\\{ = b'), '{= b'];
+        yield 'relation before a lone closing fence' => [Math::tex('a = \\}'), 'a =}'];
+        yield 'relation last in parentheses' => [Math::tex('(a =)'), '(a =)'];
         yield 'plain root' => [Math::sqrt('2'), '√2'];
     }
 
@@ -116,5 +126,12 @@ final class TextWriterTest extends TestCase
     {
         $red = new Color(new Row([new Operator('+'), new Identifier('b')]), '#ff0000', true);
         self::assertSame('a + b', TextWriter::write(new Row([new Identifier('a'), $red])));
+    }
+
+    public function test_a_space_next_to_the_space_an_operator_wrote_is_not_doubled(): void
+    {
+        self::assertSame('a = b', TextWriter::write(Math::tex('a\,=\,b')));
+        self::assertSame('a + b', TextWriter::write(Math::tex('a\;+\;b')));
+        self::assertSame('a + b', TextWriter::write(Math::tex('a + b')));
     }
 }

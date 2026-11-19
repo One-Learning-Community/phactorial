@@ -36,6 +36,25 @@ final class Fallback extends Node
     }
 
     /**
+     * The node with $f applied to what unwrap() would reach (the innermost node past notes, display switches, source and
+     * color), each wrapper put back around the result.
+     *
+     * @param \Closure(Node): Node $f
+     *
+     * @internal Engine detail, not public API.
+     */
+    public static function mapInner(Node $n, \Closure $f): Node
+    {
+        return match (true) {
+            $n instanceof self && $n->content !== null => new self(self::mapInner($n->content, $f), $n->note),
+            $n instanceof DisplayStyle => new DisplayStyle(self::mapInner($n->content, $f), $n->display),
+            $n instanceof TexSource => new TexSource(self::mapInner($n->content, $f), $n->tex, $n->close),
+            $n instanceof Color => new Color(self::mapInner($n->content, $f), $n->color, $n->inline),
+            default => $f($n),
+        };
+    }
+
+    /**
      * The color of the innermost Color wrapper unwrap() peels, or null when it peels none.
      *
      * @internal Engine detail, not public API.

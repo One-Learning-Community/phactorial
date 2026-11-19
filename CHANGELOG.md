@@ -17,6 +17,9 @@ and the project follows [Semantic Versioning](https://semver.org/).
 - The TeX writer keeps the spacing of a color switch.
 - `\mathop{\int}` and `\mathop{\sum}` space as `\int` and `\sum` do, as in TeX, where they used to take extra class spacing. They write back as `\int\limits` and `\sum`.
 - A script on a lone colored token is written without braces: `\textcolor{red}{x}^2`, not `{\textcolor{red}{x}}^2`. A colored `\sum` is written bare when its limits are stacked, and braced when its scripts sit beside it, since a bare one would take them as limits. A colored integral takes its scripts beside it and is never braced.
+- Postfix operators such as `!` and `%` no longer take a space in text output: `n! ∼ √(2πn)`, `5% ⋅ 3`.
+- MathML written by this library reads back with the same spacing. A zero `lspace` or `rspace` that the TeX spacing rules produce is read as that rule. Other zeros are kept, so `\mathord{=}` stays `\mathord{=}`, except alone inside a fence, where it reads as `=` with the same layout. One case is ambiguous: `\mathrel` on a symbol that is not a relation (such as `\mathrel{:}`) that loses its space on both sides reads back as `\mathord`.
+- A label-less chemistry arrow beside a relation, a punctuation mark or a fence is written between empty groups, as mhchem writes it, so it reads back at its own width and not as a relation.
 - Goldens, each changed on purpose:
   - The TeX corpus entries `color` and `color-more` expect no notes, since color is drawn.
   - `TexEnvironmentTest` now expects no notes for accepted values, and it and `TexFinalReviewTest` check the rejected-color note with `red!50`, because `red` is now accepted.
@@ -24,11 +27,16 @@ and the project follows [Semantic Versioning](https://semver.org/).
   - `MathmlWriterTest` gains a row that shows an inline color switch written per item.
   - `OmmlWriterTest::test_run_format` counts the `m:ctrlPr` of each object along with the runs.
   - The `binomial` MathML snapshot writes the `!` before `(` as `form="postfix"` and the `(` without a form, as in `k(n-k)`.
-  - The `cd-env` TeX MathML snapshot writes the `>` after `@` or another `>` without `form="prefix"`, since a relation after an operator is infix.
+  - The `cd-env` TeX MathML snapshot writes the `>` after `@` or another `>` without `form="prefix"`, since a relation after an operator is infix, and writes `rspace="0em"` and `lspace="0em"` between the two `>`, which sit side by side.
+  - The layout of these TeX corpus entries changed; no snapshot pins them. `stirling` is wider, since `!` ends an operand (72.8 to 79.4 at 12pt). `arrows-more` (230.3 to 163.7), `arrows-long` (122.1 to 95.4), `arrows-harpoon` (72.9 to 52.9), `delims-arrows` (84.1 to 50.7), `symbols-logic` (141.7 to 135.1), `symbols-geometry` (179.4 to 172.8) and `cd-env` (240.5 to 227.2) are narrower, because adjacent relations take no space between them; their runs of relations also lose `form="prefix"` and gain `lspace="0em"` and `rspace="0em"`. In `escapes` (`\$ 5 \% \& \# \_ \{ \}`), `%` and `&` are now postfix and `#` infix, so the width goes from 68.8 to 64.8 and the text from `$5 % &#_{}` to `$5%& # _{}`.
+  - The text output of about 80 corpus and fixture entries changed. A fence takes no padding (`f ( x)` is `f(x)`, `Fe ( OH)₃` is `Fe(OH)₃`, `P ( A ∣ B)` is `P(A ∣ B)`). Space commands and adjacent operators no longer double a space (`a b  c d` is `a b c d`, `kg  ⋅ m  /  s²` is `kg ⋅ m / s²`). Runs of relations are set off by spaces (`↑↓↕⇑⇓⇕` is `↑ ↓ ↕ ⇑ ⇓ ⇕`, `⇌⇀↽⇋` is `⇌ ⇀ ↽ ⇋`).
+  - `ChemScriptsTest` expects `[⁶⁰Co(NH₃)₆]³⁺`, with no padding inside the fence.
 
 ### Fixed
 
-- A relation or binary operator after `!` or after another relation was set as a prefix operator and lost its spacing: `n! \sim b`, `n! + b`, `x \sim \sim b`. A factorial now ends an operand, as in TeX, so `n!!` is two postfix operators.
+- A relation or binary operator after a postfix operator or another relation was set as prefix and lost its spacing: `n! \sim b`, `n! + b`, `x \sim \sim b`. `!`, `%`, primes and the degree sign now end an operand. `%` before an opening fence stays binary: `a \% (b + c)`.
+- Spacing now follows TeX where TeX sets none: between adjacent relations (`\to\to`), between a fence and a relation (`\left( = b \right)`, `\{ \sim \}`), and before punctuation after a relation (`a =, b`). Space commands between relations are skipped, as TeX skips glue. `\mathrel` sets only the class, so `\mathrel{:}=` closes up too. An explicit MathML `lspace` or `rspace` other than the thick space still wins.
+- Text output no longer doubles spaces between adjacent operators or space commands (`a\,=\,b` is `a = b`) or pads fences (`f(x)`, `k!(n − k)!`).
 - A `#rrggbb` value in `\color` lost the `#` and its first digit on a round trip.
 - A `\tag` after a color switch was dropped.
 - A color switch as a script or an argument gained braces on every round trip.
