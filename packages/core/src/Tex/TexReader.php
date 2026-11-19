@@ -310,6 +310,7 @@ final class TexReader
         $breakAt = null;
         $gaps = [];
         $gapAt = [];
+        $bad = [];
         while (true) {
             $rows[] = [self::row($this->parseUntil('nl'))];
             $t = $this->c->peek();
@@ -318,7 +319,9 @@ final class TexReader
             }
             $breakAt ??= $t[2];
             $this->c->p++;
-            $gaps[] = $this->skipOptionalDimension() ?? 0.0;
+            $em = $this->skipOptionalDimension() ?? 0.0;
+            $bad[] = is_nan($em);
+            $gaps[] = is_nan($em) ? 0.0 : $em;
             $gapAt[] = $t[2];
         }
         if ($breakAt === null) {
@@ -328,8 +331,8 @@ final class TexReader
         while (count($rows) > 1 && self::blank($rows[array_key_last($rows)][0])) {
             array_push($lost, ...self::lostNotes(array_pop($rows)[0]));
         }
-        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, count($rows));
-        $node = self::withNotes(count($rows) === 1 ? $rows[0][0] : new Grid($rows, ['center'], 'baseline', true, rowSpacing: $gaps), $lost);
+        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, count($rows), $bad);
+        $node = self::withNotes(count($rows) === 1 ? $rows[0][0] : new Grid($rows, ['center'], 'baseline', true, rowSpacing: self::withJot($gaps, count($rows))), $lost);
 
         return $this->note(NoteLevel::Approximated, '\\\\', 'line break outside an environment; rows stacked', $breakAt, $node);
     }
@@ -580,7 +583,10 @@ final class TexReader
             : new Scripts($node, null, null, $empty->sub, $empty->sup)];
     }
 
-    /** `\\[2pt]`: the optional dimension after a row break, read and given in em; null (nothing read) when there is none. */
+    /**
+     * `\\[2pt]`: the optional dimension after a row break, read and given in em; null (nothing read) when there is none,
+     * NAN when something dimension-shaped was read that is no TeX dimension (`2.pt`, `3zz`): skipped and drawn as nothing.
+     */
     private function skipOptionalDimension(): ?float
     {
         if (! $this->c->peekIs('ch', '[')) {
@@ -590,6 +596,11 @@ final class TexReader
         for ($i = $this->c->p + 1; isset($this->c->t[$i]); $i++) {
             if ($this->c->t[$i][0] === 'ch' && $this->c->t[$i][1] === ']') {
                 if (preg_match('/^\s*-?[\d.]+\s*[a-z]{2}\s*$/', $s) === 1) {
+                    if (preg_match('/^\s*[-+]?(?:\d+\.?\d*|\.\d+)\s*(?:em|ex|mu|pt|bp|pc|cm|mm|in)\s*$/', $s) !== 1) {
+                        $this->c->p = $i + 1;
+
+                        return NAN;
+                    }
                     $this->c->p++;
                     $em = $this->dimension();
                     $this->c->p = $i + 1;
@@ -1591,8 +1602,8 @@ final class TexReader
      * Rows of cells up to `\end` (or the closing brace for `\substack`), neither consumed. The row after a final `\\` is
      * dropped when it is empty, as TeX does.
      *
-     * @return array{list<list<Node>>, list<MathNote>, list<float>, list<int>} the rows, the notes of the empty row that was dropped,
-     *                                                                         and the em after each row with where its `\\` stood
+     * @return array{list<list<Node>>, list<MathNote>, list<float>, list<int>, list<bool>} the rows, the notes of the empty row that was dropped,
+     *                                                                         and the em after each row, where its `\\` stood, and whether its dimension was malformed
      */
     private function cells(string $closer): array
     {
@@ -1604,6 +1615,7 @@ final class TexReader
         $capNote = null;
         $gaps = [];
         $gapAt = [];
+        $bad = [];
         while (true) {
             $at = $this->c->offset();
             $cell = self::row($this->parseUntil('&', 'nl', $closer));
@@ -1631,7 +1643,8 @@ final class TexReader
             $em = $this->skipOptionalDimension() ?? 0.0;
             if ($row !== []) {
                 $rows[] = $row;
-                $gaps[] = $em;
+                $bad[] = is_nan($em);
+                $gaps[] = is_nan($em) ? 0.0 : $em;
                 $gapAt[] = $t[2];
             }
             $row = [];
@@ -1652,7 +1665,7 @@ final class TexReader
             $lost = array_merge($lost, self::lostNotes($row[0]));
         }
 
-        return [$rows, self::inSourceOrder($lost), $gaps, $gapAt];
+        return [$rows, self::inSourceOrder($lost), $gaps, $gapAt, $bad];
     }
 
     /**
@@ -1675,19 +1688,37 @@ final class TexReader
      * @param list<MathNote> $lost
      * @param list<float> $gaps
      * @param list<int> $gapAt
+     * @param list<bool> $bad
      *
      * @return list<MathNote>
      */
-    private function undrawnSpacing(array $lost, array $gaps, array $gapAt, int $rows): array
+    private function undrawnSpacing(array $lost, array $gaps, array $gapAt, int $rows, array $bad): array
     {
         foreach ($gaps as $i => $em) {
-            if ($i >= $rows - 1 && $em !== 0.0 && ($m = $this->spacingNote($gapAt[$i])) !== null) {
+            if (($bad[$i] || $i >= $rows - 1 && $em !== 0.0) && ($m = $this->spacingNote($gapAt[$i])) !== null) {
                 $lost[] = $m;
                 break;
             }
         }
 
         return self::inSourceOrder($lost);
+    }
+
+    /**
+     * The row spacing of a grid with TeX's jot between its lines: one entry per gap between `$rows` rows.
+     *
+     * @param list<float> $gaps the `\\[len]` of each row
+     *
+     * @return list<float>
+     */
+    private static function withJot(array $gaps, int $rows): array
+    {
+        $out = [];
+        for ($i = 0; $i < $rows - 1; $i++) {
+            $out[] = ($gaps[$i] ?? 0.0) + Grid::JOT;
+        }
+
+        return $out;
     }
 
     /**
@@ -1771,7 +1802,7 @@ final class TexReader
         }
         $notes = [];
         $align = TexEnvironments::arguments($name, $this->c, $notes);
-        [$rows, $lost, $gaps, $gapAt] = $this->cells('end');
+        [$rows, $lost, $gaps, $gapAt, $bad] = $this->cells('end');
         if ($this->c->peekIs('cs', 'end')) {
             $this->c->p++;
             $endAt = $this->c->offset();
@@ -1788,11 +1819,12 @@ final class TexReader
             $this->display = true;
         }
         $node = TexEnvironments::node($name, $rows, $align, $notes, $at);
-        $spaced = $gaps === [] ? null : self::spaced($node, $gaps);
+        $jot = TexEnvironments::addsJot($name);
+        $spaced = $gaps === [] ? null : self::spaced($node, $jot ? self::withJot($gaps, count($rows)) : $gaps);
         if ($spaced !== null) {
             $node = $spaced;
         }
-        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, $spaced === null ? 0 : count($rows));
+        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, $spaced === null ? 0 : count($rows), $bad);
         foreach (array_reverse($notes) as [$level, $element, $reason, $off]) {
             $node = $this->note($level, $element, $reason, $off, $node);
         }
@@ -1808,8 +1840,8 @@ final class TexReader
             return $this->note(NoteLevel::Approximated, '\\substack', 'missing argument', $at);
         }
         $this->c->p++;
-        [$rows, $lost, $gaps, $gapAt] = $this->cells('}');
-        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, count($rows));
+        [$rows, $lost, $gaps, $gapAt, $bad] = $this->cells('}');
+        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, count($rows), $bad);
         $closed = $this->c->peekIs('}');
         if ($closed) {
             $this->c->p++;
@@ -2497,7 +2529,7 @@ final class TexReader
                 }
             }
         }
-        if (preg_match('/^\s*([-+]?\d*\.?\d+)\s*([a-z]{2})?/', $s, $m) !== 1) {
+        if (preg_match('/^\s*([-+]?(?:\d+\.?\d*|\.\d+))\s*([a-z]{2})?/', $s, $m) !== 1) {
             return 0.0;
         }
         $v = (float) $m[1];

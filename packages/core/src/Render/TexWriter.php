@@ -28,6 +28,7 @@ use Phactorial\Node\UnderOver;
 use Phactorial\OperatorDictionary;
 use Phactorial\Styles;
 use Phactorial\Tex\TexClass;
+use Phactorial\Tex\TexEnvironments;
 use Phactorial\Tex\TexReader;
 use Phactorial\Tex\TexSymbols;
 
@@ -616,6 +617,14 @@ final class TexWriter
         return in_array($ch, TexSymbols::ORD, true);
     }
 
+    /** An em amount with at most three decimals, trailing zeros trimmed: `0.4`, `-0.25`, `1`, and `0` for none. */
+    private static function emAmount(float $em): string
+    {
+        $num = rtrim(rtrim(number_format($em, 3, '.', ''), '0'), '.');
+
+        return $num === '' || $num === '-0' ? '0' : $num;
+    }
+
     private static function space(float $em): string
     {
         foreach ([[3 / 18, '\,'], [4 / 18, '\:'], [5 / 18, '\;'], [-3 / 18, '\!'], [1 / 3, '\ '], [1.0, '\quad'], [2.0, '\qquad']] as [$v, $cmd]) {
@@ -627,9 +636,7 @@ final class TexWriter
         // so a kern reads back and writes the same.
         // In a script, em does not shrink with the size and mu does, so the kern spelling is kept there.
         if (self::$scriptDepth === 0 && abs($em * 1000 - round($em * 1000)) < 1e-6) {
-            $num = rtrim(rtrim(number_format($em, 3, '.', ''), '0'), '.');
-
-            return '\hspace{' . ($num === '' || $num === '-0' ? '0' : $num) . 'em}';
+            return '\hspace{' . self::emAmount($em) . 'em}';
         }
 
         return '\mkern' . rtrim(rtrim(number_format($em * 18, 4, '.', ''), '0'), '.') . 'mu';
@@ -1546,8 +1553,8 @@ final class TexWriter
 
             return self::environment($g, 'aligned');
         }
-        // gathered has one column (amsmath rejects an & in it), so a wider display grid is a darray.
-        if ($bare && ($g->columns === 0 || count(array_unique($g->columnAlign)) === 1 && $g->columnAlign[0] === 'center') && (! $g->display || $g->columns <= 1)) {
+        // gathered has one column (amsmath rejects an & in it), so a wider display grid is a darray; so is a narrow one that sits closer than gathered's jot.
+        if ($bare && ($g->columns === 0 || count(array_unique($g->columnAlign)) === 1 && $g->columnAlign[0] === 'center') && (! $g->display || $g->columns <= 1 && array_all($g->rowSpacing, static fn (float $gap): bool => $gap > Grid::JOT - 0.0005))) {
             return self::environment($g, $g->display ? 'gathered' : 'matrix');
         }
         $spec = implode('', array_map(static fn (string $a): string => $a[0], $g->columnAlign));
@@ -1577,13 +1584,14 @@ final class TexWriter
             }
             $rows[] = self::trimTex($line);
         }
+        $jot = TexEnvironments::addsJot($env);
         $out = '';
         foreach ($rows as $r => $line) {
             $out .= $line;
             if ($r < count($rows) - 1) {
-                $em = $g->rowSpacing[$r];
-                $num = rtrim(rtrim(number_format($em, 3, '.', ''), '0'), '.');
-                $out .= ' \\\\' . ($num === '' || $num === '0' || $num === '-0' ? '' : '[' . $num . 'em]') . ' ';
+                // The environment's own jot is not written: only what is left over.
+                $num = self::emAmount($g->rowSpacing[$r] - ($jot ? Grid::JOT : 0.0));
+                $out .= ' \\\\' . ($num === '0' ? '' : '[' . $num . 'em]') . ' ';
             }
         }
 

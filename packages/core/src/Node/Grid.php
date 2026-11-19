@@ -9,10 +9,14 @@ use Phactorial\Layout\Context;
 
 /**
  * An equation grid (mtable): rows of cells in aligned columns, laid out the way TeX sets a matrix.
- * Columns are one em apart unless columnSpacing says otherwise, every row is at least as tall as TeX's array strut (0.84 em above the baseline, 0.36 em below) and rows stack with no gap beyond it, an alignment grid adds TeX's 0.3 em jot between rows, rowSpacing adds more after a row, and the whole grid is centered on the math axis.
+ * Columns are one em apart unless columnSpacing says otherwise, every row is at least as tall as TeX's array strut (0.84 em above the baseline, 0.36 em below) and rows stack with no gap beyond it, rowSpacing adds more after a row (the reader puts TeX's 0.3 em jot of aligned and gathered there), rows may overlap when it is negative, a script-size grid has no strut and keeps rows 1.2 em apart, and the whole grid is centered on the math axis.
  */
 final class Grid extends Node
 {
+    /** @internal Engine detail, not public API. TeX's \jot in em: the extra space between the lines of aligned and gathered. */
+    public const JOT = 0.3;
+    /** @internal Engine detail, not public API. MathML's default rowspacing, 1ex, in em (the MathML reader takes an ex as half an em). */
+    public const MATHML_ROW_SPACING = 0.5;
     /** @internal Engine detail, not public API. */
     public const COLUMN_ALIGN = ['left', 'center', 'right'];
     /** @internal Engine detail, not public API. */
@@ -147,14 +151,15 @@ final class Grid extends Node
         $em = $c->size();
         $axis = $c->k('axisHeight');
 
+        $strut = $c->level === 0;
         $boxes = [];
         $colW = array_fill(0, $this->columns, 0.0);
         $rowA = [];
         $rowD = [];
         foreach ($this->rows as $i => $row) {
-            // TeX's \@arstrut: 0.7 and 0.3 of a 1.2 em baseline skip, in every row.
-            $rowA[$i] = 0.84 * $em;
-            $rowD[$i] = 0.36 * $em;
+            // TeX's \@arstrut: 0.7 and 0.3 of a 1.2 em baseline skip, in every row. Scripts (\substack, subarray) have none.
+            $rowA[$i] = $strut ? 0.84 * $em : 0.0;
+            $rowD[$i] = $strut ? 0.36 * $em : 0.0;
             foreach ($row as $j => $cell) {
                 $b = $cell->layout($cc);
                 $boxes[$i][$j] = $b;
@@ -175,12 +180,19 @@ final class Grid extends Node
         $base = [];
         $y = 0.0;
         foreach ($this->rows as $i => $_) {
-            $y = $i === 0 ? 0.0 : $y + $rowD[$i - 1] + $rowA[$i] + ($this->alignment ? 0.3 * $em : 0.0) + $this->rowSpacing[$i - 1] * $em;
+            if ($i > 0) {
+                $stack = $rowD[$i - 1] + $rowA[$i];
+                $y += ($strut ? $stack : max(1.2 * $em, $stack + 0.1 * $em)) + $this->rowSpacing[$i - 1] * $em;
+            }
             $base[$i] = $y;
         }
-        $last = count($this->rows) - 1;
-        $top = -$rowA[0];
-        $bottom = $base[$last] + $rowD[$last];
+        // Rows may overlap (a negative row spacing): the box covers the ink of all of them.
+        $top = 0.0;
+        $bottom = 0.0;
+        foreach ($this->rows as $i => $_) {
+            $top = $i === 0 ? $base[0] - $rowA[0] : min($top, $base[$i] - $rowA[$i]);
+            $bottom = $i === 0 ? $base[0] + $rowD[0] : max($bottom, $base[$i] + $rowD[$i]);
+        }
         $shift = -$axis - ($top + $bottom) / 2;
 
         $out = new Box();

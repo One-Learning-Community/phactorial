@@ -658,7 +658,7 @@ final class TexReaderTest extends TestCase
         self::assertSame([], TexReader::read('\begin{aligned} a &= b \\\\ c &= d \end{aligned}')->notes());
         $grid = TexReader::read('\begin{aligned} a &= b \\\\[4pt] c &= d \\\\[1em] e &= f \end{aligned}')->node;
         self::assertInstanceOf(\Phactorial\Node\Grid::class, $grid);
-        self::assertEqualsWithDelta([0.4, 1.0], $grid->rowSpacing, 1e-9);
+        self::assertEqualsWithDelta([0.7, 1.3], $grid->rowSpacing, 1e-9); // the explicit space and aligned's 0.3em jot
     }
 
     public function test_row_spacing_that_is_not_drawn_is_noted(): void

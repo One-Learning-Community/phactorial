@@ -227,7 +227,8 @@ final class TexWriterTest extends TestCase
 
     public function test_display_grids_stay_display_grids(): void
     {
-        self::assertSame('\begin{gathered}a \\\\ b\end{gathered}', self::tex(new Grid([[Math::row('a')], [Math::row('b')]], ['center'], display: true)));
+        self::assertSame('\begin{gathered}a \\\\ b\end{gathered}', self::tex(new Grid([[Math::row('a')], [Math::row('b')]], ['center'], display: true, rowSpacing: [0.3])));
+        self::assertSame('\begin{darray}{c}a \\\\ b\end{darray}', self::tex(new Grid([[Math::row('a')], [Math::row('b')]], ['center'], display: true)));
         self::assertSame('\begin{darray}{ll}a & b\end{darray}', self::tex(new Grid([[Math::row('a'), Math::row('b')]], ['left', 'left'], display: true)));
     }
 

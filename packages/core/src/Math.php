@@ -399,7 +399,8 @@ final class Math
         }
         unset($row);
 
-        return new Grid($cells, $align, 'baseline', true, $gaps, true);
+        // TeX's \jot between the lines of an alignment.
+        return new Grid($cells, $align, 'baseline', true, $gaps, true, array_fill(0, max(0, count($cells) - 1), Grid::JOT));
     }
 
     /** $cell with its leading operator, if the cell starts with one (seen through Fallback, DisplayStyle, TexSource and Color), given the infix form. */
