@@ -1577,7 +1577,16 @@ final class TexWriter
             }
             $rows[] = self::trimTex($line);
         }
+        $out = '';
+        foreach ($rows as $r => $line) {
+            $out .= $line;
+            if ($r < count($rows) - 1) {
+                $em = $g->rowSpacing[$r];
+                $num = rtrim(rtrim(number_format($em, 3, '.', ''), '0'), '.');
+                $out .= ' \\\\' . ($num === '' || $num === '0' || $num === '-0' ? '' : '[' . $num . 'em]') . ' ';
+            }
+        }
 
-        return '\begin{' . $env . '}' . $args . implode(' \\\\ ', $rows) . '\end{' . $env . '}';
+        return '\begin{' . $env . '}' . $args . $out . '\end{' . $env . '}';
     }
 }

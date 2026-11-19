@@ -226,8 +226,8 @@ final class TexFinalReviewTest extends TestCase
     public function test_notes_of_a_dropped_trailing_row_come_in_source_order(): void
     {
         self::assertSame(
-            ['\\\\: row spacing is not drawn @offset 17', '\color: unknown color `Salmon`; drawn in the default color @offset 25'],
-            self::notes('\begin{matrix} a \\\\[1em] \color{Salmon} \end{matrix}'),
+            ['\\\\: row spacing is not drawn @offset 17', '\hline: row rules are not drawn @offset 25'],
+            self::notes('\begin{matrix} a \\\\[1em] \hline \end{matrix}'),
         );
     }
 

@@ -90,7 +90,7 @@ final class GridTest extends TestCase
         $box = self::lay(new Grid([[$f1], [$f2]]));
         $rules = array_values(array_filter($box->items, static fn ($i): bool => $i instanceof Rule));
         // Fraction bars sit at the same height above each cell's baseline.
-        $expect = self::lay($f1, false)->descent + self::lay($f2, false)->ascent + 0.1 * 12;
+        $expect = max(self::lay($f1, false)->descent, 0.36 * 12) + max(self::lay($f2, false)->ascent, 0.84 * 12);
         $this->assertGreaterThan(14.4, $expect);
         $this->assertCount(2, $rules);
         $this->assertEqualsWithDelta($expect, $rules[1]->y - $rules[0]->y, 1e-9);
@@ -295,5 +295,55 @@ final class GridTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         new Grid([[Math::row('a'), Math::row('b')]], columnSpacing: [-0.1]);
+    }
+
+    private static function height(string $tex): float
+    {
+        $box = Math::layout(\Phactorial\Tex\TexReader::read($tex)->node, 18.0, true);
+
+        return $box->ascent + $box->descent;
+    }
+
+    public function test_a_matrix_row_has_the_array_strut(): void
+    {
+        self::assertEqualsWithDelta(2.4 * 18, self::height('\begin{matrix} a & b \\\\ c & d \end{matrix}'), 1e-6);
+        self::assertEqualsWithDelta(2.4 * 18, self::height('\begin{matrix} a & \\\\ & d \end{matrix}'), 1e-6);
+    }
+
+    public function test_an_alignment_adds_jot_between_rows(): void
+    {
+        self::assertEqualsWithDelta(2.7 * 18, self::height('\begin{aligned} a &= b \\\\ c &= d \end{aligned}'), 1e-6);
+    }
+
+    public function test_tall_content_grows_its_row(): void
+    {
+        self::assertGreaterThan(self::height('\begin{matrix} a \\\\ c \end{matrix}') + 0.2 * 18, self::height('\begin{matrix} \frac{a}{b} \\\\ c \end{matrix}'));
+    }
+
+    public function test_row_spacing_is_drawn(): void
+    {
+        $base = self::height('\begin{matrix} a \\\\ b \end{matrix}');
+        self::assertEqualsWithDelta($base + 18, self::height('\begin{matrix} a \\\\[1em] b \end{matrix}'), 1e-6);
+        self::assertEqualsWithDelta($base + 18, self::height('\begin{matrix} a \\\\[10pt] b \end{matrix}'), 1e-6);
+        self::assertEqualsWithDelta($base + 18, self::height('\begin{matrix} a \\\\[18mu] b \end{matrix}'), 1e-6);
+        self::assertEqualsWithDelta($base - 0.2 * 18, self::height('\begin{matrix} a \\\\[-0.2em] b \end{matrix}'), 1e-6);
+        self::assertEqualsWithDelta($base + 18, self::height('\begin{matrix} a \\\\[1em] b \\\\ \end{matrix}'), 1e-6);
+    }
+
+    public function test_row_spacing_is_normalized_and_must_be_finite(): void
+    {
+        $rows = [[Math::row('a')], [Math::row('b')], [Math::row('c')]];
+        self::assertSame([0.0, 0.0], (new Grid($rows))->rowSpacing);
+        self::assertSame([0.5, 0.0], (new Grid($rows, rowSpacing: [0.5]))->rowSpacing);
+        self::assertSame([0.5, -1.0], (new Grid($rows, rowSpacing: [0.5, -1.0, 7.0]))->rowSpacing);
+        self::assertSame([], (new Grid([[Math::row('a')]], rowSpacing: [1.0]))->rowSpacing);
+        foreach ([NAN, INF, -INF] as $bad) {
+            try {
+                new Grid($rows, rowSpacing: [$bad]);
+                self::fail('expected an InvalidArgumentException');
+            } catch (\InvalidArgumentException $e) {
+                self::assertStringContainsString('Row spacing', $e->getMessage());
+            }
+        }
     }
 }

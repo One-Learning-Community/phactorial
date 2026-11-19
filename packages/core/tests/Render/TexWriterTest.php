@@ -465,4 +465,15 @@ final class TexWriterTest extends TestCase
         self::assertStringNotContainsString('stretchy', \Phactorial\Render\MathmlWriter::write($M::tex('\xrightarrow{f}')));
         self::assertStringContainsString('stretchy="true"', \Phactorial\Render\MathmlWriter::write($M::tex('\xlongequal{d}')));
     }
+
+    public function test_row_spacing_is_written_in_em_and_round_trips(): void
+    {
+        $once = self::tex(\Phactorial\Math::tex('\begin{matrix} a \\\\[4pt] b \\\\ c \\\\[-0.25em] d \end{matrix}'));
+        self::assertSame('\begin{matrix}a \\\\[0.4em] b \\\\ c \\\\[-0.25em] d\end{matrix}', $once);
+        self::assertSame($once, self::tex(\Phactorial\Math::tex($once)));
+        $aligned = self::tex(\Phactorial\Math::tex('\begin{aligned} a &= b \\\\[1em] c &= d \end{aligned}'));
+        self::assertStringContainsString('\\\\[1em]', $aligned);
+        self::assertSame($aligned, self::tex(\Phactorial\Math::tex($aligned)));
+        self::assertStringNotContainsString('[', self::tex(\Phactorial\Math::tex('\begin{matrix} a \\\\[0pt] b \end{matrix}')));
+    }
 }

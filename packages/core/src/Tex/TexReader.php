@@ -308,7 +308,8 @@ final class TexReader
     {
         $rows = [];
         $breakAt = null;
-        $spacing = null;
+        $gaps = [];
+        $gapAt = [];
         while (true) {
             $rows[] = [self::row($this->parseUntil('nl'))];
             $t = $this->c->peek();
@@ -317,18 +318,18 @@ final class TexReader
             }
             $breakAt ??= $t[2];
             $this->c->p++;
-            if ($this->skipOptionalDimension()) {
-                $spacing ??= $this->spacingNote($t[2]);
-            }
+            $gaps[] = $this->skipOptionalDimension() ?? 0.0;
+            $gapAt[] = $t[2];
         }
         if ($breakAt === null) {
             return $rows[0][0];
         }
-        $lost = $spacing === null ? [] : [$spacing];
+        $lost = [];
         while (count($rows) > 1 && self::blank($rows[array_key_last($rows)][0])) {
             array_push($lost, ...self::lostNotes(array_pop($rows)[0]));
         }
-        $node = self::withNotes(count($rows) === 1 ? $rows[0][0] : new Grid($rows, ['center'], 'baseline', true), $lost);
+        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, count($rows));
+        $node = self::withNotes(count($rows) === 1 ? $rows[0][0] : new Grid($rows, ['center'], 'baseline', true, rowSpacing: $gaps), $lost);
 
         return $this->note(NoteLevel::Approximated, '\\\\', 'line break outside an environment; rows stacked', $breakAt, $node);
     }
@@ -421,7 +422,7 @@ final class TexReader
                 $nodes[] = $this->note(NoteLevel::Dropped, '&', 'alignment tab outside an alignment environment', $t[2]);
             } elseif ($ty === 'nl') {
                 $this->c->p++;
-                $spaced = $this->skipOptionalDimension();
+                $spaced = $this->skipOptionalDimension() !== null;
                 $break = $this->note(NoteLevel::Dropped, '\\\\', 'line break outside an environment', $t[2]);
                 if ($break instanceof Fallback) {
                     $this->breakNote = $break->note;
@@ -579,30 +580,32 @@ final class TexReader
             : new Scripts($node, null, null, $empty->sub, $empty->sup)];
     }
 
-    /** `\\[2pt]`: the optional dimension after a row break. */
-    private function skipOptionalDimension(): bool
+    /** `\\[2pt]`: the optional dimension after a row break, read and given in em; null (nothing read) when there is none. */
+    private function skipOptionalDimension(): ?float
     {
         if (! $this->c->peekIs('ch', '[')) {
-            return false;
+            return null;
         }
         $s = '';
         for ($i = $this->c->p + 1; isset($this->c->t[$i]); $i++) {
             if ($this->c->t[$i][0] === 'ch' && $this->c->t[$i][1] === ']') {
                 if (preg_match('/^\s*-?[\d.]+\s*[a-z]{2}\s*$/', $s) === 1) {
+                    $this->c->p++;
+                    $em = $this->dimension();
                     $this->c->p = $i + 1;
 
-                    return true;
+                    return $em;
                 }
 
-                return false;
+                return null;
             }
             if ($this->c->t[$i][0] !== 'ch' && $this->c->t[$i][0] !== 'sp') {
-                return false;
+                return null;
             }
             $s .= $this->c->t[$i][1];
         }
 
-        return false;
+        return null;
     }
 
     /** `\\[4pt]` is read and its spacing ignored: say so, once. */
@@ -1588,7 +1591,8 @@ final class TexReader
      * Rows of cells up to `\end` (or the closing brace for `\substack`), neither consumed. The row after a final `\\` is
      * dropped when it is empty, as TeX does.
      *
-     * @return array{list<list<Node>>, list<MathNote>} the rows, and the notes of the empty row that was dropped
+     * @return array{list<list<Node>>, list<MathNote>, list<float>, list<int>} the rows, the notes of the empty row that was dropped,
+     *                                                                         and the em after each row with where its `\\` stood
      */
     private function cells(string $closer): array
     {
@@ -1598,7 +1602,8 @@ final class TexReader
         $row = [];
         $capped = false;
         $capNote = null;
-        $spacing = null;
+        $gaps = [];
+        $gapAt = [];
         while (true) {
             $at = $this->c->offset();
             $cell = self::row($this->parseUntil('&', 'nl', $closer));
@@ -1623,11 +1628,11 @@ final class TexReader
                 break;
             }
             $this->c->p++;
-            if ($this->skipOptionalDimension()) {
-                $spacing ??= $this->spacingNote($t[2]);
-            }
+            $em = $this->skipOptionalDimension() ?? 0.0;
             if ($row !== []) {
                 $rows[] = $row;
+                $gaps[] = $em;
+                $gapAt[] = $t[2];
             }
             $row = [];
         }
@@ -1646,13 +1651,63 @@ final class TexReader
         } else {
             $lost = array_merge($lost, self::lostNotes($row[0]));
         }
-        if ($spacing !== null) {
-            $lost[] = $spacing;
-        }
-        // Source order: the spacing of an earlier `\\[len]` and the cap note can come before what the dropped row held.
-        usort($lost, static fn (MathNote $a, MathNote $b): int => (int) substr($a->where, 7) <=> (int) substr($b->where, 7));
 
-        return [$rows, $lost];
+        return [$rows, self::inSourceOrder($lost), $gaps, $gapAt];
+    }
+
+    /**
+     * Source order: the spacing of an earlier `\\[len]` and the cap note can come before what the dropped row held.
+     *
+     * @param list<MathNote> $notes
+     *
+     * @return list<MathNote>
+     */
+    private static function inSourceOrder(array $notes): array
+    {
+        usort($notes, static fn (MathNote $a, MathNote $b): int => (int) substr($a->where, 7) <=> (int) substr($b->where, 7));
+
+        return $notes;
+    }
+
+    /**
+     * The notes with a note for the first `\\[len]` that no row gap draws (one after the last row, or in a node with no rows to space).
+     *
+     * @param list<MathNote> $lost
+     * @param list<float> $gaps
+     * @param list<int> $gapAt
+     *
+     * @return list<MathNote>
+     */
+    private function undrawnSpacing(array $lost, array $gaps, array $gapAt, int $rows): array
+    {
+        foreach ($gaps as $i => $em) {
+            if ($i >= $rows - 1 && $em !== 0.0 && ($m = $this->spacingNote($gapAt[$i])) !== null) {
+                $lost[] = $m;
+                break;
+            }
+        }
+
+        return self::inSourceOrder($lost);
+    }
+
+    /**
+     * `$node` with `$gaps` as the row spacing of its grid (seen through a fence), or null when it holds no grid.
+     *
+     * @param list<float> $gaps
+     */
+    private static function spaced(Node $node, array $gaps): ?Node
+    {
+        if ($node instanceof Grid) {
+            return $node->withRowSpacing($gaps);
+        }
+        if ($node instanceof Fenced && ($inner = self::spaced($node->content, $gaps)) !== null) {
+            return new Fenced($node->open, $node->close, $inner);
+        }
+        if ($node instanceof Fallback && $node->content !== null && ($inner = self::spaced($node->content, $gaps)) !== null) {
+            return new Fallback($inner, $node->note);
+        }
+
+        return null;
     }
 
     /** @return list<MathNote> the notes in a cell that has nothing else in it */
@@ -1675,7 +1730,8 @@ final class TexReader
     /** @param list<MathNote> $notes */
     private static function withNotes(Node $node, array $notes): Node
     {
-        foreach ($notes as $note) {
+        // The first note outermost: Math::notes() reads the tree outside in, so they come back in source order.
+        foreach (array_reverse($notes) as $note) {
             $node = new Fallback($node, $note);
         }
 
@@ -1715,7 +1771,7 @@ final class TexReader
         }
         $notes = [];
         $align = TexEnvironments::arguments($name, $this->c, $notes);
-        [$rows, $lost] = $this->cells('end');
+        [$rows, $lost, $gaps, $gapAt] = $this->cells('end');
         if ($this->c->peekIs('cs', 'end')) {
             $this->c->p++;
             $endAt = $this->c->offset();
@@ -1732,6 +1788,11 @@ final class TexReader
             $this->display = true;
         }
         $node = TexEnvironments::node($name, $rows, $align, $notes, $at);
+        $spaced = $gaps === [] ? null : self::spaced($node, $gaps);
+        if ($spaced !== null) {
+            $node = $spaced;
+        }
+        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, $spaced === null ? 0 : count($rows));
         foreach (array_reverse($notes) as [$level, $element, $reason, $off]) {
             $node = $this->note($level, $element, $reason, $off, $node);
         }
@@ -1747,12 +1808,13 @@ final class TexReader
             return $this->note(NoteLevel::Approximated, '\\substack', 'missing argument', $at);
         }
         $this->c->p++;
-        [$rows, $lost] = $this->cells('}');
+        [$rows, $lost, $gaps, $gapAt] = $this->cells('}');
+        $lost = $this->undrawnSpacing($lost, $gaps, $gapAt, count($rows));
         $closed = $this->c->peekIs('}');
         if ($closed) {
             $this->c->p++;
         }
-        $node = self::withNotes(new Grid($rows, ['center']), $lost);
+        $node = self::withNotes(new Grid($rows, ['center'], rowSpacing: $gaps), $lost);
 
         return $closed ? $node : $this->note(NoteLevel::Approximated, '\\substack', 'unclosed brace', $at, $node);
     }
