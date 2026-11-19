@@ -5,6 +5,10 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `\color` and `\textcolor` read xcolor mixing expressions over the base names: tints such as `red!50`, mixes such as `red!30!blue`, longer chains, and `-red` for the complement. Each mix is computed in xcolor's color models, so the result matches LaTeX. These values were drawn in the default color with a note.
+
 ### Changed
 
 - The MathML writer writes an empty `<mo fence="true" stretchy="true" lspace="0" rspace="0"></mo>` on the missing side of a half-open fence, so a browser adds no space there.

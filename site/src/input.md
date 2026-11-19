@@ -91,8 +91,9 @@ The TeX reader accepts these values:
 - The 19 base names of xcolor, with xcolor's values: black, blue, brown, cyan, darkgray, gray, green, lightgray, lime, magenta, olive, orange, pink, purple, red, teal, violet, white and yellow. `purple` is `#bf0040`, not the CSS purple.
 - `#rgb` and `#rrggbb`.
 - The models `[HTML]{2350FF}`, `[rgb]{0.14,0.31,1}`, `[RGB]{35,80,255}` and `[gray]{0.5}`, with spaces allowed after commas.
+- Mixes of the base names, as in xcolor: `red!50` is red tinted halfway to white, `red!50!black` is half red and half black, chains such as `red!30!blue!60!green` mix step by step, and a leading `-` takes the complement, so `-red` is cyan. Each mix is computed in xcolor's color models, as LaTeX does it, so `cyan!50!red` matches LaTeX.
 
-Any other value, including an xcolor mix such as `red!50`, is drawn in the default color with a note: ``unknown color `red!50`; drawn in the default color``. The TeX writer keeps the rejected value, so `red!50` round-trips. A value with markup or characters TeX cannot read is written back as `\color{}`.
+Any other value, including a dvipsnames name such as `ForestGreen`, is drawn in the default color with a note: ``unknown color `ForestGreen`; drawn in the default color``. The TeX writer keeps the rejected value, so `ForestGreen` round-trips. A value with markup or characters TeX cannot read is written back as `\color{}`.
 
 [Output](./output.md#svg) explains how colors behave in a dark theme.
 
