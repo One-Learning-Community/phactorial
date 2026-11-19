@@ -30,7 +30,7 @@ A formula starts in the style its source asked for: `$$…$$` and `\[…\]` in T
 
 | Output | Returns |
 |---|---|
-| `svg(size: 16, color: 'currentColor', pad: 0, label: null)` | SVG markup with `role="img"` and an `aria-label` of `text()`, or of `label`. An empty `label` writes `aria-hidden="true"` instead. Inline, it also carries the `vertical-align` that sets its baseline on the line's. |
+| `svg(size: 16, color: 'currentColor', pad: 0, label: null)` | SVG markup with `role="img"` and an `aria-label` of `text()`, or of `label`. An empty `label` writes `aria-hidden="true"` instead. Inline, it also carries a `vertical-align` that puts it on the text's baseline. |
 | `png(size: 16, scale: 2, color: '#000000', pad: 0)` | A `MathPng` |
 | `mathml()` | MathML, with `display="block"` in display style |
 | `omml(align: 'center', format: null)` | Word's `m:oMath` inline; `m:oMathPara` aligned `left`, `center` or `right` in display style |
@@ -108,7 +108,7 @@ use Phactorial\Render\TexWriter;
 echo TexWriter::write($formula);   // x = \frac{- b \pm \sqrt{b^2 - 4 a c}}{2 a}
 ```
 
-Standard TeX with no package-specific commands, so KaTeX and MathJax accept it, and `Math::tex()` reads it back as the same formula.
+Plain TeX math that KaTeX and MathJax accept. Chemistry stays as `\ce` and `\pu`, which need their mhchem extension. `Math::tex()` reads the output back as the same formula.
 
 ## Word (OMML)
 

@@ -117,6 +117,6 @@ The wiring classes behind these (the parser, the renderers, the listener and the
 The syntax rules are pinned to GitHub's own renderer. `bin/capture-github.php` sends a list of sample strings to the `/markdown` API and saves the HTML under `tests/fixtures/github`. `GithubParityTest` compares the formulas GitHub marks, and the text around them, with this extension's output. These cases differ, and the test group `known-divergence` holds them:
 
 - `$$a$$b$$`: GitHub reads one formula and the text `b`, and drops the trailing `$$`. This extension keeps the `$$` as text.
-- GitHub puts a display formula inside a `<p>`. This extension emits a `<div>` for a paragraph that holds only that formula. It carries the same formula.
+- GitHub puts a display formula inside a `<p>`. This extension emits a `<div>` for a paragraph that holds only that formula, with the same formula inside.
 
 A pipe inside a table cell splits the cell in both renderers, because tables split before inline parsing: `$a|b$` becomes the cells `$a` and `b$`.

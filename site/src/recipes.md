@@ -14,7 +14,7 @@ An inline formula uses text style, which keeps fractions and limits small, and i
 
 ## The LaTeX look
 
-The look of a LaTeX document is Latin Modern Math. It is not bundled; download `latinmodern-math.otf` from CTAN or the GUST site (GUST Font License). Its outlines are CFF, which the reader handles like any other.
+The look of a LaTeX document is Latin Modern Math. It is not bundled; download `latinmodern-math.otf` from CTAN or the GUST site (GUST Font License). It loads like any other math font.
 
 ```php
 use Phactorial\Font\Font;

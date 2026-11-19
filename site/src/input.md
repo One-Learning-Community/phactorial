@@ -76,9 +76,9 @@ $formula = Math::tex('\int_0^1 x^2 \, dx = \frac{1}{3}');
 
 Write TeX in single-quoted strings or a nowdoc (`<<<'TEX'`). In double quotes PHP turns `\f`, `\n`, `\t`, `\v`, `\r` and `\e` into control characters, so `\frac` and `\nabla` arrive broken, and `$x` is replaced by a PHP variable. Inside single quotes, TeX's `\\` line break is written `\\\\`.
 
-The input is math mode. A `$…$`, `$$…$$`, `\(…\)` or `\[…\]` wrapper is optional. The reader covers what [KaTeX supports](https://katex.org/docs/supported.html) for math: fractions, roots, scripts and primes, `\left`, `\right` and `\middle`, `\big` sizes, accents, braces, extensible arrows, large operators with limits, font and style commands, `\text`, spacing, and the environments `matrix` and its variants, `array`, `cases`, `aligned`, `align`, `gathered` and `gather`. Macros work: `\newcommand`, `\renewcommand`, `\providecommand`, `\def` and `\DeclareMathOperator`, each scoped to its group.
+The input is TeX math on its own, without a LaTeX document around it. A `$…$`, `$$…$$`, `\(…\)` or `\[…\]` wrapper is optional. The reader supports the same math commands as [KaTeX](https://katex.org/docs/supported.html): fractions, roots, scripts and primes, `\left`, `\right` and `\middle`, `\big` sizes, accents, braces, extensible arrows, large operators with limits, font and style commands, `\text`, spacing, and the environments `matrix` and its variants, `array`, `cases`, `aligned`, `align`, `gathered` and `gather`. Macros work: `\newcommand`, `\renewcommand`, `\providecommand`, `\def` and `\DeclareMathOperator`, each scoped to its group.
 
-These are read but not drawn, and each one is reported: boxes (`\boxed`, `\fbox`, `\cancel`), `\hline` and column rules, `\tag`, commutative diagrams, `\newenvironment`, `\tensor` and `\mathchoice`. `\scriptstyle` and `\scriptscriptstyle` are drawn in text style, and `smallmatrix` at normal size. An unknown command is drawn as its own name, as KaTeX shows it; `\colorbox` and `\fcolorbox` are not read, so they come out that way.
+These are read but not drawn, and each one is reported: boxes (`\boxed`, `\fbox`, `\cancel`), `\hline` and column rules, `\tag`, commutative diagrams, `\newenvironment`, `\tensor` and `\mathchoice`. `\scriptstyle` and `\scriptscriptstyle` are drawn in text style, and `smallmatrix` at normal size. An unknown command is drawn as its name, the way KaTeX shows it. `\colorbox` and `\fcolorbox` are not supported, so they appear as their names too.
 
 The TeX writer keeps what the reader does not draw. `\boxed`, `\fbox`, `\cancel`, `\bcancel`, `\xcancel` and `\sout` are written back with their content normalized, and `\tag` is written back at the top level of a formula. TeX in, TeX out loses none of them, though the other writers still draw only the content. Color is drawn and written back, as described next.
 
@@ -100,7 +100,7 @@ Scripts before a base are read from `{}^{a}_{b}X`, `\prescript{a}{b}{X}` and `\s
 
 ### Chemistry
 
-`\ce` and `\pu` read [mhchem](https://mhchem.github.io/MathJax-mhchem/), the notation KaTeX and MathJax offer as an extension.
+`\ce` and `\pu` read chemistry written in [mhchem](https://mhchem.github.io/MathJax-mhchem/) notation, the chemistry extension for KaTeX and MathJax.
 
 ```php
 $reaction = Math::tex('\ce{2H2 + O2 -> 2H2O}');
@@ -128,7 +128,7 @@ Arrows are `->`, `<-`, `<->`, `<-->` and `<=>`, with labels in `[above][below]`,
 
 `\pu` reads a number and units: `\pu{25 kJ/mol}`, `\pu{kJ mol-1}`, `\pu{1.2e3 kJ}` (drawn 1.2 ⋅ 10³), `\pu{10^-3 mol}` and `\pu{25 °C}`. Spacing follows mhchem, and `°C` is a plain degree sign followed by C.
 
-A piece the subset does not cover, `\bond{…}` or a `\\` line break, is drawn as its source text, upright, with an approximated note, and the rest of the argument is still read. An unknown command inside `\ce`, such as `\cf` or `\cee`, is drawn as its name with a dropped note, and its argument is read as math. Nuclear notation such as `^{0}_{-1}e` reads as prescripts, and orbital notation such as `1s^2 2s^2` reads as an ordinary run. siunitx (`\SI`, `\si`, `\qty`, `\num`) is not supported. Input limits, including nesting, cover the argument and any math inside it.
+Anything outside this subset, such as `\bond{…}` or a `\\` line break, is drawn as its source text, upright, with an approximated note, and the rest of the argument is still read. An unknown command inside `\ce`, such as `\cf` or `\cee`, is drawn as its name with a dropped note, and its argument is read as math. Nuclear notation such as `^{0}_{-1}e` reads as prescripts, and orbital notation such as `1s^2 2s^2` reads as an ordinary run. siunitx (`\SI`, `\si`, `\qty`, `\num`) is not supported. Input limits, including nesting, cover the argument and any math inside it.
 
 The TeX writer writes `\ce{…}` and `\pu{…}` back unexpanded, so that TeX needs mhchem wherever it goes next. KaTeX and MathJax both offer it.
 

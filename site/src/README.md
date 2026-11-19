@@ -15,15 +15,15 @@ actions:
     type: secondary
 features:
   - title: Plain PHP
-    details: Runs in your PHP process and returns a string. No Node, no browser, no fonts on the server.
+    details: Runs in your PHP process and returns a string. No Node, no browser, and the math font is bundled.
   - title: Reads TeX and MathML
-    details: The TeX KaTeX reads, chemistry with \ce and \pu, MathML, and MathType and Wiris text.
+    details: Write math in TeX as you would for KaTeX or MathJax, chemistry with \ce, or paste MathML from Word.
   - title: Writes every format
     details: SVG, PNG, MathML, TeX, live Word equations and plain text, all from the same formula.
 footer: MIT licensed. Set in STIX Two Math.
 ---
 
-Phactorial typesets mathematics in plain PHP. It reads TeX or MathML and writes SVG, PNG, MathML, TeX, Word equations (OMML) or plain text. It needs PHP 8.4 with `ctype`, `dom` and `mbstring`. No Node, no browser, no fonts on the server.
+Phactorial turns math into images and markup from PHP. Give it a formula in TeX or MathML and get back SVG, PNG, MathML, TeX, a Word equation or plain text. It needs PHP 8.4 with the `ctype`, `dom` and `mbstring` extensions. The math font is bundled, so there is nothing else to install.
 
 ## Quick start
 
@@ -39,32 +39,32 @@ echo MathRender::fromTex('x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}')->display()->s
 
 ![The quadratic formula as SVG](/equation-quadratic.png)
 
-Every glyph is a path, so the SVG looks the same everywhere and needs no web font.
+Every glyph is drawn as a path, so the SVG looks the same in every browser and needs no web font.
+
+## Output formats
+
+| Format | Use it for |
+|---|---|
+| SVG | Web pages and any vector pipeline |
+| PNG | Email, chat, anywhere SVG won't show (needs `ext-imagick`) |
+| MathML | Browsers that draw math themselves, and screen readers |
+| TeX | Storage and editing, or KaTeX and MathJax in the browser |
+| Word (OMML) | Word documents, as equations the reader can edit |
+| Plain text | Alt text, search indexes, plain-text email |
 
 ## How it works
 
-A formula passes through three stages.
+1. **Read.** `Math::tex()` or `Math::mathml()` turns source text into a formula tree. The `Math` builder makes the same tree from PHP code.
+2. **Lay out.** `Math::layout()` positions every glyph, following the rules TeX uses.
+3. **Write.** A writer turns the result into one of the formats above.
 
-1. **Read.** `Math::tex()` and `Math::mathml()` turn TeX (with `\ce` and `\pu` chemistry), MathML, or MathType and Wiris text into a formula tree. The `Math` builder makes the same tree in PHP.
-2. **Lay out.** `Math::layout()` sets the tree in an OpenType math font, by the rules TeX and MathML Core use.
-3. **Write.** A writer turns the tree or the layout into output.
-
-`MathRender` runs all three in one call. The classes behind it stay public for finer control. Every reader produces the same tree, so conversion comes free: TeX to MathML, MathML to TeX, and either to Word.
-
-| Output | From | Use it for |
-|---|---|---|
-| SVG | the layout | Web pages, any vector pipeline |
-| PNG | the layout | Email, chat, anything that won't show SVG (needs ext-imagick) |
-| MathML | the tree | Browsers that render MathML themselves, screen readers |
-| TeX | the tree | Editing, storage, KaTeX or MathJax on the client |
-| OMML | the tree | Word documents, as live equations a reader can edit |
-| Plain text | the tree | Alt text, search indexes, plain-text email |
+Most code only needs `MathRender`, which runs all three steps in one call. Because every reader produces the same tree, Phactorial also converts between formats: TeX to MathML, MathML to TeX, and either one to Word.
 
 ## Compared with KaTeX and MathJax
 
-KaTeX and MathJax are the standard tools for math on the web. Both are JavaScript, so a PHP site must run Node beside PHP or render in the visitor's browser.
+KaTeX and MathJax are JavaScript libraries. To use them from a PHP site, you run Node next to PHP or let the visitor's browser do the typesetting.
 
-Phactorial reads the TeX KaTeX reads (gaps are listed under [Input](./input.md#tex)), runs in your PHP process and returns a string. It also writes Word equations, which neither JavaScript library does.
+Phactorial understands the same TeX math commands, so most formulas written for KaTeX work here unchanged. It runs inside your PHP process and returns a string. It also writes Word equations, which neither library does. [Input](./input.md#tex) lists the few commands it reads but does not draw.
 
 Not yet supported: line breaks inside long formulas, boxes and backgrounds within a formula, and equation numbers.
 
