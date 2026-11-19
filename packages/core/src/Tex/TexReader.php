@@ -949,8 +949,21 @@ final class TexReader
         if ($doubled !== null) {
             $node = $this->note(NoteLevel::Approximated, $doubled[0], $doubled[1], $doubled[2], $node);
         }
+        if ($limits !== null && self::classSpaced($a[0])) {
+            // TeX rejects a control after a class atom (`\mathrel{\sum}\limits`); the layout still follows it.
+            $node = $this->note(NoteLevel::Approximated, '\\' . $limits, 'a limit control must follow an operator', $limitsAt, $node);
+        }
 
         return $node;
+    }
+
+    /** Whether the node is a lone operator given a class's spacing (`\mathrel{\sum}`, also colored or negated), not an op atom's. */
+    private static function classSpaced(Node $n): bool
+    {
+        $lone = self::loneWrapped($n)[0];
+
+        return $lone instanceof Operator && ($lone->lspace !== null || $lone->rspace !== null)
+            && ! ($lone->lspace === 1.0 && $lone->rspace === 1.0);
     }
 
     /**
@@ -1882,7 +1895,9 @@ final class TexReader
 
         // The color (and the source that spells it) around the symbol survives the class.
         // TeX's \mathop takes its limits as \displaylimits: above and below in display style, beside inline.
-        return [$rewrap($spaced), $class === 'op' && mb_strlen($char) === 1 ? 'op' : 'ord', null];
+        $isOp = $class === 'op' && mb_strlen($char) === 1;
+
+        return [$rewrap($spaced), $isOp ? 'op' : 'ord', null];
     }
 
     /**

@@ -183,8 +183,8 @@ final class LimitsRoundTripTest extends TestCase
     public function test_a_marked_mo_symbol_is_written_as_a_mathop(): void
     {
         $node = MathmlReader::read('<math><munder><mo movablelimits="true">x</mo><mi>a</mi></munder></math>')->node;
-        // TeX's \mathop sets its own spacing, so only the layout of the limits (stacked in display, beside inline) carries over.
-        self::assertSame('\mathop{x}_a', TexWriter::write($node));
+        // TeX's \mathop sets its own spacing, so the symbol's dictionary spacing is written as kerns outside the operator and its limits.
+        self::assertSame('\mkern4mu \mathop{x}_a \mkern4mu', TexWriter::write($node));
         $back = MathmlReader::read(MathmlWriter::write($node))->node;
         foreach ([true, false] as $display) {
             self::assertEqualsWithDelta(self::width($node, $display), self::width($back, $display), self::TOLERANCE);
