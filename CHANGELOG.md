@@ -5,6 +5,8 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-11-18
+
 ### Added
 
 - Color in formulas. `\color`, `\textcolor` and MathML `mathcolor` are drawn by SVG and PNG, written by the MathML and TeX writers, and carried into Word equations as `w:color`. The tree gains `Node\Color`.

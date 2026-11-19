@@ -13,7 +13,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "phactorial/phactorial": "0.19.x-dev"
+                    "phactorial/phactorial": "0.20.x-dev"
                 }
             }
         },
@@ -23,7 +23,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "phactorial/commonmark": "0.19.x-dev"
+                    "phactorial/commonmark": "0.20.x-dev"
                 }
             }
         }
