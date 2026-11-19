@@ -45,4 +45,7 @@ jobs:
           restore-keys: composer-core-${{ matrix.php }}-
       - run: composer install --no-interaction --no-progress
       - run: vendor/bin/phpunit
+      - name: Round-trip fuzz
+        if: matrix.php == '8.4'
+        run: vendor/bin/phpunit --group fuzz
       - run: vendor/bin/phpstan analyse --memory-limit=1G

@@ -41,8 +41,14 @@ Each package keeps a manifest of its public API in `tests/Api/api.txt`: one sort
 If Xdebug is loaded, prefix with `php -d xdebug.mode=off` for speed. CI runs the same commands on PHP 8.4 and 8.5
 (`.github/workflows`).
 
-The core package's fuzz tests (thousands of random TeX and chemistry inputs) are left out of the default run. Run
-them after changing the TeX or chemistry readers: `cd packages/core && vendor/bin/phpunit --group fuzz`.
+The core package's fuzz tests (thousands of random TeX and chemistry inputs, and seeded MathML round trips) are left
+out of the default run, and take about ten seconds together. CI runs them on PHP 8.4. Run them after changing the TeX
+or chemistry readers, the MathML writer or reader, or operator spacing: `cd packages/core && vendor/bin/phpunit --group
+fuzz`. The round-trip tests (`tests/Mathml/RoundTripFuzzTest.php`) check the inputs whose layout changes between the
+tree and the MathML read back from it, and one check counts the inputs whose TeX output differs. Each check pins the
+exact mismatch set as a count and a hash. When a change moves a set, inspect the difference: run with
+`ROUND_TRIP_DUMP=<dir>` at the parent commit and at yours, and diff the files. Then update the constant in the same
+commit, and give the reason in the commit message.
 
 The docs import their runnable recipes from `site/recipes`, a Composer project on Orchestra Testbench that runs each
 one as a test. Run it after changing either package or a recipe:
