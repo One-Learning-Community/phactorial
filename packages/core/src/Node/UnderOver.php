@@ -280,18 +280,18 @@ final class UnderOver extends Node
         }
         // Stretchy parts stretch to the widest child that does not stretch.
         $overAnchor = 0.0;
-        $overChar = $overOp?->char;
+        $overChar = $overOp?->drawnChar();
         if ($overOp !== null && $overKind === 'accent') {
-            $overChar = self::combiningForm($c, $overOp, $widest) ?? $overOp->char;
+            $overChar = self::combiningForm($c, $overOp, $widest) ?? $overOp->drawnChar();
         }
         if ($overOp !== null && ($overKind === 'accent' || $overKind === 'stretch')) {
-            [$overBox, $overAnchor] = self::stretched($c, $overChar ?? $overOp->char, $overOp->stretchy === false ? 0.0 : $widest);
+            [$overBox, $overAnchor] = self::stretched($c, $overChar ?? $overOp->drawnChar(), $overOp->stretchy === false ? 0.0 : $widest);
             $overBox = self::tinted($overBox, $this->over);
         } elseif ($overKind === 'accent' && $overBox !== null) {
             $overAnchor = $overBox->width / 2;
         }
         if ($underOp !== null && ($underKind === 'accent' || $underKind === 'stretch')) {
-            [$underBox] = self::stretched($c, $underOp->char, $widest);
+            [$underBox] = self::stretched($c, $underOp->drawnChar(), $widest);
             $underBox = self::tinted($underBox, $this->under);
         }
 
