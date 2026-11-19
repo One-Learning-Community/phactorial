@@ -56,6 +56,11 @@ final class FormSpacingTexTest extends TestCase
         yield 'name in a root index' => ['<math><mroot><mi>a</mi><mo>sin</mo></mroot></math>'];
         yield 'name in a limit argument' => ['<math><munder><mo>lim</mo><msqrt><mo>sin</mo></msqrt></munder><mi>f</mi></math>'];
         yield 'letter in a limit argument' => ['<math><munder><mo>lim</mo><mo>x</mo></munder><mi>f</mi></math>'];
+        yield 'accent over a letter operator' => ['<math><mover><mo>x</mo><mo>^</mo></mover></math>'];
+        yield 'accent over a letter operator in a row' => ['<math><mi>a</mi><mover><mo>x</mo><mo>^</mo></mover><mi>b</mi></math>'];
+        yield 'accent over a relation' => ['<math><mover><mo>=</mo><mo>^</mo></mover></math>'];
+        yield 'accent over a name' => ['<math><mover><mo>sin</mo><mo>^</mo></mover></math>'];
+        yield 'colored accent over a letter operator' => ['<math><mstyle mathcolor="red"><mover><mo>x</mo><mo>^</mo></mover></mstyle></math>'];
         yield 'fenced letter over a plus' => ['<math><mi>a</mi><mover><mo>+</mo><mrow><mo>(</mo><mo>x</mo><mo>)</mo></mrow></mover><mi>b</mi></math>'];
     }
 
@@ -101,6 +106,19 @@ final class FormSpacingTexTest extends TestCase
         foreach ([true, false] as $display) {
             self::assertEqualsWithDelta(self::width($tree, $display), self::width($back, $display), self::TOLERANCE);
         }
+    }
+
+    public function test_an_accent_over_a_tex_base_writes_without_kerns(): void
+    {
+        foreach (['\\widehat{x}', '\\hat{x}', '\\widehat{=}'] as $tex) {
+            self::assertSame($tex, TexWriter::write(Math::tex($tex)));
+        }
+    }
+
+    public function test_an_accent_over_an_operator_writes_its_spacing_around_the_stack(): void
+    {
+        $tex = TexWriter::write(MathmlReader::read('<math><mover><mo>x</mo><mo>^</mo></mover></math>')->node);
+        self::assertSame('\\: \\widehat{\\mathop{x}} \\:', $tex);
     }
 
     public function test_a_name_the_reader_spaces_alike_is_written_plain(): void

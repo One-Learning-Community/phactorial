@@ -728,6 +728,18 @@ final class TexWriter
      */
     private static function operatorPiece(Node $kid, ?string $form, bool $inFence, ?Node $prev = null, ?Node $next = null, ?string $nextForm = null): ?string
     {
+        $parts = self::operatorParts($kid, $form, $inFence, $prev, $next, $nextForm);
+
+        return $parts === null ? null : $parts[0] . $parts[1] . $parts[2];
+    }
+
+    /**
+     * The three parts of operatorPiece(): the kern before, the written operator, the kern after.
+     *
+     * @return ?array{string, string, string}
+     */
+    private static function operatorParts(Node $kid, ?string $form, bool $inFence, ?Node $prev = null, ?Node $next = null, ?string $nextForm = null): ?array
+    {
         $core = UnderOver::nameNode($kid);
         if (! $core instanceof Operator) {
             return null;
@@ -742,12 +754,12 @@ final class TexWriter
             }
         });
         if (self::spacingPlan($core, $form, false, false)[0] !== null) {
-            return $piece; // written as a class, which carries the spacing itself
+            return ['', $piece, '']; // written as a class, which carries the spacing itself
         }
         if (self::readsAsOrdinary($core)) {
             $plan = self::ordinaryPlan($core, $form, $prev, $next, $nextForm);
             if ($plan === null) {
-                return $piece;
+                return ['', $piece, ''];
             }
             [$l, $r] = $plan;
             if (self::$scriptDepth > 0 && $prev === null) {
@@ -763,14 +775,14 @@ final class TexWriter
                     self::$opAtomCore = false;
                 }
 
-                return self::kern($l, true) . $piece . self::kern($r, false);
+                return [self::kern($l, true), $piece, self::kern($r, false)];
             }
 
-            return self::kern($l, true) . '\mathop{' . $piece . '}' . self::kern($r, false);
+            return [self::kern($l, true), '\mathop{' . $piece . '}', self::kern($r, false)];
         }
         [, $l, $r] = self::spacingPlan($core, $form, false, false);
 
-        return self::kern($l, true) . $piece . self::kern($r, false);
+        return [self::kern($l, true), $piece, self::kern($r, false)];
     }
 
     /**
@@ -1391,7 +1403,18 @@ final class TexWriter
                 $wide = $overOp->stretchy !== false;
                 $name = $wide ? ($names[1] ?? $names[0]) : ($names[0] ?? $names[1]);
 
-                return ['\\' . $name . '{' . self::w($base, false) . '}', true];
+                // A stretchy accent spans the base operator's glyph and its spacing goes around the stack, so the kerns do too.
+                $baseOp = UnderOver::operatorOf($base);
+                // A stretched, large or limit-name base is laid out by its own rules, with no spacing around the stack.
+                $spans = $baseOp !== null && ! UnderOver::isStretchy($baseOp) && ! $baseOp->isLargeop(OperatorDictionary::FORM_PREFIX) && ! UnderOver::isLimitName($base);
+                if ($wide && $spans && ($parts = self::operatorParts($base, null, false)) !== null) {
+                    [$kernL, $piece, $kernR] = $parts;
+
+                    return [$kernL . '\\' . $name . '{' . $piece . '}' . $kernR, $kernL === '' && $kernR === ''];
+                }
+
+                // A stretched base ignores its own spacing, so it is written bare, with no kerns inside the accent.
+                return ['\\' . $name . '{' . self::withEdge($wide ? $baseOp : null, false, static fn (): string => self::w($base, false)) . '}', true];
             }
         }
         // Extensible arrows.
