@@ -5,6 +5,8 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-11-19
+
 ### Added
 
 - `\color` and `\textcolor` read xcolor mixing expressions over the base names: tints such as `red!50`, mixes such as `red!30!blue`, longer chains, and `-red` for the complement. Each mix is computed in xcolor's color models, so the result matches LaTeX. These values were drawn in the default color with a note.
@@ -21,7 +23,7 @@ and the project follows [Semantic Versioning](https://semver.org/).
 - A plain upright word such as `\mathrm{max}`, or `Math::styled('max', 'normal')`, under a limit now stacks in every style, as TeX and browsers set it.
 - A `\middle` outside `\left…\right` has a new note: "is drawn as a plain delimiter".
 - `<mo>-</mo>` (a hyphen-minus) is drawn as a minus sign, also when sized with `minsize` or `maxsize` and as an accent. Firefox, WebKit and MathJax draw it so. The node keeps `-`, so MathML written back is unchanged, and TeX `-` now matches the width of the MathML it came from.
-- `Math::notes()` lists a note shared by several nodes once. Distinct notes with equal content are each listed.
+- `Math::notes()` lists a note shared by several nodes once, and lists notes in source order where a node carries several, such as the notes of a dropped trailing row. Distinct notes with equal content are each listed.
 - The TeX writer spells a kern as a named space (`\,`, `\:`, `\;`, `\!`) or as `\mkern<n>mu`. It keeps `\hspace{…em}` at top level for an amount with at most three decimals in em, so `\hspace{-0.5em}` is unchanged, and writes `\mkern` inside scripts, where mu shrinks and em does not.
 - The TeX writer writes an operator that TeX reads as ordinary (`<mo>sin</mo>`, `<mo>∂</mo>`, `<mo>mod</mo>`, a letter `<mo>`) as `\mathop{…}` between kerns where the layout's spacing differs from what the plain spelling reads back with. `<mo>lim</mo><mi>x</mi>` still writes `\lim x`.
 - A stretchy accent over an operator stretches to the drawn glyph, and the operator's spacing goes around the stack once. In TeX it is written as kerns outside the accent with the base as an op atom, `\: \widehat{\mathop{x}} \:`. Widths at 18pt:
@@ -37,7 +39,6 @@ and the project follows [Semantic Versioning](https://semver.org/).
 - A one-column display grid whose rows sit closer than the jot is written as `\begin{darray}{c}`, as aligned grids read from MathML already are.
 - A TeX dimension that ends or starts with a dot reads as TeX reads it: `\\[2.pt]` and `\hspace{2.pt}` are 0.2em, and `\kern2.pt` likewise.
 - `\\[4pt]` and `\\[1em]` after a row of an environment, or of a formula with a top-level `\\`, add that space after the row, and the "row spacing is not drawn" note no longer appears for it. A negative space lets rows overlap, and the grid still covers both. The note stays for a `\\[len]` that no row gap holds (after the last row, or in an environment with no rows to space) and for a malformed dimension such as `\\[3zz]` or `\\[1.5.3pt]`, which is ignored. The TeX writer writes the space in em, `\\[0.4em]`, less the jot of an environment that adds one, and reads it back to the same tree. The OMML writer does not carry it. `Grid` has a new `rowSpacing` parameter and property, in em after each row.
-- `Math::notes()` lists notes in source order where a node carries several, such as the notes of a dropped trailing row.
 - Goldens, each changed on purpose:
   - The round-trip fuzz pins moved, each time by shrinking the failing set. `WELL_FORMED` went 2097, 2084, 1177, 753. `SOUP` went 658, 653, 431, and the last step added two inputs: `) \left( \\ = \| ,` and `\\ \left( \\ \textcolor{red}{=} \middle| \cdot`. A `\\` first in an unclosed fence now reads as a real fence, so they show the older line-break-in-fence mismatch, `\left( \\ = b \right)`. `FENCED_TEX` went 6890, 6160, 5909.
   - `SOUP` then went 431 to 300: 131 inputs now agree after the round trip and one appears, `\\ ( b \left( \left( & \ce{->} \%`. The `&` between the `\ce` arrow and `\%` hid it before. The same gap shows in `\left( \ce{->} \%`, already in the set. `WELL_FORMED` and `FENCED_TEX` did not move.
