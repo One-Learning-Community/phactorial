@@ -60,6 +60,10 @@ final class FallbackAdvanceTest extends TestCase
         yield 'after an operand in a fence' => ['\\left( a \\\\ = b \\right)', '\\left( a = b \\right)'];
         yield 'two breaks in a row' => ['\\left( \\\\ \\\\ = b \\right)', '\\left( = b \\right)'];
         yield 'after a function name' => ['\\left( \\sin \\\\ ( x ) \\right)', '\\left( \\sin ( x ) \\right)'];
+        yield 'after a fraction in a fence' => ['\\left( \\frac{a}{b} \\\\ x \\right)', '\\left( \\frac{a}{b} x \\right)'];
+        yield 'fraction then function name' => ['\\left( \\frac{a}{b} \\\\ \\sin x \\right)', '\\left( \\frac{a}{b} \\sin x \\right)'];
+        yield 'fraction then relation' => ['\\left( \\frac{a}{b} \\\\ = x \\right)', '\\left( \\frac{a}{b} = x \\right)'];
+        yield 'fraction then fraction' => ['\\left( \\frac{a}{b} \\\\ \\frac{a}{b} \\right)', '\\left( \\frac{a}{b} \\frac{a}{b} \\right)'];
     }
 
     #[DataProvider('droppedBreaks')]

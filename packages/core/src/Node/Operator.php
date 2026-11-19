@@ -20,8 +20,12 @@ final class Operator extends Node
 {
     public readonly string $char;
 
-    /** The widest explicit spacing, in mu, that script style keeps: the space of TeX's op class (relations, binaries and punctuation lose theirs). */
-    private const float SCRIPT_SPACE = 1.0;
+    /**
+     * The widest explicit spacing, in mu, that script style keeps: the space of TeX's op class (relations, binaries and punctuation lose theirs).
+     *
+     * @internal Engine detail, not public API; TexWriter::layoutSpacing() applies the same rule.
+     */
+    public const float SCRIPT_SPACE = 1.0;
 
     /**
      * Invalid UTF-8 in $char is replaced silently here; the Math builders also record a note.

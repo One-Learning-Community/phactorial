@@ -121,6 +121,19 @@ final class FormSpacingTexTest extends TestCase
         self::assertSame('\\: \\widehat{\\mathop{x}} \\:', $tex);
     }
 
+    public function test_an_accented_operator_in_a_script_keeps_its_kerns_beside_it(): void
+    {
+        // In a script, a leading negative kern moves after the symbol only at the start of the script argument; mid-row both
+        // kerns stay beside the accent stack, whose neighbors decide that.
+        $tree = MathmlReader::read('<math><msub><mi>c</mi><mrow><mi>a</mi><mover><mo>x</mo><mo>^</mo></mover><mi>b</mi></mrow></msub></math>')->node;
+        $tex = TexWriter::write($tree);
+        self::assertSame('c_{a \\mkern-1mu \\widehat{\\mathop{x}} \\mkern-1mu b}', $tex);
+        $back = Math::tex($tex);
+        foreach ([true, false] as $display) {
+            self::assertEqualsWithDelta(self::width($tree, $display), self::width($back, $display), self::TOLERANCE);
+        }
+    }
+
     public function test_a_name_the_reader_spaces_alike_is_written_plain(): void
     {
         self::assertSame('\lim x', TexWriter::write(MathmlReader::read('<math><mo>lim</mo><mi>x</mi></math>')->node));

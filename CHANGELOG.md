@@ -16,8 +16,22 @@ and the project follows [Semantic Versioning](https://semver.org/).
 - Archived MathML with a stretchy opener and no closer, written by earlier versions, reads slightly differently at the fence's inner edge.
 - A plain upright word such as `\mathrm{max}`, or `Math::styled('max', 'normal')`, under a limit now stacks in every style, as TeX and browsers set it.
 - A `\middle` outside `\left…\right` has a new note: "is drawn as a plain delimiter".
+- `<mo>-</mo>` (a hyphen-minus) is drawn as a minus sign, also when sized with `minsize` or `maxsize` and as an accent. Firefox, WebKit and MathJax draw it so. The node keeps `-`, so MathML written back is unchanged, and TeX `-` now matches the width of the MathML it came from.
+- `Math::notes()` lists a note shared by several nodes once. Distinct notes with equal content are each listed.
+- The TeX writer spells a kern as a named space (`\,`, `\:`, `\;`, `\!`) or as `\mkern<n>mu`. It keeps `\hspace{…em}` at top level for an amount with at most three decimals in em, so `\hspace{-0.5em}` is unchanged, and writes `\mkern` inside scripts, where mu shrinks and em does not.
+- The TeX writer writes an operator that TeX reads as ordinary (`<mo>sin</mo>`, `<mo>∂</mo>`, `<mo>mod</mo>`, a letter `<mo>`) as `\mathop{…}` between kerns where the layout's spacing differs from what the plain spelling reads back with. `<mo>lim</mo><mi>x</mi>` still writes `\lim x`.
+- A stretchy accent over an operator stretches to the drawn glyph, and the operator's spacing goes around the stack once. In TeX it is written as kerns outside the accent with the base as an op atom, `\: \widehat{\mathop{x}} \:`. Widths at 18pt:
+  - `<mover><mo>x</mo><mo>^</mo></mover>` goes from 27.58pt to 20.31pt, and the same operator between `a` and `b` from 46.89pt to 39.63pt.
+  - `<mover><mo>=</mo><mo>^</mo></mover>` and its TeX source `\widehat{=}` go from 26.91pt to 28.04pt, since the spacing now sits around the stack.
+  - The name `sin` with a hat, then `x`, goes from 44.82pt to 46.97pt, by the hat's overshoot.
+  - `\underbrace` and `\overbrace` over an operator letter go from 27pt to 21.34pt, equal to their round trip.
+  - TeX that reads as an accent over an operator draws the same way: `\widehat{\mathop{x}}` goes from 18.04pt to 12.31pt, and `\underbrace{=}` from 27pt to 28pt.
+  - An accent with `stretchy="false"` keeps 18.62pt.
 - Goldens, each changed on purpose:
   - The round-trip fuzz pins moved, each time by shrinking the failing set. `WELL_FORMED` went 2097, 2084, 1177, 753. `SOUP` went 658, 653, 431, and the last step added two inputs: `) \left( \\ = \| ,` and `\\ \left( \\ \textcolor{red}{=} \middle| \cdot`. A `\\` first in an unclosed fence now reads as a real fence, so they show the older line-break-in-fence mismatch, `\left( \\ = b \right)`. `FENCED_TEX` went 6890, 6160, 5909.
+  - `SOUP` then went 431 to 300: 131 inputs now agree after the round trip and one appears, `\\ ( b \left( \left( & \ce{->} \%`. The `&` between the `\ce` arrow and `\%` hid it before. The same gap shows in `\left( \ce{->} \%`, already in the set. `WELL_FORMED` and `FENCED_TEX` did not move.
+  - The editor SVG snapshots `mathlive-0`, `wiris-safexml-1` and `wiris-viewer-3`, `-5`, `-8`, `-12` and `-15` replace the narrow hyphen with the wider minus.
+  - `LimitsRoundTripTest` expects `\: \mathop{x}_a \:` where it expected `\mkern4mu \mathop{x}_a \mkern4mu`. `TexWriterTest` gains an assertion that `Math::space(2/18)` writes `\mkern2mu`. `FormSpacingTexTest` is new.
   - The MathML snapshots `mathml/cases`, `tex/mathml/piecewise`, `tex/mathml/linear-system`, `tex/mathml/delim-dot` and `editors/mathml/wiris-viewer-table-2` gain the empty fence `mo` with `lspace="0" rspace="0"` on the open side of a half-open fence.
   - The `tex/mathml/operatorname-star` snapshot has `<mo movablelimits="true">`.
   - `\operatorname*{argmax}_x` is written back as itself, where it was `\underset{x}{\operatorname{argmax}}`. `TexWriterTest`, `SmallFixesTest` and `TexFinalReviewTest` expect the new spelling.
@@ -38,6 +52,9 @@ and the project follows [Semantic Versioning](https://semver.org/).
 - `\color` and `\textcolor`, with or without a `[model]`, inside `\operatorname` and `\tag` no longer leak their spec into the name or label.
 - A `\tag` label keeps symbols such as `\alpha` and escapes such as `\%`, drops formatting commands, and is always valid TeX, also when the label is unbraced.
 - A limit control after a class atom or a plain word, as in `\mathrel{\sum}\limits_a` or `\mathrm{max}\limits_x`, gets a note, since TeX rejects it. The TeX writer writes it as valid TeX.
+- A `\\` dropped by the TeX reader no longer spaces the operator after it: `\left( \\ = b \right)` is as wide as `\left( = b \right)`. It no longer adds a second thin space beside a fraction either: `\left( \frac{a}{b} \\ \sin x \right)` goes from 66.72pt to 63.72pt in text style, and `\left( \frac{a}{b} \\ \frac{a}{b} \right)` from 40.72pt to 37.72pt. A repeated dropped `\\` no longer reads as `{}`, and a function name before a fence loses its trailing space across an empty fallback.
+- `<mo>sin</mo>`, `<mo>∂</mo>`, `<mo>mod</mo>` and a letter `<mo>`, alone, in a fence or in a root, keep their spacing through TeX. `\sin^2` read from MathML keeps its width.
+- A scripted symbol operator keeps its width through TeX: `<msup><mo>∂</mo><mn>2</mn></msup>` (18.93pt, which was written back as 15.93pt) and `<msub><mo>∞</mo><mi>x</mi></msub>` (35.33pt, which was written back as 25.33pt).
 
 ## [0.20.0] - 2026-11-18
 

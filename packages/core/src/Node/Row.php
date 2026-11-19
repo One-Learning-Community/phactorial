@@ -171,8 +171,12 @@ final class Row extends Node
         return Forms::of($this->nodes());
     }
 
-    /** An operator with the thick space of a relation before it (TeX: Op-Rel is thick only, no thin on top). */
-    private static function isRelation(Operator $o, ?string $form): bool
+    /**
+     * An operator with the thick space of a relation before it (TeX: Op-Rel is thick only, no thin on top).
+     *
+     * @internal Engine detail, not public API; TexWriter::plainSpacing() asks the same question.
+     */
+    public static function isRelation(Operator $o, ?string $form): bool
     {
         $l = $o->lspace !== null ? $o->lspace * 18 : OperatorDictionary::lookup($o->char, $form ?? OperatorDictionary::FORM_INFIX)['lspace'];
 
@@ -226,8 +230,10 @@ final class Row extends Node
             }
             // A fraction next to an operand (mixed number "3 1/2", "2 x/y") gets a thin space so it does not read as one blob.
             $seen = Fallback::unwrap($child);
+            // An empty Fallback is invisible to the spacing: it gets none itself, and its neighbors see past it.
+            $invisible = $seen instanceof Fallback;
             // A Middle spaces itself like an operator.
-            if ($prev !== null && ! ($prev instanceof Operator) && ! ($prev instanceof Middle) && ! ($prev instanceof Space) && ! ($seen instanceof Space)) {
+            if (! $invisible && $prev !== null && ! ($prev instanceof Operator) && ! ($prev instanceof Middle) && ! ($prev instanceof Space) && ! ($seen instanceof Space)) {
                 if (! ($seen instanceof Operator) && ! ($seen instanceof Middle) && ($seen instanceof Fraction || $prev instanceof Fraction)) {
                     $x += $c->mu(3);
                 }
@@ -235,7 +241,7 @@ final class Row extends Node
             // TeX's table: a function name (Op) takes a thin space after an ordinary or a closing delimiter, and none after an
             // opening one or at the start. Its own trailing space is dropped before an opening or closing delimiter or a comma.
             $isName = self::isFunctionName($seen);
-            if ($prev !== null && $isName && ! self::isFunctionName($prev) && ! ($prev instanceof Space) && ! ($prev instanceof Fraction) && ! ($seen instanceof Space)
+            if (! $invisible && $prev !== null && $isName && ! self::isFunctionName($prev) && ! ($prev instanceof Space) && ! ($prev instanceof Fraction) && ! ($seen instanceof Space)
                 && (! ($prev instanceof Operator || $prev instanceof Middle) || ($prev instanceof Operator && (OperatorDictionary::isClosing($prev->char) || $prev->char === '!')))) {
                 $x += $c->mu(3);
             }
@@ -264,7 +270,7 @@ final class Row extends Node
             $out->ascent = max($out->ascent, $b->ascent);
             $out->descent = max($out->descent, $b->descent);
             // An empty Fallback is invisible to the spacing of its neighbors.
-            if (! ($seen instanceof Fallback)) {
+            if (! $invisible) {
                 $prev = $seen;
                 $lastAtom = $b;
             }

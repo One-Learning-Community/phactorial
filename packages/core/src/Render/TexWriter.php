@@ -30,7 +30,6 @@ use Phactorial\Styles;
 use Phactorial\Tex\TexClass;
 use Phactorial\Tex\TexReader;
 use Phactorial\Tex\TexSymbols;
-use Phactorial\Tokenizer;
 
 /**
  * Writes a node tree as standard TeX, the kind KaTeX accepts: no package-specific macros, one spelling per construct.
@@ -63,8 +62,8 @@ final class TexWriter
     public static function write(Node $root): string
     {
         $saved = self::$topLevel;
-        [$savedAround, $savedDepth] = [self::$around, self::$scriptDepth];
-        [self::$around, self::$scriptDepth] = [null, 0];
+        [$savedAround, $savedDepth, $savedOpAtom] = [self::$around, self::$scriptDepth, self::$opAtomCore];
+        [self::$around, self::$scriptDepth, self::$opAtomCore] = [null, 0, false];
         self::$topLevel = [];
         $tagged = false;
         foreach (self::topChildren($root) as $child) {
@@ -81,7 +80,7 @@ final class TexWriter
             return self::trimTex(self::w($root, false));
         } finally {
             self::$topLevel = $saved;
-            [self::$around, self::$scriptDepth] = [$savedAround, $savedDepth];
+            [self::$around, self::$scriptDepth, self::$opAtomCore] = [$savedAround, $savedDepth, $savedOpAtom];
         }
     }
 
@@ -217,8 +216,23 @@ final class TexWriter
             if ($bare instanceof Row) {
                 $piece = self::modular($bare) ?? '{' . self::w($bare, false) . '}';
             } else {
-                self::$around = [$kid, $row->children[$index - 1] ?? null, $row->children[$index + 1] ?? null, $forms[$index + 1] ?? null];
-                $piece = self::operatorPiece($kid, $forms[$index], $inFence, ...array_slice(self::$around, 1)) ?? self::w($kid, $inFence);
+                // An empty Fallback (a dropped line break) is invisible to the spacing, as in Row::build(): the neighbors are the
+                // nearest children past it.
+                $before = $index - 1;
+                while ($before >= 0 && self::isInvisible($row->children[$before])) {
+                    $before--;
+                }
+                $after = $index + 1;
+                while ($after < count($row->children) && self::isInvisible($row->children[$after])) {
+                    $after++;
+                }
+                $outerAround = self::$around;
+                self::$around = [$kid, $row->children[$before] ?? null, $row->children[$after] ?? null, $forms[$after] ?? null];
+                try {
+                    $piece = self::operatorPiece($kid, $forms[$index], $inFence, ...array_slice(self::$around, 1)) ?? self::w($kid, $inFence);
+                } finally {
+                    self::$around = $outerAround;
+                }
             }
             if ($piece === '') {
                 continue;
@@ -716,7 +730,7 @@ final class TexWriter
         return self::kern($left, true) . $sym . self::kern($right, false);
     }
 
-    // The three statics below are context for operator(), set only around one self::w() or self::base() call and restored in a
+    // The statics below ($around, $opAtomCore, $edge, $edgeLimits and $form) are context for operator(), set only around one self::w() or self::base() call and restored in a
     // finally block, so they never outlive it. $edge is matched by object identity, so only that one operator (never one in a
     // script or a nested row) is written bare; $form is set only for a row child that is itself an operator.
 
@@ -768,11 +782,12 @@ final class TexWriter
             }
             if (self::coloredDirectly($kid, $core)) {
                 // A colored name read as ordinary drops a \mathop outside the color, so the op atom goes inside it.
+                $outerAtom = self::$opAtomCore;
                 self::$opAtomCore = true;
                 try {
                     $piece = self::withEdge($core, false, static fn (): string => self::w($kid, $inFence));
                 } finally {
-                    self::$opAtomCore = false;
+                    self::$opAtomCore = $outerAtom;
                 }
 
                 return [self::kern($l, true), $piece, self::kern($r, false)];
@@ -826,11 +841,11 @@ final class TexWriter
         $l = $o->lspace ?? $entry['lspace'];
         $r = $o->rspace ?? $entry['rspace'];
         if (self::$scriptDepth > 0) {
-            // As Operator::layoutAs() does at script level: an explicit side keeps what an op has and loses more, any other follows
+            // Twin of Operator::layoutAs() at script level (keep the two in step): an explicit side keeps what an op has and loses more, any other follows
             // the dictionary, which drops it for an operator spaced on both sides.
             $drops = OperatorDictionary::dropsSpacingInScripts($o->char);
-            $l = $o->lspace !== null ? ($o->lspace > 1.0 ? 0.0 : $l) : ($drops ? 0.0 : $l);
-            $r = $o->rspace !== null ? ($o->rspace > 1.0 ? 0.0 : $r) : ($drops ? 0.0 : $r);
+            $l = $o->lspace !== null ? ($o->lspace > Operator::SCRIPT_SPACE ? 0.0 : $l) : ($drops ? 0.0 : $l);
+            $r = $o->rspace !== null ? ($o->rspace > Operator::SCRIPT_SPACE ? 0.0 : $r) : ($drops ? 0.0 : $r);
         }
 
         return [(float) $l, (float) $r];
@@ -839,7 +854,8 @@ final class TexWriter
     /**
      * The spacing in mu the plain spelling reads back with. A letter-like symbol is an identifier, with none. A name (`\sin`,
      * `\operatorname{mod}`) is a function name, TeX's Op class: a thin space after an operand, and one after itself that goes
-     * before a fence, a comma or a relation (the rules of Row::build()).
+     * before a fence, a comma or a relation. Twin of the name rules of Row::build(): keep the two in step, including its relation
+     * predicate (Row::isRelation()) and its skipping of empty Fallbacks, which the callers do by passing the nearest real neighbors.
      *
      * @return array{float, float}
      */
@@ -859,11 +875,17 @@ final class TexWriter
             $l = 3.0;
         }
         if (! ($after instanceof Operator && (OperatorDictionary::isOpening($after->char) || OperatorDictionary::isClosing($after->char)
-            || in_array($after->char, [',', ';'], true) || Forms::isRelation($after, $nextForm)))) {
+            || in_array($after->char, [',', ';'], true) || Row::isRelation($after, $nextForm)))) {
             $r += 3.0;
         }
 
         return [$l, $r];
+    }
+
+    /** An empty Fallback, which the layout spaces as if it were not there (Row::build()). */
+    private static function isInvisible(Node $n): bool
+    {
+        return Fallback::unwrap($n) instanceof Fallback;
     }
 
     /** A function name as the layout takes it: an upright named identifier, alone or with scripts. */
@@ -1301,11 +1323,12 @@ final class TexWriter
                 if ($plan !== null) {
                     if (self::coloredDirectly($s->base, $core)) {
                         // The reader drops a \mathop outside a color, so the op atom goes inside it; the group keeps the scripts beside.
+                        $outerAtom = self::$opAtomCore;
                         self::$opAtomCore = true;
                         try {
                             $base = self::withEdge($core, false, static fn (): string => self::base($s->base));
                         } finally {
-                            self::$opAtomCore = false;
+                            self::$opAtomCore = $outerAtom;
                         }
                     } else {
                         $base = '\mathop{' . $base . '}';
@@ -1407,7 +1430,7 @@ final class TexWriter
                 $baseOp = UnderOver::operatorOf($base);
                 // A stretched, large or limit-name base is laid out by its own rules, with no spacing around the stack.
                 $spans = $baseOp !== null && ! UnderOver::isStretchy($baseOp) && ! $baseOp->isLargeop(OperatorDictionary::FORM_PREFIX) && ! UnderOver::isLimitName($base);
-                if ($wide && $spans && ($parts = self::operatorParts($base, null, false)) !== null) {
+                if ($wide && $spans && ($parts = self::operatorParts($base, null, false, ...(self::$around !== null && self::uncolored(self::$around[0]) === $u ? array_slice(self::$around, 1) : []))) !== null) {
                     [$kernL, $piece, $kernR] = $parts;
 
                     return [$kernL . '\\' . $name . '{' . $piece . '}' . $kernR, $kernL === '' && $kernR === ''];
