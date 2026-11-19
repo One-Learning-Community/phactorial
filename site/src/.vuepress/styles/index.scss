@@ -21,3 +21,8 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
+
+// The logo already spells the name, so the theme's text title beside it would repeat it.
+.vp-navbar .vp-site-name {
+  display: none;
+}
