@@ -111,16 +111,36 @@ final class MathmlWriter
             $n instanceof Scripts => self::scripts($n),
             $n instanceof UnderOver => self::underOver($n),
             // Only a Middle that Fenced stretches does so in the layout; a browser must not stretch the others.
-            $n instanceof Middle => self::operator(new Operator($n->char, $n->stretches(), lspace: 3, rspace: 3), OperatorDictionary::FORM_INFIX, OperatorDictionary::FORM_INFIX),
+            $n instanceof Middle => self::middle($n),
             $n instanceof Fenced => self::fenced($n),
             $n instanceof Grid => self::grid($n),
             $n instanceof Row => self::row($n),
             $n instanceof DisplayStyle => '<mstyle displaystyle="' . ($n->display ? 'true' : 'false') . '">' . self::node($n->content) . '</mstyle>',
             $n instanceof Fallback => $n->content === null ? '' : self::plain0($n->content),
             $n instanceof TexSource => self::plain0($n->content),
-            $n instanceof Color => self::mstyle($n->color, self::node($n->content)),
+            $n instanceof Color => self::color($n),
             default => throw new \InvalidArgumentException('Unknown node ' . $n::class),
         };
+    }
+
+    /** A color around a Middle goes on its `mo`, which keeps `stretchy`; an `mstyle` around a plain `mo` would read back as a plain bar. */
+    private static function color(Color $c): string
+    {
+        $inner = $c->content;
+        while (($inner instanceof Fallback && $inner->content !== null) || $inner instanceof TexSource) {
+            $inner = $inner->content;
+        }
+        if ($inner instanceof Middle && Colors::isHex($c->color)) {
+            return self::middle($inner, $c->color);
+        }
+
+        return self::mstyle($c->color, self::node($c->content));
+    }
+
+    /** The `mo` of a Middle, with its color when it has one. */
+    private static function middle(Middle $m, ?string $color = null): string
+    {
+        return self::operator(new Operator($m->char, $m->stretches(), lspace: 3, rspace: 3), OperatorDictionary::FORM_INFIX, OperatorDictionary::FORM_INFIX, color: $color);
     }
 
     private static function mstyle(string $color, string $xml): string
@@ -166,10 +186,10 @@ final class MathmlWriter
      * @param string $inferred the form a browser infers from the position
      * @param bool $stretched the layout stretches this operator (part of a stack), so it is not told to stay put
      */
-    private static function operator(Operator $o, string $form, string $inferred, bool $fence = false, bool $stretched = false): string
+    private static function operator(Operator $o, string $form, string $inferred, bool $fence = false, bool $stretched = false, ?string $color = null): string
     {
         $form = $o->form ?? $form;
-        $attrs = $form !== $inferred ? ' form="' . $form . '"' : '';
+        $attrs = ($color !== null ? ' mathcolor="' . $color . '"' : '') . ($form !== $inferred ? ' form="' . $form . '"' : '');
         if ($fence) {
             $attrs .= ' stretchy="true"';
         } elseif ($o->minSize !== null || $o->maxSize !== null) {
@@ -238,7 +258,7 @@ final class MathmlWriter
                     // ApplyFunction goes between the name (with its scripts or limits) and what follows it.
                     ? self::plain0($child) . '<mo>&#x2061;</mo>'
                     : self::arrowApart($apart[$i] ?? null, self::node($child), $child);
-                $out .= $inline !== null && Fallback::color($child) === null ? self::mstyle($inline, $xml) : $xml;
+                $out .= $inline !== null && Fallback::color($child) === null ? ($op instanceof Middle && Colors::isHex($inline) ? self::middle($op, $inline) : self::mstyle($inline, $xml)) : $xml;
             }
         }
 

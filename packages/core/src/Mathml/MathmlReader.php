@@ -14,6 +14,7 @@ use Phactorial\Node\Fenced;
 use Phactorial\Node\Fraction;
 use Phactorial\Node\Grid;
 use Phactorial\Node\Identifier;
+use Phactorial\Node\Middle;
 use Phactorial\Node\Node;
 use Phactorial\Node\Number;
 use Phactorial\Node\Operator;
@@ -27,6 +28,7 @@ use Phactorial\Node\UnderOver;
 use Phactorial\NoteLevel;
 use Phactorial\OperatorDictionary;
 use Phactorial\Styles;
+use Phactorial\Tex\TexSymbols;
 
 /**
  * Reads MathML (from editors, Word, hand-written) into formula nodes. Well-formed markup is read as XML first, then anything
@@ -1073,7 +1075,7 @@ final class MathmlReader
                     }
                     $stack = array_slice($stack, 0, $found);
                     $between = $this->foldLoneOpeners(array_splice($out, $idx + 1), $inner);
-                    $out[$idx] = $this->fence($out[$idx], $n, $opener->char, $ch, self::edged($this->bars($between), true, true));
+                    $out[$idx] = $this->fence($out[$idx], $n, $opener->char, $ch, self::edged(self::middles($this->bars($between)), true, true));
                 }
             } else {
                 $out[] = $n;
@@ -1166,6 +1168,83 @@ final class MathmlReader
     }
 
     /**
+     * Inside a fence's content, the unpaired bars that carry a middle marker become Middles (see isMiddleAt()); a
+     * MathJax-shaped one drops the two empty rows around it. Any other bar stays plain, so another tool's `|` is not read
+     * as a `\middle`. A color around it stays around the Middle. A lone inner row (one `mrow` between the fence's
+     * delimiters) is searched too.
+     *
+     * @param list<Node> $nodes
+     *
+     * @return list<Node>
+     */
+    private static function middles(array $nodes): array
+    {
+        if (count($nodes) === 1) {
+            $only = Fallback::unwrap($nodes[0]);
+            if ($only instanceof Row) {
+                return [Fallback::mapInner($nodes[0], static fn (Node $n): Node => $n instanceof Row ? new Row(self::middles($n->children)) : $n)];
+            }
+        }
+        $out = [];
+        $count = count($nodes);
+        for ($i = 0; $i < $count; $i++) {
+            if (! self::isMiddleAt($nodes, $i)) {
+                $out[] = $nodes[$i];
+                continue;
+            }
+            $middle = self::toMiddle($nodes[$i]);
+            if (self::isEmptyRow($nodes[$i - 1] ?? null) && self::isEmptyRow($nodes[$i + 1] ?? null)) {
+                // The left row is dropped only if it is still last: two bars can share one empty row.
+                if ($out !== [] && $out[count($out) - 1] === $nodes[$i - 1]) {
+                    array_pop($out);
+                }
+                $i++;
+            }
+            $out[] = $middle;
+        }
+
+        return $out;
+    }
+
+    private static function toMiddle(Node $n): Node
+    {
+        if ($n instanceof Color) {
+            return new Color(self::toMiddle($n->content), $n->color, $n->inline);
+        }
+
+        return $n instanceof Operator ? new Middle($n->char) : $n;
+    }
+
+    /** A row with nothing in it: MathJax writes `\middle|` between two of them. */
+    private static function isEmptyRow(?Node $n): bool
+    {
+        $n = $n === null ? null : Fallback::unwrap($n);
+
+        return $n instanceof Row && $n->children === [];
+    }
+
+    /**
+     * Whether the node at $i is a `\middle` our writer or MathJax wrote: a stretchy one-character non-bracket TeX
+     * delimiter with no form or size of its own, and either 3mu on both sides (what the writer always gives a Middle; a
+     * fence delimiter never has it) or an empty row on each side (MathJax's shape). A fence's own delimiter, a bar with
+     * the dictionary default, and a stretchy bar with neither marker are not.
+     *
+     * @param list<Node> $nodes
+     */
+    private static function isMiddleAt(array $nodes, int $i): bool
+    {
+        $op = self::delimiter($nodes[$i])[0];
+        if (! $op instanceof Operator || $op->stretchy !== true || $op->form !== null || $op->minSize !== null || $op->maxSize !== null
+            || OperatorDictionary::isOpening($op->char) || OperatorDictionary::isClosing($op->char)
+            || mb_strlen($op->char) !== 1 || TexSymbols::delimiter($op->char) === null) {
+            return false;
+        }
+
+        return ($op->lspace !== null && $op->rspace !== null && abs($op->lspace - 3.0) < 0.05 && abs($op->rspace - 3.0) < 0.05)
+            || (self::isEmptyRow($nodes[$i - 1] ?? null) && self::isEmptyRow($nodes[$i + 1] ?? null));
+    }
+
+    /**
      * Pairs `|` with the next `|` and `‖` with the next `‖` among these siblings; a lone bar stays plain.
      *
      * @param list<Node> $nodes
@@ -1174,10 +1253,11 @@ final class MathmlReader
      */
     private function bars(array $nodes): array
     {
-        $isBar = static function (Node $n, string $ch): bool {
-            $n = self::delimiter($n)[0];
+        // A bar that carries a middle marker is a \middle, never half of a bar pair.
+        $isBar = static function (int $k, string $ch) use ($nodes): bool {
+            $n = self::delimiter($nodes[$k])[0];
 
-            return $n instanceof Operator && $n->stretchy !== false && $n->char === $ch;
+            return $n instanceof Operator && $n->stretchy !== false && $n->char === $ch && ! self::isMiddleAt($nodes, $k);
         };
         $out = [];
         $count = count($nodes);
@@ -1185,9 +1265,9 @@ final class MathmlReader
             $n = $nodes[$i];
             $op = self::delimiter($n)[0];
             $close = null;
-            if ($op instanceof Operator && $op->stretchy !== false && ($op->char === '|' || $op->char === '‖')) {
+            if ($op instanceof Operator && $op->stretchy !== false && ($op->char === '|' || $op->char === '‖') && ! self::isMiddleAt($nodes, $i)) {
                 for ($j = $i + 1; $j < $count; $j++) {
-                    if ($isBar($nodes[$j], $op->char)) {
+                    if ($isBar($j, $op->char)) {
                         $close = $j;
                         break;
                     }
@@ -1197,7 +1277,7 @@ final class MathmlReader
                 $out[] = $n;
                 continue;
             }
-            $out[] = $this->fence($n, $nodes[$close], $op->char, $op->char, self::edged($this->bars(array_slice($nodes, $i + 1, $close - $i - 1)), true, true));
+            $out[] = $this->fence($n, $nodes[$close], $op->char, $op->char, self::edged(self::middles($this->bars(array_slice($nodes, $i + 1, $close - $i - 1))), true, true));
             $i = $close;
         }
 

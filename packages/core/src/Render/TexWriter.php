@@ -163,7 +163,18 @@ final class TexWriter
 
             return $o instanceof Operator && $o->form !== null ? $o->withForm(null) : $k;
         }, $row->children));
+        $switchAt = $inFence ? self::colorSwitchAt($row->children) : null;
+        $current = null;
         foreach ($row->children as $index => $kid) {
+            $color = null;
+            if ($switchAt !== null && $index >= $switchAt) {
+                // From the switch on, each child's color is written as a switch, which TeX reads to the end of the fence.
+                $outer = self::strip($kid);
+                if ($outer instanceof Color) {
+                    $color = $outer->color;
+                    $kid = $outer->content;
+                }
+            }
             $bare = self::strip($kid);
             if ($bare instanceof Row) {
                 $piece = self::modular($bare) ?? '{' . self::w($bare, false) . '}';
@@ -172,6 +183,11 @@ final class TexWriter
             }
             if ($piece === '') {
                 continue;
+            }
+            if ($color !== null && $color !== $current) {
+                // `\color{c}\middle|` has no space after the switch, as TeX-born text; any other piece takes one.
+                $piece = '\\color{' . $color . '}' . ($bare instanceof Middle ? '' : ' ') . $piece;
+                $current = $color;
             }
             if ($bare instanceof Scripts && ($bare->preSub !== null || $bare->preSup !== null) && $previous instanceof Scripts) {
                 // After scripts, a bare `{}_a X` would read as more scripts of the node before; a group of its own keeps them prescripts.
@@ -191,6 +207,31 @@ final class TexWriter
         }
 
         return $out;
+    }
+
+    /**
+     * Where a run of block-colored children, to the end of the row, starts when a Middle is in it, or null. That run is
+     * TeX's `\color{c}\middle| ...`, the one way to color a \middle (`\textcolor{c}{\middle|}` is a plain bar in TeX),
+     * and a later color change is another switch. An uncolored child after a colored Middle breaks the run (a switch
+     * would color it too), and the color stays around each child, as a plain bar.
+     *
+     * @param list<Node> $children
+     */
+    private static function colorSwitchAt(array $children): ?int
+    {
+        $start = count($children);
+        while ($start > 0 && ($c = self::strip($children[$start - 1])) instanceof Color && ! $c->inline) {
+            $start--;
+        }
+        for ($i = $start; $i < count($children); $i++) {
+            $c = self::strip($children[$i]);
+            $m = $c instanceof Color ? self::strip($c->content) : null;
+            if ($m instanceof Middle && TexSymbols::delimiter($m->char) !== null) {
+                return $start;
+            }
+        }
+
+        return null;
     }
 
     /** The row the reader builds for `\bmod`, `\mod{n}`, `\pmod{n}` or `\pod{n}`, written as that command; null for any other row. */
@@ -1082,13 +1123,37 @@ final class TexWriter
         $open = TexSymbols::delimiter($f->open);
         $close = TexSymbols::delimiter($f->close);
         // \middle only works between \left and \right: in a plain fence the middles are plain symbols too.
-        $body = $inner instanceof Grid ? self::gridBody($inner, false) : self::w($f->content, $open !== null && $close !== null);
+        $content = self::colorSwitchContent($f->content);
+        $body = $inner instanceof Grid ? self::gridBody($inner, false) : self::w($content, $open !== null && $close !== null);
         if ($open === null || $close === null) {
             // A fence glyph with no \left spelling (a corner): plain symbols around the content, so the glyphs stay.
             return implode(' ', array_filter([self::symbol($f->open), $body, self::symbol($f->close)], static fn (string $p): bool => $p !== ''));
         }
 
         return '\left' . $open . ($body === '' ? ' ' : ' ' . $body . ' ') . '\right' . $close;
+    }
+
+    /**
+     * A block color that is the whole content of a fence and holds a Middle at its top level, as a row of colored children,
+     * so the row writes it as a switch (`\color{c} a \middle| b`); TeX has no other way to color a \middle.
+     */
+    private static function colorSwitchContent(Node $content): Node
+    {
+        $c = self::strip($content);
+        if (! $c instanceof Color || $c->inline) {
+            return $content;
+        }
+        $row = self::strip($c->content);
+        if (! $row instanceof Row) {
+            return $content;
+        }
+        foreach ($row->children as $child) {
+            if (self::strip($child) instanceof Middle) {
+                return new Row(array_map(static fn (Node $k): Node => new Color($k, $c->color), $row->children));
+            }
+        }
+
+        return $content;
     }
 
     private static function matrixEnvironment(Fenced $f, Grid $g): ?string
