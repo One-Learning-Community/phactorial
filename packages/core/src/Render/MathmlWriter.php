@@ -442,21 +442,20 @@ final class MathmlWriter
         return '<mtable' . $attrs . '>' . $rows . '</mtable>';
     }
 
+    private const EMPTY_FENCE = '<mo fence="true" stretchy="true" lspace="0" rspace="0"></mo>';
+
     private static function fenced(Fenced $f): string
     {
         $out = '<mrow>';
-        if ($f->open !== '') {
-            $out .= self::operator(new Operator($f->open), OperatorDictionary::FORM_PREFIX, OperatorDictionary::FORM_PREFIX, true);
-        }
+        // The usual MathML for `\left.` and `\right.`: an empty stretchy fence (zero spacing, since a browser gives an empty mo the default space), so the reader can pair the side that is there.
+        $out .= $f->open !== '' ? self::operator(new Operator($f->open), OperatorDictionary::FORM_PREFIX, OperatorDictionary::FORM_PREFIX, true) : self::EMPTY_FENCE;
         $open = $f->open !== '';
         $close = $f->close !== '';
         $content = Fenced::edged(Fenced::stretchMiddles($f->content, 0.0), $open, $close);
         // A bare arrow alone between the delimiters is no row for edged() to mark, but it has the delimiters beside it too.
         $xml = self::node($content);
         $out .= Fallback::unwrap($content) instanceof UnderOver ? self::arrowApart(self::arrowDrops((new Row([$content]))->inFence($open, $close))[0] ?? null, $xml, $content) : $xml;
-        if ($f->close !== '') {
-            $out .= self::operator(new Operator($f->close), OperatorDictionary::FORM_POSTFIX, OperatorDictionary::FORM_POSTFIX, true);
-        }
+        $out .= $f->close !== '' ? self::operator(new Operator($f->close), OperatorDictionary::FORM_POSTFIX, OperatorDictionary::FORM_POSTFIX, true) : self::EMPTY_FENCE;
 
         return $out . '</mrow>';
     }
