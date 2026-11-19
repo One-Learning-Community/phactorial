@@ -41,7 +41,7 @@ A formula starts in the style its source asked for: `$$…$$` and `\[…\]` in T
 
 `size` is in CSS pixels. `svg()` and `png()` throw `InvalidArgumentException` for a size that is not above zero or a negative pad. `MathPng` holds `bytes`, the CSS `width` and `height` (the image has `scale` pixels to each), `verticalAlign`, which is `null` for a display formula, and `alt`, the formula as text. `dataUri()` returns the image as a `data:` URL, and `img($src, $alt = null)` writes an `<img>` at that size and baseline with the formula's text as `alt`.
 
-`MathRender` serves web pages, so its defaults are inline, 16 pixels and `currentColor`. The classes below serve their own formats and follow them: `Math::layout()` defaults to display style at 12 points, `SvgRenderer` and `PngRenderer` to black, `MathmlWriter` to display, and `OmmlWriter::oMathPara()` to center. [Stability](./stability.md#defaults) makes this a rule.
+`MathRender` is built for web pages, so its defaults are inline, 16 pixels and `currentColor`. The classes below follow their own formats: `Math::layout()` defaults to display style at 12 points, `SvgRenderer` and `PngRenderer` to black, `MathmlWriter` to display, and `OmmlWriter::oMathPara()` to center. See [Stability](./stability.md#defaults).
 
 The rest of this page covers those classes. MathML, TeX, OMML and plain text are written from the formula tree. SVG and PNG are drawn from a layout.
 
@@ -72,7 +72,7 @@ echo $svg->render($box, pad: 2.0);
 
 The SVG is `width + 2 × pad` wide and `ascent + descent + 2 × pad` high. `SvgRenderer::baselineOffset($box, $pad)` is the distance from its top edge to the baseline. Each glyph is one `<path>` whose outline is stored in font units and placed with a `transform="matrix(…)"`; fraction bars and radical rules are `<rect>`s. Pass the same font you laid out with.
 
-Each run of same-colored items sits in one `<g fill="#rrggbb">`. Uncolored ink keeps the renderer's `color`. `MathRender::svg()` uses `currentColor` by default, so uncolored ink follows the page theme, while an explicit color is fixed and does not follow a dark theme.
+Each run of same-colored items sits in one `<g fill="#rrggbb">`. Uncolored ink takes the renderer's `color`. `MathRender::svg()` defaults to `currentColor`, so uncolored ink follows the page theme. Colors set in the formula stay fixed in a dark theme.
 
 ## PNG
 
@@ -98,7 +98,7 @@ use Phactorial\Render\MathmlWriter;
 echo MathmlWriter::write($formula, display: false);   // <math xmlns="…" display="inline">…</math>
 ```
 
-The output is MathML Core, which current browsers render natively. The writers are static: call `MathmlWriter::write()`, since its constructor is private.
+The output is MathML Core, which current browsers render natively. Like the other writers below, `MathmlWriter` is called statically.
 
 ## TeX
 

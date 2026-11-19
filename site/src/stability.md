@@ -16,7 +16,7 @@ The public API is every class, method, property and constant that is not marked 
 A change to any of these is a breaking change, and it waits for a major release.
 
 - Removing or renaming a class, method, property, constant or enum case.
-- Renaming a parameter or changing its default. PHP's named arguments make `Math::layout(font: $f)` a call to a parameter name, so the names freeze with the method.
+- Renaming a parameter or changing its default. Named arguments, such as `Math::layout(font: $f)`, make parameter names part of the API.
 - Changing a return type, even to a wider one. `Math::frac()` returns `Fraction`, and it will keep returning exactly that.
 - Changing what a documented value means.
 - Adding a case to `NoteLevel`.
@@ -40,7 +40,7 @@ A formula is a tree of `Phactorial\Node` objects. The readers produce it, `MathR
 
 `Math::layout()` returns a `Box`, and the SVG and PNG writers walk it. `Box::$items` and `Font`'s metrics cannot be assigned. Treat a box's other fields as read-only. The constructors of `Glyph`, `Rule` and `Box` are internal: build boxes with `Math::layout()`.
 
-`DisplayItem` is sealed. In every 1.x release, `Box::each()` and `Box::$items` yield only `Glyph` and `Rule`. A new kind of item would arrive behind an optional `Math::layout()` parameter that names the kinds the caller can draw. A backend written against 1.0 never meets an item it cannot draw.
+`DisplayItem` is sealed. In every 1.x release, `Box::each()` and `Box::$items` yield only `Glyph` and `Rule`. A new kind of item would come only when the caller asks for it through a new optional `Math::layout()` parameter, so a backend written against 1.0 never meets an item it cannot draw.
 
 The conventions are fixed: units are points, y points down, the origin is the left end of the baseline, a `Glyph`'s `x` and `y` are its origin on the baseline, `sx` and `sy` scale about that origin, and a `Rule`'s `x` and `y` are its top-left corner.
 
@@ -65,9 +65,9 @@ Golden output may change in any minor release. The changelog lists each such cha
 
 ### Defaults
 
-Two layers have two sets of defaults, and the split is a rule.
+The two layers have different defaults on purpose.
 
-- `MathRender` serves web pages: inline style, 16 pixels, `currentColor`.
+- `MathRender` is built for web pages: inline style, 16 pixels, `currentColor`.
 - Every lower layer follows its own format. `Math::layout()` and `MathmlWriter::write()` default to display style, `Math::layout()` to 12 points, the renderers to black, and `OmmlWriter::oMathPara()` to center.
 
 A default does not change in a minor release.

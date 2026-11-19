@@ -23,11 +23,11 @@ There are two kinds of item.
 - **`Rule`**: a filled rectangle, such as a fraction bar or the top of a radical. `x` and `y` are its top-left corner, `w` and `h` its size.
 - **`Glyph`**: one glyph of the math font. `gid` is the glyph id, `(x, y)` its origin on the baseline, `size` the font size. `sx` and `sy` stretch the outline about the origin; they are 1.0 except on a stretched delimiter or arrow, where one straight piece is scaled to cover a long run. Ignore them and a tall bracket comes out short.
 
-Both kinds carry `color`, a `?string`: null for the renderer's own color, or a lowercase `#rrggbb` inside a colored part of the formula. `withColor($color)` on either kind returns a copy with it set. A backend that ignores `color` draws everything in one color, as it did before color existed.
+Both kinds carry `color`, a `?string`: null for the renderer's own color, or a lowercase `#rrggbb` inside a colored part of the formula. A backend that ignores `color` draws everything in one color. On either kind, `withColor($color)` returns a recolored copy and `translated($dx, $dy)` a moved one.
 
-`$box->items` gives the same items as a flat list with absolute positions. It is read-only and built on every read, so read it once, or prefer `each()`.
+`$box->items` gives the same items as a flat list with absolute positions. It is rebuilt on every read, so read it once, or prefer `each()`.
 
-The set of item kinds is closed. Through all of 1.x, `each()` and `$items` yield only `Glyph` and `Rule`, so a backend that draws those two never meets an item it cannot draw. A future kind would arrive behind an optional parameter of `Math::layout()` that a caller must pass to receive it. `DisplayItem` is sealed: do not implement it. `translated($dx, $dy)` on either kind returns a copy moved by that offset.
+Through all of 1.x, `each()` and `$items` yield only `Glyph` and `Rule`, so a backend that draws those two never meets an item it cannot draw. `DisplayItem` is sealed: do not implement it.
 
 ## Drawing a glyph
 
@@ -66,13 +66,19 @@ $box->each(function (DisplayItem $item, float $dx, float $dy) use ($font, $canva
 });
 ```
 
-`$canvas` stands for your drawing API. Cache the parsed commands per glyph if you draw many formulas. `Q` is a quadratic curve and `C` a cubic one. The only curve a TrueType font writes is `Q`, and the only curve a font with CFF outlines writes is `C`, so a backend that accepts any math font handles both. If your API has only cubic curves, a quadratic from `p0` through control point `q` to `p1` is the cubic with control points `p0 + ⅔(q − p0)` and `p1 + ⅔(q − p1)`.
+`$canvas` stands for your drawing API. Cache the parsed commands per glyph if you draw many formulas. `Q` is a quadratic curve and `C` a cubic one. TrueType fonts use only `Q` and CFF fonts only `C`, so handle both to accept any math font. If your API has only cubic curves, a quadratic from `p0` through control point `q` to `p1` is the cubic with control points `p0 + ⅔(q − p0)` and `p1 + ⅔(q − p1)`.
 
 ## Glyphs as text
 
-A PDF backend can set ordinary letters as real text, so they can be selected and searched, as [Quoin](https://one-learning-community.github.io/quoin/guide/equations.html)'s PDF export does. `Glyph::$text` holds the character a glyph stands for. Set a glyph as text only when `text` is a single code point and the font maps that code point to `gid` (`$font->gid($codePoint) === $glyph->gid`), and `sx` and `sy` are 1.0. Draw every other glyph as an outline: stretched pieces have no character, and script-size forms share a character with the full-size glyph.
+A PDF backend can set ordinary letters as real text, so readers can select and search them. `Glyph::$text` holds the character a glyph stands for. Set a glyph as text only when all of these hold:
 
-`SvgRenderer::glyphPaths($glyphs, $width, $ascent, $descent)` draws just the glyphs you pass, as an SVG with a view box of `0 -ascent width height` (baseline at y = 0), for a backend that sets text itself and only needs the rest as shapes. Pass the box's `$width`, `$ascent` and `$descent`.
+- `text` is a single code point;
+- the font maps that code point to the glyph (`$font->gid($codePoint) === $glyph->gid`);
+- `sx` and `sy` are 1.0.
+
+Draw every other glyph as an outline. Stretched pieces have no character, and script-size forms share their character with the full-size glyph.
+
+A backend that sets text itself can draw the remaining glyphs with `SvgRenderer::glyphPaths($glyphs, $width, $ascent, $descent)`. Pass the box's `$width`, `$ascent` and `$descent`. The SVG's view box is `0 -ascent width height`, with the baseline at y = 0.
 
 ## Walking the tree
 
@@ -103,7 +109,5 @@ Give every `match` or `instanceof` chain over nodes a default branch. [Stability
 STIX Two Math is bundled and is the default. Load another math font with `Font::fromFile($path)` and pass it to both `Math::layout(..., font: $font)` and the writer. A `Font` is read-only: its `unitsPerEm` and `numGlyphs` cannot be assigned.
 
 The font needs an OpenType `MATH` table. Its outlines may be TrueType or CFF, so Latin Modern Math and the other `.otf` math fonts load the same way as a `.ttf`. The reader refuses CFF2 (variable) fonts, CID-keyed CFF fonts, a CFF font whose `FontMatrix` disagrees with its units per em, font collections, and fonts without a `MATH` table. A file that is not a font at all says so. A font that can't be used throws `Phactorial\Exception\UnsupportedFont`, which names the file and the reason.
-
-`TrueTypeFont`, the old name of `Font`, was removed. Use `Font`.
 
 A character the font has no glyph for is laid out with the font's `.notdef` glyph. If your backend draws such characters in another font, pass `fallbackAdvance` to `Math::layout()` so the layout leaves room for them.

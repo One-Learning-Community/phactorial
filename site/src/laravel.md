@@ -1,6 +1,6 @@
 # Laravel
 
-Laravel renders Markdown through league/commonmark in three places: `Str::markdown()`, mail templates and, if you use it, spatie/laravel-markdown. Each one accepts [phactorial/commonmark](./commonmark.md). Mail needs one class more, because email cannot show SVG. Outside Markdown, a Blade component typesets a formula in any template, and a cache keeps busy pages fast.
+Laravel renders Markdown through league/commonmark in three places: `Str::markdown()`, mail templates and spatie/laravel-markdown. Each accepts [phactorial/commonmark](./commonmark.md). Mail needs one extra class, because email cannot show SVG. Outside Markdown, a Blade component typesets a formula in any template.
 
 ```
 composer require phactorial/commonmark
@@ -12,7 +12,7 @@ composer require phactorial/commonmark
 
 @[code{3-} php](../recipes/laravel/str-markdown.php)
 
-The fluent form takes the same arguments: `str($post->body)->markdown([], [new MathExtension()])`. Print the result unescaped, with `{!! $html !!}`. The extension escapes everything it writes, but the rest of the Markdown can carry raw HTML unless you pass `'html_input' => 'strip'`, so strip it for text your users wrote.
+The fluent form takes the same arguments: `str($post->body)->markdown([], [new MathExtension()])`. Print the result unescaped, with `{!! $html !!}`. The extension escapes everything it writes, but the rest of the Markdown can still carry raw HTML. For text your users wrote, pass `'html_input' => 'strip'`.
 
 The [options](./commonmark.md#options) live under the `math` key, beside league/commonmark's own.
 
@@ -30,7 +30,7 @@ Add the extension to `config/markdown.php`, and its options to `commonmark_optio
 ],
 ```
 
-`<x-markdown>` and the `MarkdownRenderer` class then typeset math, and the package caches what it renders. From phactorial/commonmark 0.19.0, its code highlighting leaves ` ```math ` fences alone and highlights every other fence.
+`<x-markdown>` and the `MarkdownRenderer` class then typeset math, and the package caches what it renders. Its code highlighting skips ` ```math ` fences.
 
 ## A Blade component
 
@@ -75,9 +75,11 @@ $$
 </x-mail::message>
 ```
 
-PNG needs the Imagick extension. Run `php artisan storage:link` once, and set `APP_URL` to the address mail readers can reach, since the links must be absolute. A file is named by its contents, so a formula sent a thousand times is stored once. Some clients, Outlook among them, hold back remote images until the reader allows them; until then the reader sees each formula's `alt` text, which is the formula written out, such as `πr²`.
+PNG needs the Imagick extension. Run `php artisan storage:link` once, and set `APP_URL` to an address mail readers can reach, since the links must be absolute. Each file is named by its contents, so a formula sent a thousand times is stored once.
 
-A mail sent once to one reader can carry its images instead of linking them: render with `png()`, attach the bytes, and point `img()` at the `cid:` reference. [The email recipe](./recipes.md#in-email) shows the calls.
+Some clients, Outlook among them, hold back remote images until the reader allows them. Until then the reader sees each formula's `alt` text, such as `πr²`.
+
+A one-off mail can attach its images instead of linking them: render with `png()`, attach the bytes, and point `img()` at the `cid:` reference. [The email recipe](./recipes.md#in-email) shows the calls.
 
 ## Caching
 

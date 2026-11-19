@@ -41,19 +41,15 @@ echo MathRender::fromTex('x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}')->display()->s
 
 Every glyph is a path, so the SVG looks the same everywhere and needs no web font.
 
-## Reads and writes
-
-It reads TeX (including `\ce` and `\pu` chemistry), MathML, MathType and Wiris text, and the `Math` builder in PHP. It writes the formats in the table below. Every reader produces the same tree, so Phactorial also converts: TeX to MathML, MathML to TeX, either to Word.
-
-## What it does
+## How it works
 
 A formula passes through three stages.
 
-1. **Read.** `Math::tex()` and `Math::mathml()` turn source text into a formula tree. The `Math` builder makes the same tree in PHP.
+1. **Read.** `Math::tex()` and `Math::mathml()` turn TeX (with `\ce` and `\pu` chemistry), MathML, or MathType and Wiris text into a formula tree. The `Math` builder makes the same tree in PHP.
 2. **Lay out.** `Math::layout()` sets the tree in an OpenType math font, by the rules TeX and MathML Core use.
 3. **Write.** A writer turns the tree or the layout into output.
 
-`MathRender` runs all three in one call. The classes behind it stay public for finer control.
+`MathRender` runs all three in one call. The classes behind it stay public for finer control. Every reader produces the same tree, so conversion comes free: TeX to MathML, MathML to TeX, and either to Word.
 
 | Output | From | Use it for |
 |---|---|---|
@@ -66,17 +62,15 @@ A formula passes through three stages.
 
 ## Compared with KaTeX and MathJax
 
-KaTeX and MathJax are the standard tools for math on the web, and they are excellent. Both are JavaScript, so a PHP site runs Node beside PHP or renders in the visitor's browser.
+KaTeX and MathJax are the standard tools for math on the web. Both are JavaScript, so a PHP site must run Node beside PHP or render in the visitor's browser.
 
-Phactorial is the PHP-only alternative. It reads the TeX KaTeX reads (gaps listed under [Input](./input.md#tex)), runs in your PHP process and returns a string. It also writes Word equations, which neither JavaScript library does.
-
-phpoffice/math converts between MathML and Word's format but does not typeset. Phactorial also reads TeX and draws the formula.
+Phactorial reads the TeX KaTeX reads (gaps are listed under [Input](./input.md#tex)), runs in your PHP process and returns a string. It also writes Word equations, which neither JavaScript library does.
 
 Not yet supported: line breaks inside long formulas, boxes and backgrounds within a formula, and equation numbers.
 
 ## Speed and safety
 
-Once the font is loaded, TeX to SVG takes about 0.1 ms per formula. The first formula in a new PHP process takes about 15 ms without opcache, with classes and font loaded from scratch. Time and memory grow linearly with formula size. [`bin/benchmark.php`](https://github.com/One-Learning-Community/phactorial/blob/main/bin/benchmark.php) in the repository measures these on your machine.
+Once the font is loaded, TeX to SVG takes about 0.1 ms per formula. The first formula in a new PHP process takes about 15 ms without opcache. Time and memory grow linearly with formula size. [`bin/benchmark.php`](https://github.com/One-Learning-Community/phactorial/blob/main/bin/benchmark.php) measures these on your machine.
 
 The readers never throw. Input that is too large or too deep is cut off at fixed limits, drawn as far as it got and reported, so formulas typed by users are safe to render. See [Untrusted input](./recipes.md#untrusted-input).
 
@@ -87,4 +81,3 @@ The readers never throw. Input that is too large or too deep is cut off at fixed
 - [Output](./output.md): the writers and their options.
 - [Custom backends](./backends.md): drawing a layout yourself, and other math fonts.
 - [CommonMark](./commonmark.md): math in Markdown, typeset on the server.
-- Quoin uses Phactorial for [equations in PDF, Word and HTML documents](https://one-learning-community.github.io/quoin/guide/equations.html).

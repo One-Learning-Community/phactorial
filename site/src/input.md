@@ -92,9 +92,9 @@ The TeX reader accepts these values:
 - `#rgb` and `#rrggbb`.
 - The models `[HTML]{2350FF}`, `[rgb]{0.14,0.31,1}`, `[RGB]{35,80,255}` and `[gray]{0.5}`, with spaces allowed after commas.
 
-Any other value, an xcolor mix such as `red!50` included, is drawn in the default color, with a note: ``unknown color `red!50`; drawn in the default color``. Characters in the note other than letters, digits, `#.,!:-` and space show as `?`. TeX written from such a formula keeps the rejected value as it was, so `red!50` round-trips; a value with markup, or with characters TeX cannot read, is written back as an empty group, `\color{}`.
+Any other value, including an xcolor mix such as `red!50`, is drawn in the default color with a note: ``unknown color `red!50`; drawn in the default color``. The TeX writer keeps the rejected value, so `red!50` round-trips. A value with markup or characters TeX cannot read is written back as `\color{}`.
 
-SVG groups each run of same-colored items in one `<g fill>`. Ink without a color keeps the renderer's color; an explicit color is fixed. [Output](./output.md#svg) says how that plays with a dark theme.
+[Output](./output.md#svg) explains how colors behave in a dark theme.
 
 Scripts before a base are read from `{}^{a}_{b}X`, `\prescript{a}{b}{X}` and `\sideset`, and drawn right-aligned against the base. `\sideset` draws the scripts in its first two arguments; anything else in them is dropped and noted.
 
@@ -130,9 +130,9 @@ Arrows are `->`, `<-`, `<->`, `<-->` and `<=>`, with labels in `[above][below]`,
 
 A piece the subset does not cover, `\bond{…}` or a `\\` line break, is drawn as its source text, upright, with an approximated note, and the rest of the argument is still read. An unknown command inside `\ce`, such as `\cf` or `\cee`, is drawn as its name with a dropped note, and its argument is read as math. Nuclear notation such as `^{0}_{-1}e` reads as prescripts, and orbital notation such as `1s^2 2s^2` reads as an ordinary run. siunitx (`\SI`, `\si`, `\qty`, `\num`) is not supported. Input limits, including nesting, cover the argument and any math inside it.
 
-The TeX writer writes `\ce{…}` and `\pu{…}` back as read, not expanded. The TeX it makes needs mhchem wherever it goes next; KaTeX and MathJax both offer it.
+The TeX writer writes `\ce{…}` and `\pu{…}` back unexpanded, so that TeX needs mhchem wherever it goes next. KaTeX and MathJax both offer it.
 
-Equilibrium arrows such as `\xrightleftharpoons` stretch to their labels everywhere, not only in chemistry. An arrow without labels that Word cannot stretch is written there as a plain long arrow.
+Equilibrium arrows such as `\xrightleftharpoons` stretch to fit their labels, inside or outside `\ce`. In Word output, an unlabeled arrow Word cannot stretch becomes a plain long arrow.
 
 The reader also returns the display style and the notes:
 
@@ -172,8 +172,6 @@ $formula = Math::mathml('<math display="block"><mfrac><mn>1</mn><mn>2</mn></mfra
 Entity declarations in a DOCTYPE are ignored.
 
 `MathmlReader::read()` returns a result with the same three fields as the TeX reader's; `display` is true for `display="block"`.
-
-A formula is a tree of `Phactorial\Node` objects, and `Math::tex()` and `Math::mathml()` return its root. To visit every node, call `children()`, which lists a node's children in reading order. See [Stability](./stability.md#the-node-tree).
 
 `<mmultiscripts>` is read as prescripts and scripts, one pair on each side; more pairs are noted. What is not drawn as written: `<menclose>` is drawn as its content, `<maction>` as its first choice, and table lines, spacing and spans are ignored. Images and other media inside a formula are dropped, and so is content that an HTML tag pushed out of a `<math>` element in markup that isn't well-formed. `mathsize` and `mathbackground` are ignored.
 

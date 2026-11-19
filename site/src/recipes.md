@@ -1,6 +1,6 @@
 # Recipes
 
-Each recipe starts from TeX. `MathRender::fromMathml()` or `MathRender::of()` with a builder formula can take the place of `MathRender::fromTex()`.
+Each recipe starts from TeX. To start from MathML or a builder formula, use `MathRender::fromMathml()` or `MathRender::of()` in place of `MathRender::fromTex()`.
 
 ## In a web page
 
@@ -10,7 +10,7 @@ Use SVG on the web. It stays sharp at any zoom and needs no math font.
 
 `size` is the pixel size of the surrounding text. The color is `currentColor`, the parent's text color, so the formula follows a dark theme; pass `color:` for any other CSS color.
 
-Inline, the formula is in text style, which keeps fractions and limits small, and the SVG carries the `vertical-align` that sets its baseline on the line's. A display formula sits on its own line and carries none.
+An inline formula uses text style, which keeps fractions and limits small, and its SVG carries a `vertical-align` that puts it on the text's baseline. A display formula sits on its own line.
 
 ## The LaTeX look
 
@@ -25,9 +25,9 @@ $font = Font::fromFile('/fonts/latinmodern-math.otf');
 echo MathRender::fromTex('\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}')->display()->font($font)->svg(size: 18, pad: 2);
 ```
 
-Load the font once and reuse the object. SVG, PNG and MathML output carry no font, so the file costs nothing there. A PDF that embeds the font carries it whole, about 390 KB; [Quoin](https://one-learning-community.github.io/quoin/guide/fonts.html#the-math-font) does this for equations in its PDF documents.
+Load the font once and reuse the object. SVG, PNG and MathML output do not embed the font. A PDF that embeds it carries the whole file, about 390 KB.
 
-Other math fonts with CFF outlines load the same way: New Computer Modern Math, the TeX Gyre math fonts, Fira Math, Libertinus Math and XITS Math. In a Quoin document, [Quoin's `withMathFont()` and its Laravel `math_font` option](https://one-learning-community.github.io/quoin/guide/fonts.html#the-math-font) point the font set at the file.
+Other math fonts with CFF outlines load the same way: New Computer Modern Math, the TeX Gyre math fonts, Fira Math, Libertinus Math and XITS Math.
 
 ## Accessible formulas
 
@@ -47,9 +47,9 @@ Gmail and Outlook do not display SVG. Send PNG. It needs the Imagick extension.
 
 Attach `$png->bytes` to the message as an inline image with the content ID `formula-1`.
 
-`png()` draws two image pixels to each CSS pixel, which stays sharp on high-density screens. `img()` writes the `<img>` at its CSS size, with the formula's text as `alt` and, inline, the `vertical-align` that sets it on the baseline. The same values are on the result as `width`, `height` and `verticalAlign`.
+`png()` draws two image pixels to each CSS pixel, so it stays sharp on high-density screens. `img()` writes the `<img>` at its CSS size, with the formula's text as `alt` and, inline, a `vertical-align` that puts it on the baseline. The result also exposes these as `width`, `height` and `verticalAlign`.
 
-Many email clients block `data:` images, so attach the PNG and reference it by `cid:`, or host it. `dataUri()` serves pages that accept them.
+Many email clients block `data:` images, so attach the PNG and reference it by `cid:`, or host it. Where `data:` images work, use `dataUri()`.
 
 ## In Word
 
