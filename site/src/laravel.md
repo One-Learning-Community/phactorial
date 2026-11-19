@@ -1,4 +1,10 @@
+---
+description: Render math in Laravel Markdown on the server, as SVG or MathML, with no JavaScript and no math font. Works with Str::markdown(), mail, spatie/laravel-markdown and Blade.
+---
+
 # Laravel
+
+Render math in Laravel's Markdown on the server: `$x^2$` and `$$…$$` become SVG or MathML, with no JavaScript and no math font.
 
 Laravel renders Markdown through league/commonmark in three places: `Str::markdown()`, mail templates and spatie/laravel-markdown. Each accepts [phactorial/commonmark](./commonmark.md). Mail needs one extra class, because email cannot show SVG. Outside Markdown, a Blade component typesets a formula in any template.
 
