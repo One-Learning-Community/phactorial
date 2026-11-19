@@ -73,6 +73,9 @@ final class TexReader
     private ?string $font = null;
     /** @var array<string, true> */
     private array $noted = [];
+
+    /** The note of the first dropped `\\`, which each later one carries too (so it stays an empty Fallback, not a `{}`). */
+    private ?MathNote $breakNote = null;
     /** \overset results not yet wrapped in a group of their own: \underset{b}{\overset{a}{x}} folds them, {{\overset..}} does not. */
     /** @var \SplObjectStorage<Node, bool> */
     private \SplObjectStorage $bare;
@@ -419,7 +422,13 @@ final class TexReader
             } elseif ($ty === 'nl') {
                 $this->c->p++;
                 $spaced = $this->skipOptionalDimension();
-                $nodes[] = $this->note(NoteLevel::Dropped, '\\\\', 'line break outside an environment', $t[2]);
+                $break = $this->note(NoteLevel::Dropped, '\\\\', 'line break outside an environment', $t[2]);
+                if ($break instanceof Fallback) {
+                    $this->breakNote = $break->note;
+                } elseif ($this->breakNote !== null) {
+                    $break = new Fallback(null, $this->breakNote);
+                }
+                $nodes[] = $break;
                 if ($spaced && ($m = $this->spacingNote($t[2])) !== null) {
                     $nodes[] = new Fallback(null, $m);
                 }

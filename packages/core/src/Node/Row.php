@@ -213,6 +213,7 @@ final class Row extends Node
         $x = 0.0;
         $prev = null;
         $last = null;
+        $lastAtom = null;
         $forms = $this->forms();
         $drops = $this->drops($forms);
         $items = $this->splices() ? $this->items() : null;
@@ -238,8 +239,8 @@ final class Row extends Node
                 && (! ($prev instanceof Operator || $prev instanceof Middle) || ($prev instanceof Operator && (OperatorDictionary::isClosing($prev->char) || $prev->char === '!')))) {
                 $x += $c->mu(3);
             }
-            if ($last !== null && $last->trail > 0.0 && self::isFunctionName($prev) && $seen instanceof Operator && (OperatorDictionary::isOpening($seen->char) || OperatorDictionary::isClosing($seen->char) || in_array($seen->char, [',', ';'], true) || self::isRelation($seen, $forms[$i]))) {
-                $x -= $last->trail;
+            if ($lastAtom !== null && $lastAtom->trail > 0.0 && self::isFunctionName($prev) && $seen instanceof Operator && (OperatorDictionary::isOpening($seen->char) || OperatorDictionary::isClosing($seen->char) || in_array($seen->char, [',', ';'], true) || self::isRelation($seen, $forms[$i]))) {
+                $x -= $lastAtom->trail;
             }
             $form = $forms[$i];
             // Forms::of gives every operator a form and no one else.
@@ -262,7 +263,11 @@ final class Row extends Node
             $x += $b->width;
             $out->ascent = max($out->ascent, $b->ascent);
             $out->descent = max($out->descent, $b->descent);
-            $prev = $seen;
+            // An empty Fallback is invisible to the spacing of its neighbors.
+            if (! ($seen instanceof Fallback)) {
+                $prev = $seen;
+                $lastAtom = $b;
+            }
             if ($i === 0) {
                 $out->firstGid = $b->firstGid;
             }
