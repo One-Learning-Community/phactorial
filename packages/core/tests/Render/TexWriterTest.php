@@ -110,6 +110,7 @@ final class TexWriterTest extends TestCase
         self::assertSame('\qquad', self::tex(Math::space(2)));
         self::assertSame('\hspace{0.37em}', self::tex(Math::space(0.37)));
         self::assertSame('\hspace{-0.5em}', self::tex(Math::space(-0.5)));
+        self::assertSame('\mkern2mu', self::tex(Math::space(2 / 18)));
     }
 
     public function test_phantom_fractions_roots(): void
