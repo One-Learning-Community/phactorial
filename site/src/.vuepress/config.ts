@@ -44,16 +44,24 @@ export default defineUserConfig({
     },
 
     navbar: [
-      { text: 'Overview', link: '/' },
-      { text: 'Input', link: '/input.html' },
-      { text: 'Output', link: '/output.html' },
+      {
+        text: 'Guide',
+        children: [
+          { text: 'Input', link: '/input.html' },
+          { text: 'Output', link: '/output.html' },
+          { text: 'Custom backends', link: '/backends.html' },
+          { text: 'Stability', link: '/stability.html' },
+        ],
+      },
       { text: 'Recipes', link: '/recipes.html' },
-      { text: 'Backends', link: '/backends.html' },
-      { text: 'CommonMark', link: '/commonmark.html' },
-      { text: 'Laravel', link: '/laravel.html' },
-      { text: 'Stability', link: '/stability.html' },
+      {
+        text: 'Integrations',
+        children: [
+          { text: 'CommonMark', link: '/commonmark.html' },
+          { text: 'Laravel', link: '/laravel.html' },
+        ],
+      },
       { text: 'Changelog', link: 'https://github.com/One-Learning-Community/phactorial/blob/main/CHANGELOG.md' },
-      { text: 'Quoin', link: 'https://one-learning-community.github.io/quoin/' },
     ],
 
     sidebar: [

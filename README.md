@@ -1,4 +1,11 @@
-# Phactorial
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="site/src/.vuepress/public/phactorial-wordmark-dark.svg">
+    <img alt="Phactorial" src="site/src/.vuepress/public/phactorial-wordmark.svg" height="56">
+  </picture>
+</h1>
+
+**Equations made simple.**
 
 [![phactorial/phactorial](https://img.shields.io/packagist/v/phactorial/phactorial?label=phactorial/phactorial)](https://packagist.org/packages/phactorial/phactorial) [![phactorial/commonmark](https://img.shields.io/packagist/v/phactorial/commonmark?label=phactorial/commonmark)](https://packagist.org/packages/phactorial/commonmark) [![core](https://github.com/One-Learning-Community/phactorial/actions/workflows/core.yml/badge.svg?branch=main)](https://github.com/One-Learning-Community/phactorial/actions/workflows/core.yml) [![commonmark](https://github.com/One-Learning-Community/phactorial/actions/workflows/commonmark.yml/badge.svg?branch=main)](https://github.com/One-Learning-Community/phactorial/actions/workflows/commonmark.yml) [![recipes](https://github.com/One-Learning-Community/phactorial/actions/workflows/recipes.yml/badge.svg?branch=main)](https://github.com/One-Learning-Community/phactorial/actions/workflows/recipes.yml)
 

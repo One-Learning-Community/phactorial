@@ -1,28 +1,28 @@
-// Ink on light, Paper on dark.
+// Cobalt, the color of the factorial sign in the logo. Lighter on dark grounds.
 :root {
-  --vp-c-accent: #18181b;
-  --vp-c-accent-bg: #18181b;
-  --vp-c-accent-hover: #3f3f46;
-  --vp-c-accent-text: #fafafa;
-  --vp-c-accent-soft: rgba(24, 24, 27, 0.08);
+  --vp-c-accent: #2350ff;
+  --vp-c-accent-bg: #2350ff;
+  --vp-c-accent-hover: #1a3fd6;
+  --vp-c-accent-text: #ffffff;
+  --vp-c-accent-soft: rgba(35, 80, 255, 0.1);
 }
 
 [data-theme='dark'] {
-  --vp-c-accent: #fafafa;
-  --vp-c-accent-bg: #fafafa;
-  --vp-c-accent-hover: #d4d4d8;
-  --vp-c-accent-text: #18181b;
-  --vp-c-accent-soft: rgba(250, 250, 250, 0.12);
-}
-
-// Ink links are close to the body text color, so underline them in page content.
-[vp-content] a:not(.header-anchor) {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
+  --vp-c-accent: #5b7dff;
+  --vp-c-accent-bg: #5b7dff;
+  --vp-c-accent-hover: #7d97ff;
+  --vp-c-accent-text: #0f1118;
+  --vp-c-accent-soft: rgba(91, 125, 255, 0.16);
 }
 
 // The logo already spells the name, so the theme's text title beside it would repeat it.
 .vp-navbar .vp-site-name {
   display: none;
+}
+
+// The lockup is wide and short, so size the home hero by width rather than the theme's height cap.
+.vp-hero-image {
+  width: min(560px, 88%);
+  height: auto;
+  margin-top: 4rem;
 }

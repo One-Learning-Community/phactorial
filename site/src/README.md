@@ -1,6 +1,31 @@
-# Phactorial
+---
+home: true
+title: Overview
+heroImage: /phactorial-wordmark.svg
+heroImageDark: /phactorial-wordmark-dark.svg
+heroAlt: Phactorial
+heroText: null
+tagline: Equations made simple.
+actions:
+  - text: Get started
+    link: /recipes.html
+    type: primary
+  - text: GitHub
+    link: https://github.com/One-Learning-Community/phactorial
+    type: secondary
+features:
+  - title: Plain PHP
+    details: Runs in your PHP process and returns a string. No Node, no browser, no fonts on the server.
+  - title: Reads TeX and MathML
+    details: The TeX KaTeX reads, chemistry with \ce and \pu, MathML, and MathType and Wiris text.
+  - title: Writes every format
+    details: SVG, PNG, MathML, TeX, live Word equations and plain text, all from the same formula.
+footer: MIT licensed. Set in STIX Two Math.
+---
 
 Phactorial typesets mathematics in plain PHP. It reads TeX or MathML and writes SVG, PNG, MathML, TeX, Word equations (OMML) or plain text. It needs PHP 8.4 with `ctype`, `dom` and `mbstring`. No Node, no browser, no fonts on the server.
+
+## Quick start
 
 ```
 composer require phactorial/phactorial
